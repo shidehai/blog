@@ -1,0 +1,47 @@
+{
+  "name": "personal-knowledge-journal",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=24.15.0 <25",
+    "pnpm": "9.15.9"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "start": "node scripts/env.mjs runtime && node dist/server/entry.mjs",
+    "build": "astro build && pnpm search:index",
+    "search:index": "pagefind --site dist/client",
+    "astro": "astro",
+    "typecheck": "astro check",
+    "lint": "eslint .",
+    "format": "prettier --write --ignore-unknown .prettierrc.json README.md package.json astro.config.ts eslint.config.js playwright.config.ts tsconfig.json vitest.config.ts deploy directus scripts src tests",
+    "format:check": "prettier --check --ignore-unknown .prettierrc.json README.md package.json astro.config.ts eslint.config.js playwright.config.ts tsconfig.json vitest.config.ts deploy directus scripts src tests",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:unit && pnpm build && pnpm test:e2e"
+  },
+  "dependencies": {
+    "@astrojs/node": "11.0.3",
+    "@directus/sdk": "24.0.0",
+    "astro": "7.1.6",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.62.1",
+    "@types/node": "24.13.3",
+    "eslint": "10.8.0",
+    "eslint-plugin-astro": "1.5.0",
+    "globals": "17.9.0",
+    "pagefind": "1.5.2",
+    "prettier": "3.9.6",
+    "prettier-plugin-astro": "0.14.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.65.0",
+    "vitest": "4.1.10"
+  }
+}

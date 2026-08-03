@@ -1,0 +1,13 @@
+{"file":".trellis/tasks/07-31-blog-system/research/cms-architecture.md","reason":"Verify Directus Markdown/version/permission/schema behavior and the researched draft-leakage caveats; ignore its superseded hosting recommendation."}
+{"file":".trellis/tasks/07-31-blog-system/research/vps-deployment.md","reason":"Verify Compose isolation, Caddy trusted-header auth, immutable image switching, volume durability, secrets, and clean-room VPS recovery."}
+{"file":".trellis/tasks/07-31-blog-system/research/design-references.md","reason":"Check final UX craft, visual anti-patterns, static Chinese search, and framework customization against the approved references."}
+{"file":".trellis/tasks/07-31-blog-system/research/aiayy-frontend-direction.md","reason":"Verify the public routes visibly match the approved aiayy.cn material/composition/motion family while fixing its contrast, touch-target, content-priority, forced-color, and animation-gating weaknesses."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Audit content/status/config/media data flow end to end and ensure every public consumer shares the same validated source."}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend pre-development and quality gates."}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Required pnpm verification and test evidence."}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Audit shared runtime validation and strict typing."}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend/infrastructure quality routing."}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Audit Compose, images, ports, secrets, health, and proxy behavior."}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "Verify PostgreSQL/Directus authority and private storage boundaries."}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Verify fail-closed boundary behavior without secret leakage."}
+{"file": ".trellis/spec/backend/logging-guidelines.md", "reason": "Verify bounded structured logs and forbidden sensitive fields."}

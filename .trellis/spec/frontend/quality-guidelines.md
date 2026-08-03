@@ -1,0 +1,37 @@
+# Frontend Quality Guidelines
+
+## Required Commands
+
+`package.json` defines one aggregate gate:
+
+```bash
+pnpm verify
+```
+
+It runs Prettier check, ESLint, Astro type checking, Vitest, the production
+Astro/Pagefind build, and Playwright in that order. Keep each focused script
+independently runnable for diagnosis.
+
+## Test Shape
+
+- Unit tests cover non-trivial boundary logic with the smallest useful case;
+  `tests/unit/env.test.ts` proves permissive fixture mode and fail-closed secret
+  modes.
+- Browser tests prove observable output; `tests/e2e/smoke.spec.ts` checks both
+  the page heading and `/healthz` response.
+- A passing build includes Pagefind indexing from `dist/client`, not merely
+  Astro compilation.
+
+## Formatting Scope
+
+`.prettierignore` excludes Trellis/platform files and product/planning
+documents. `pnpm format` must format application-owned code only; never create
+large documentation-only diffs as a side effect of a code change.
+
+## Forbidden Patterns
+
+- No theme, UI kit, page builder, local Markdown store, or global client runtime.
+- No test that only restates its implementation.
+- No public route that silently becomes runtime-rendered.
+- No dependency when an Astro, browser, CSS, or standard-library feature covers
+  the behavior.

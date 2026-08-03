@@ -1,0 +1,32 @@
+:root {
+  color-scheme: light dark;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+}
+
+main {
+  width: min(42rem, calc(100% - 2rem));
+  margin-inline: auto;
+  padding-block: clamp(4rem, 15vh, 10rem);
+}
+
+h1 {
+  text-wrap: balance;
+}
+
+p {
+  line-height: 1.8;
+}

@@ -1,0 +1,17 @@
+.astro/
+.agents/
+.claude/
+.codex/
+.data/
+.trellis/
+.trellis/.backup-*/
+.trellis/.runtime/
+coverage/
+dist/
+node_modules/
+playwright-report/
+test-results/
+pnpm-lock.yaml
+AGENTS.md
+DESIGN.md
+PRODUCT.md

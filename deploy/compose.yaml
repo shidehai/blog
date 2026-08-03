@@ -1,0 +1,196 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-file: "3"
+    max-size: 10m
+
+services:
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    depends_on:
+      site:
+        condition: service_healthy
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL}
+      CMS_DOMAIN: ${CMS_DOMAIN:?Set CMS_DOMAIN}
+      PREVIEW_BASIC_PASSWORD_HASH: ${PREVIEW_BASIC_PASSWORD_HASH:?Set PREVIEW_BASIC_PASSWORD_HASH}
+      PREVIEW_BASIC_USER: ${PREVIEW_BASIC_USER:?Set PREVIEW_BASIC_USER}
+      PREVIEW_TRUSTED_HEADER: ${PREVIEW_TRUSTED_HEADER:?Set PREVIEW_TRUSTED_HEADER}
+      SITE_DOMAIN: ${SITE_DOMAIN:?Set SITE_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - type: bind
+        source: ./Caddyfile
+        target: /etc/caddy/Caddyfile
+        read_only: true
+      - type: bind
+        source: ${BLOG_DATA_ROOT:-../.data}/caddy/data
+        target: /data
+      - type: bind
+        source: ${BLOG_DATA_ROOT:-../.data}/caddy/config
+        target: /config
+      - type: bind
+        source: ${BLOG_DATA_ROOT:-../.data}/caddy/logs
+        target: /var/log/caddy
+    networks: [web]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    logging: *default-logging
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 128
+    healthcheck:
+      test:
+        ["CMD", "wget", "--quiet", "--spider", "http://127.0.0.1:2019/config/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  site:
+    image: ${SITE_IMAGE:?Set SITE_IMAGE to an immutable digest}
+    restart: unless-stopped
+    init: true
+    environment:
+      DIRECTUS_PREVIEW_TOKEN: ${DIRECTUS_PREVIEW_TOKEN:?Set DIRECTUS_PREVIEW_TOKEN}
+      DIRECTUS_URL: http://directus:8055
+      HOST: 0.0.0.0
+      NODE_ENV: production
+      PORT: 4321
+      PREVIEW_TRUSTED_HEADER: ${PREVIEW_TRUSTED_HEADER:?Set PREVIEW_TRUSTED_HEADER}
+      SITE_URL: ${SITE_URL:?Set SITE_URL}
+    networks: [web]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging: *default-logging
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 128
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4321/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  directus:
+    image: directus/directus:12.2.0
+    restart: unless-stopped
+    init: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_CLIENT: pg
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:?Set POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      SECRET: ${DIRECTUS_SECRET:?Set DIRECTUS_SECRET}
+      PUBLIC_URL: https://${CMS_DOMAIN:?Set CMS_DOMAIN}
+      TELEMETRY: "false"
+      WEBSOCKETS_ENABLED: "false"
+      STORAGE_LOCATIONS: local
+      STORAGE_LOCAL_DRIVER: local
+      STORAGE_LOCAL_ROOT: /directus/uploads
+    volumes:
+      - type: bind
+        source: ${BLOG_DATA_ROOT:-../.data}/directus/uploads
+        target: /directus/uploads
+      - type: bind
+        source: ../directus
+        target: /directus/project
+        read_only: true
+    networks: [web, data]
+    security_opt: [no-new-privileges:true]
+    logging: *default-logging
+    mem_limit: 768m
+    cpus: 1.0
+    pids_limit: 256
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8055/server/ping').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+
+  postgres:
+    image: postgres:17.9-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - type: bind
+        source: ${BLOG_DATA_ROOT:-../.data}/postgres
+        target: /var/lib/postgresql/data
+    networks: [data]
+    security_opt: [no-new-privileges:true]
+    logging: *default-logging
+    mem_limit: 1g
+    cpus: 1.5
+    pids_limit: 256
+    shm_size: 256m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backup:
+    profiles: [backup]
+    build:
+      context: ..
+      dockerfile: deploy/backup.Dockerfile
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
+      POSTGRES_HOST: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD:?Set RESTIC_PASSWORD}
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:?Set RESTIC_REPOSITORY}
+    volumes:
+      - type: bind
+        source: ${BLOG_DATA_ROOT:-../.data}/directus/uploads
+        target: /data/uploads
+        read_only: true
+      - type: bind
+        source: ${BLOG_DATA_ROOT:-../.data}/backup-staging
+        target: /backup-staging
+    networks: [data, backup-egress]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging: *default-logging
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 128
+
+networks:
+  web: {}
+  backup-egress: {}
+  data:
+    internal: true

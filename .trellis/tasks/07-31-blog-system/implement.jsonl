@@ -1,0 +1,15 @@
+{"file":".trellis/tasks/07-31-blog-system/research/cms-architecture.md","reason":"Directus/PostgreSQL selection, canonical Markdown, versioning, preview, permissions, schema promotion, and CMS alternative evidence; its hosting section is superseded by vps-deployment.md."}
+{"file":".trellis/tasks/07-31-blog-system/research/vps-deployment.md","reason":"Authoritative Docker VPS topology, Caddy/Node preview security, immutable candidate-preflight deployment with prior-image rollback, persistent uploads, and offsite restore design."}
+{"file":".trellis/tasks/07-31-blog-system/research/design-references.md","reason":"Selected reading-site references, visual anti-patterns, and final Astro/Directus/Pagefind/VPS foundation choices."}
+{"file":".trellis/tasks/07-31-blog-system/research/aiayy-frontend-direction.md","reason":"Primary frontend brief and evidence for the aiayy.cn-inspired capsule navigation, neumorphic Bento shell, route mapping, accessible motion, contrast corrections, and non-copying boundary."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"The same publication state must remain consistent across Directus, routes, media, preview, Pagefind, RSS, sitemap, image builds, and deployment."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Keep one typed CMS boundary, one published snapshot, one Markdown renderer, and one derivation path instead of per-route copies."}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Astro-first public frontend checklist and spec routing."}
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "Route, style, test, and single-package ownership established by Phase 1."}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "Project-owned Astro/HTML/CSS and accessibility conventions."}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Strict TypeScript plus the shared build/runtime validation boundary."}
+{"file": ".trellis/spec/backend/index.md", "reason": "Directus/PostgreSQL/Astro infrastructure checklist and spec routing."}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "Compose service, filesystem, and operational file ownership."}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "PostgreSQL/Directus source-of-truth, storage, and schema rules."}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Fail-closed environment, backup, and secret-safe error behavior."}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Executable Compose/container/proxy contract and validation matrix."}
