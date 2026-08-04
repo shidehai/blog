@@ -21,6 +21,13 @@
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
+    "directus:schema:diff": "docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.dev.yaml exec -T directus node cli.js schema apply --dry-run --yes /directus/project/schema.yaml",
+    "directus:schema:apply": "docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.dev.yaml exec -T directus node cli.js schema apply --yes /directus/project/schema.yaml && docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.dev.yaml exec -T postgres sh -c 'psql -v ON_ERROR_STOP=1 -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"' < directus/database.sql",
+    "directus:bootstrap": "node --env-file=.env directus/bootstrap.mjs",
+    "directus:seed": "node --env-file=.env directus/seed/index.mjs",
+    "directus:schema:check": "node --env-file=.env tests/directus.mjs schema",
+    "test:directus-access": "node --env-file=.env tests/directus.mjs access",
+    "test:directus-workflow": "node --env-file=.env tests/directus.mjs workflow",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:unit && pnpm build && pnpm test:e2e"
   },
   "dependencies": {

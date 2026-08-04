@@ -24,9 +24,14 @@ services:
 
   directus:
     environment:
-      PUBLIC_URL: http://localhost:8055
+      PUBLIC_URL: ${DIRECTUS_PUBLIC_URL:-http://localhost:8055}
     ports:
       - "127.0.0.1:8055:8055"
+    volumes:
+      - type: bind
+        source: ../directus
+        target: /directus/project
+        read_only: false
 
   postgres:
     ports:

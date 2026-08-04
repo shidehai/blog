@@ -31,6 +31,37 @@ Replace every placeholder secret in `.env` before using anything beyond local
 development. Production must set `SITE_IMAGE` to a real GHCR digest; a tag is
 not a deployment identity.
 
+## Directus license
+
+Directus 12.2.0 can run on its Core tier without a key, but Core disables the
+custom permission rules required to limit Build Reader and Preview Reader by
+status, folder, and field. `pnpm directus:bootstrap` checks that entitlement
+and stops before installing scoped permissions; `pnpm test:directus-access`
+checks it again. There is no broad-read fallback.
+
+The Open Innovation Grant (OIG) is available to eligible entities with less
+than USD 5 million in annual revenue and fewer than 50 employees. Eligibility
+is evaluated across the legal entities whose representatives use Directus
+Studio. Apply at <https://directus.com/oig>; the owner must accept the grant
+terms and keep renewal eligibility under review.
+
+After receiving a key, set `DIRECTUS_LICENSE_KEY` in `.env` and keep
+`DIRECTUS_PUBLIC_URL` at one stable absolute development URL. Compose maps the
+key to Directus' `LICENSE_KEY`; production still derives `PUBLIC_URL` only from
+the required HTTPS `CMS_DOMAIN`. Recreate Directus to apply an environment
+change, then rerun the policy bootstrap and access check:
+
+```bash
+docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.dev.yaml up -d --force-recreate directus
+pnpm directus:bootstrap
+pnpm test:directus-access
+```
+
+An OIG key currently provides five activations and is valid for one year.
+Deactivate a license before discarding its database or changing a bound
+`PUBLIC_URL`; deleting a container alone does not release an activation. Do not
+put a real key in Git, logs, fixtures, or command output.
+
 ## Health and validation
 
 ```bash
@@ -42,16 +73,16 @@ pnpm verify
 
 ## Schema and fixtures
 
-Phase 2 creates `directus/schema.yaml` and `directus/seed/`. Once present, apply
-and seed them explicitly; neither command resets existing data:
+Apply the reviewed schema, database constraints, policy/bootstrap state, and
+fake fixtures explicitly; these commands do not reset existing data:
 
 ```bash
 test -f directus/schema.yaml
-docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.dev.yaml exec -T directus \
-  npx directus schema apply --yes /directus/project/schema.yaml
-test -f directus/seed/index.mjs
-docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.dev.yaml exec -T directus \
-  node /directus/project/seed/index.mjs
+pnpm directus:schema:diff
+pnpm directus:schema:apply
+pnpm directus:bootstrap
+pnpm directus:seed
+pnpm directus:schema:check
 ```
 
 ## Backup and teardown

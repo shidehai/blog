@@ -1,0 +1,3029 @@
+version: 1
+directus: 12.2.0
+vendor: postgres
+collections:
+  - collection: posts
+    meta:
+      accountability: all
+      archive_app_filter: true
+      archive_field: status
+      archive_value: archived
+      autosave_revision_interval: null
+      collapse: open
+      collection: posts
+      color: null
+      display_template: "{{title}}"
+      group: null
+      hidden: false
+      icon: article
+      item_duplication_fields: null
+      note: 文章、教程与随记共用的发布记录。
+      preview_url: http://localhost:4321/preview/{{id}}?version={{$version}}
+      singleton: false
+      sort: 1
+      sort_field: null
+      status: active
+      translations:
+        - language: zh-CN
+          plural: 内容
+          singular: 内容
+          translation: 内容
+      unarchive_value: published
+      versioning: true
+    schema:
+      name: posts
+  - collection: posts_topics
+    meta:
+      accountability: all
+      archive_app_filter: true
+      archive_field: null
+      archive_value: null
+      autosave_revision_interval: null
+      collapse: open
+      collection: posts_topics
+      color: null
+      display_template: null
+      group: null
+      hidden: true
+      icon: merge_type
+      item_duplication_fields: null
+      note: null
+      preview_url: null
+      singleton: false
+      sort: 5
+      sort_field: null
+      status: active
+      translations: null
+      unarchive_value: null
+      versioning: false
+    schema:
+      name: posts_topics
+  - collection: site_settings
+    meta:
+      accountability: all
+      archive_app_filter: true
+      archive_field: null
+      archive_value: null
+      autosave_revision_interval: null
+      collapse: open
+      collection: site_settings
+      color: null
+      display_template: null
+      group: null
+      hidden: false
+      icon: settings
+      item_duplication_fields: null
+      note: 公开站点身份和展示设置。
+      preview_url: null
+      singleton: true
+      sort: 3
+      sort_field: null
+      status: active
+      translations:
+        - language: zh-CN
+          plural: 站点设置
+          singular: 站点设置
+          translation: 站点设置
+      unarchive_value: null
+      versioning: true
+    schema:
+      name: site_settings
+  - collection: social_links
+    meta:
+      accountability: all
+      archive_app_filter: true
+      archive_field: null
+      archive_value: null
+      autosave_revision_interval: null
+      collapse: open
+      collection: social_links
+      color: null
+      display_template: "{{label}}"
+      group: null
+      hidden: false
+      icon: link
+      item_duplication_fields: null
+      note: 站点设置中的有序公开链接。
+      preview_url: null
+      singleton: false
+      sort: 4
+      sort_field: null
+      status: active
+      translations:
+        - language: zh-CN
+          plural: 社交链接
+          singular: 社交链接
+          translation: 社交链接
+      unarchive_value: null
+      versioning: false
+    schema:
+      name: social_links
+  - collection: topics
+    meta:
+      accountability: all
+      archive_app_filter: true
+      archive_field: null
+      archive_value: null
+      autosave_revision_interval: null
+      collapse: open
+      collection: topics
+      color: null
+      display_template: "{{name}}"
+      group: null
+      hidden: false
+      icon: sell
+      item_duplication_fields: null
+      note: 稳定的内容主题分类。
+      preview_url: null
+      singleton: false
+      sort: 2
+      sort_field: null
+      status: active
+      translations:
+        - language: zh-CN
+          plural: 主题
+          singular: 主题
+          translation: 主题
+      unarchive_value: null
+      versioning: false
+    schema:
+      name: topics
+fields:
+  - collection: posts
+    field: id
+    type: uuid
+    meta:
+      collection: posts
+      conditions: null
+      display: null
+      display_options: null
+      field: id
+      group: null
+      hidden: true
+      interface: input
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 1
+      special:
+        - uuid
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: id
+      table: posts
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: true
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
+    field: status
+    type: string
+    meta:
+      collection: posts
+      conditions: null
+      display: labels
+      display_options:
+        choices:
+          - color: var(--theme--primary)
+            text: 已发布
+            value: published
+          - color: var(--theme--warning)
+            text: 已归档
+            value: archived
+        showAsDot: true
+      field: status
+      group: null
+      hidden: false
+      interface: select-dropdown
+      note: null
+      options:
+        choices:
+          - color: var(--theme--primary)
+            text: 已发布
+            value: published
+          - color: var(--theme--warning)
+            text: 已归档
+            value: archived
+      readonly: false
+      required: true
+      searchable: true
+      sort: 2
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 状态
+      validation:
+        _or:
+          - status:
+              _eq: archived
+          - _and:
+              - status:
+                  _eq: published
+              - title:
+                  _nempty: true
+              - slug:
+                  _nempty: true
+              - body:
+                  _nempty: true
+              - published_at:
+                  _nnull: true
+              - _or:
+                  - kind:
+                      _eq: note
+                  - summary:
+                      _nempty: true
+              - _or:
+                  - cover_image:
+                      _null: true
+                  - cover_decorative:
+                      _eq: true
+                  - cover_alt:
+                      _nempty: true
+      validation_message: 发布内容必须填写标题、slug、正文和发布时间；长文还需摘要，非装饰封面还需替代文本。
+      width: half
+    schema:
+      name: status
+      table: posts
+      data_type: character varying
+      default_value: published
+      max_length: 32
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: true
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
+    field: kind
+    type: string
+    meta:
+      collection: posts
+      conditions: null
+      display: labels
+      display_options:
+        choices:
+          - text: 文章
+            value: article
+          - text: 教程
+            value: tutorial
+          - text: 随记
+            value: note
+      field: kind
+      group: null
+      hidden: false
+      interface: select-dropdown
+      note: null
+      options:
+        choices:
+          - text: 文章
+            value: article
+          - text: 教程
+            value: tutorial
+          - text: 随记
+            value: note
+      readonly: false
+      required: true
+      searchable: true
+      sort: 3
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 类型
+      validation:
+        kind:
+          _in:
+            - article
+            - tutorial
+            - note
+      validation_message: 类型必须是文章、教程或随记。
+      width: half
+    schema:
+      name: kind
+      table: posts
+      data_type: character varying
+      default_value: null
+      max_length: 32
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: true
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
+    field: title
+    type: string
+    meta:
+      collection: posts
+      conditions: null
+      display: null
+      display_options: null
+      field: title
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        softLength: 100
+        trim: true
+      readonly: false
+      required: true
+      searchable: true
+      sort: 4
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 标题
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: title
+      table: posts
+      data_type: character varying
+      default_value: null
+      max_length: 180
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
+    field: slug
+    type: string
+    meta:
+      collection: posts
+      conditions: null
+      display: null
+      display_options: null
+      field: slug
+      group: null
+      hidden: false
+      interface: input
+      note: 首次发布后不得修改。仅限小写 ASCII 字母、数字和连字符。
+      options:
+        slug: true
+        trim: true
+      readonly: false
+      required: true
+      searchable: true
+      sort: 5
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 固定链接
+      validation:
+        slug:
+          _regex: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+      validation_message: slug 只能包含小写字母、数字和单个连字符。
+      width: half
+    schema:
+      name: slug
+      table: posts
+      data_type: character varying
+      default_value: null
+      max_length: 180
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
+    field: published_at
+    type: timestamp
+    meta:
+      collection: posts
+      conditions:
+        - name: 发布时必填
+          required: true
+          rule:
+            status:
+              _eq: published
+      display: datetime
+      display_options: null
+      field: published_at
+      group: null
+      hidden: false
+      interface: datetime
+      note: null
+      options: null
+      readonly: false
+      required: false
+      searchable: true
+      sort: 6
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 发布时间
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: published_at
+      table: posts
+      data_type: timestamp with time zone
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: true
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
+    field: summary
+    type: text
+    meta:
+      collection: posts
+      conditions:
+        - name: 长文必填
+          required: true
+          rule:
+            kind:
+              _in:
+                - article
+                - tutorial
+      display: null
+      display_options: null
+      field: summary
+      group: null
+      hidden: false
+      interface: input-multiline
+      note: null
+      options:
+        softLength: 240
+      readonly: false
+      required: false
+      searchable: true
+      sort: 7
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 摘要
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: summary
+      table: posts
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
+    field: body
+    type: text
+    meta:
+      collection: posts
+      conditions: null
+      display: null
+      display_options: null
+      field: body
+      group: null
+      hidden: false
+      interface: input-rich-text-md
+      note: 使用可移植 Markdown；不支持 MDX 或可执行脚本。
+      options:
+        folder: 22222222-2222-4222-8222-222222222222
+      readonly: false
+      required: true
+      searchable: true
+      sort: 8
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 正文
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: body
+      table: posts
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
+    field: topics
+    type: alias
+    meta:
+      collection: posts
+      conditions: null
+      display: related-values
+      display_options:
+        template: "{{topics_id.name}}"
+      field: topics
+      group: null
+      hidden: false
+      interface: list-m2m
+      note: null
+      options:
+        template: "{{topics_id.name}}"
+      readonly: false
+      required: false
+      searchable: true
+      sort: 9
+      special:
+        - m2m
+      translations:
+        - language: zh-CN
+          translation: 主题
+      validation: null
+      validation_message: null
+      width: full
+  - collection: posts
+    field: featured
+    type: boolean
+    meta:
+      collection: posts
+      conditions: null
+      display: boolean
+      display_options: null
+      field: featured
+      group: null
+      hidden: false
+      interface: boolean
+      note: null
+      options: null
+      readonly: false
+      required: false
+      searchable: true
+      sort: 10
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 首页推荐
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: featured
+      table: posts
+      data_type: boolean
+      default_value: false
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
+    field: cover_image
+    type: uuid
+    meta:
+      collection: posts
+      conditions: null
+      display: image
+      display_options: null
+      field: cover_image
+      group: null
+      hidden: false
+      interface: file-image
+      note: null
+      options:
+        folder: 22222222-2222-4222-8222-222222222222
+      readonly: false
+      required: false
+      searchable: true
+      sort: 11
+      special:
+        - file
+      translations:
+        - language: zh-CN
+          translation: 封面图片
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: cover_image
+      table: posts
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_files
+      foreign_key_column: id
+  - collection: posts
+    field: cover_alt
+    type: string
+    meta:
+      collection: posts
+      conditions:
+        - name: 非装饰封面必填
+          required: true
+          rule:
+            _and:
+              - cover_image:
+                  _nnull: true
+              - cover_decorative:
+                  _eq: false
+      display: null
+      display_options: null
+      field: cover_alt
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        softLength: 160
+        trim: true
+      readonly: false
+      required: false
+      searchable: true
+      sort: 12
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 封面替代文本
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: cover_alt
+      table: posts
+      data_type: character varying
+      default_value: null
+      max_length: 320
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
+    field: cover_decorative
+    type: boolean
+    meta:
+      collection: posts
+      conditions: null
+      display: boolean
+      display_options: null
+      field: cover_decorative
+      group: null
+      hidden: false
+      interface: boolean
+      note: null
+      options: null
+      readonly: false
+      required: false
+      searchable: true
+      sort: 13
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 装饰性封面
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: cover_decorative
+      table: posts
+      data_type: boolean
+      default_value: false
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
+    field: seo_title
+    type: string
+    meta:
+      collection: posts
+      conditions: null
+      display: null
+      display_options: null
+      field: seo_title
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        softLength: 60
+        trim: true
+      readonly: false
+      required: false
+      searchable: true
+      sort: 14
+      special: null
+      translations:
+        - language: zh-CN
+          translation: SEO 标题
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: seo_title
+      table: posts
+      data_type: character varying
+      default_value: null
+      max_length: 120
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
+    field: seo_description
+    type: text
+    meta:
+      collection: posts
+      conditions: null
+      display: null
+      display_options: null
+      field: seo_description
+      group: null
+      hidden: false
+      interface: input-multiline
+      note: null
+      options:
+        softLength: 160
+      readonly: false
+      required: false
+      searchable: true
+      sort: 15
+      special: null
+      translations:
+        - language: zh-CN
+          translation: SEO 描述
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: seo_description
+      table: posts
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
+    field: user_created
+    type: uuid
+    meta:
+      collection: posts
+      conditions: null
+      display: user
+      display_options: null
+      field: user_created
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 16
+      special:
+        - user-created
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: user_created
+      table: posts
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_users
+      foreign_key_column: id
+  - collection: posts
+    field: date_created
+    type: timestamp
+    meta:
+      collection: posts
+      conditions: null
+      display: datetime
+      display_options:
+        relative: true
+      field: date_created
+      group: null
+      hidden: true
+      interface: datetime
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 17
+      special:
+        - date-created
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: date_created
+      table: posts
+      data_type: timestamp with time zone
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
+    field: user_updated
+    type: uuid
+    meta:
+      collection: posts
+      conditions: null
+      display: user
+      display_options: null
+      field: user_updated
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 18
+      special:
+        - user-updated
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: user_updated
+      table: posts
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_users
+      foreign_key_column: id
+  - collection: posts
+    field: date_updated
+    type: timestamp
+    meta:
+      collection: posts
+      conditions: null
+      display: datetime
+      display_options:
+        relative: true
+      field: date_updated
+      group: null
+      hidden: true
+      interface: datetime
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 19
+      special:
+        - date-updated
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: date_updated
+      table: posts
+      data_type: timestamp with time zone
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts_topics
+    field: id
+    type: uuid
+    meta:
+      collection: posts_topics
+      conditions: null
+      display: null
+      display_options: null
+      field: id
+      group: null
+      hidden: true
+      interface: input
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 1
+      special:
+        - uuid
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: id
+      table: posts_topics
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: true
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts_topics
+    field: posts_id
+    type: uuid
+    meta:
+      collection: posts_topics
+      conditions: null
+      display: null
+      display_options: null
+      field: posts_id
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: false
+      required: true
+      searchable: true
+      sort: 2
+      special:
+        - m2o
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: posts_id
+      table: posts_topics
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: true
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: posts
+      foreign_key_column: id
+  - collection: posts_topics
+    field: topics_id
+    type: uuid
+    meta:
+      collection: posts_topics
+      conditions: null
+      display: null
+      display_options: null
+      field: topics_id
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: false
+      required: true
+      searchable: true
+      sort: 3
+      special:
+        - m2o
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: topics_id
+      table: posts_topics
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: true
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: topics
+      foreign_key_column: id
+  - collection: site_settings
+    field: id
+    type: uuid
+    meta:
+      collection: site_settings
+      conditions: null
+      display: null
+      display_options: null
+      field: id
+      group: null
+      hidden: true
+      interface: input
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 1
+      special:
+        - uuid
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: id
+      table: site_settings
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: true
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: site_settings
+    field: site_name
+    type: string
+    meta:
+      collection: site_settings
+      conditions: null
+      display: null
+      display_options: null
+      field: site_name
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        trim: true
+      readonly: false
+      required: true
+      searchable: true
+      sort: 2
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 站点名称
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: site_name
+      table: site_settings
+      data_type: character varying
+      default_value: null
+      max_length: 120
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: site_settings
+    field: author_name
+    type: string
+    meta:
+      collection: site_settings
+      conditions: null
+      display: null
+      display_options: null
+      field: author_name
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        trim: true
+      readonly: false
+      required: true
+      searchable: true
+      sort: 3
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 作者姓名
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: author_name
+      table: site_settings
+      data_type: character varying
+      default_value: null
+      max_length: 120
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: site_settings
+    field: tagline
+    type: string
+    meta:
+      collection: site_settings
+      conditions: null
+      display: null
+      display_options: null
+      field: tagline
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        softLength: 100
+        trim: true
+      readonly: false
+      required: false
+      searchable: true
+      sort: 4
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 短句
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: tagline
+      table: site_settings
+      data_type: character varying
+      default_value: null
+      max_length: 180
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: site_settings
+    field: homepage_intro
+    type: text
+    meta:
+      collection: site_settings
+      conditions: null
+      display: null
+      display_options: null
+      field: homepage_intro
+      group: null
+      hidden: false
+      interface: input-rich-text-md
+      note: null
+      options: null
+      readonly: false
+      required: false
+      searchable: true
+      sort: 5
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 首页介绍
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: homepage_intro
+      table: site_settings
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: site_settings
+    field: biography
+    type: text
+    meta:
+      collection: site_settings
+      conditions: null
+      display: null
+      display_options: null
+      field: biography
+      group: null
+      hidden: false
+      interface: input-rich-text-md
+      note: null
+      options: null
+      readonly: false
+      required: false
+      searchable: true
+      sort: 6
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 个人简介
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: biography
+      table: site_settings
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: site_settings
+    field: default_seo_description
+    type: text
+    meta:
+      collection: site_settings
+      conditions: null
+      display: null
+      display_options: null
+      field: default_seo_description
+      group: null
+      hidden: false
+      interface: input-multiline
+      note: null
+      options:
+        softLength: 160
+      readonly: false
+      required: true
+      searchable: true
+      sort: 7
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 默认 SEO 描述
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: default_seo_description
+      table: site_settings
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: site_settings
+    field: avatar
+    type: uuid
+    meta:
+      collection: site_settings
+      conditions: null
+      display: image
+      display_options: null
+      field: avatar
+      group: null
+      hidden: false
+      interface: file-image
+      note: null
+      options:
+        folder: 22222222-2222-4222-8222-222222222222
+      readonly: false
+      required: false
+      searchable: true
+      sort: 8
+      special:
+        - file
+      translations:
+        - language: zh-CN
+          translation: 头像
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: avatar
+      table: site_settings
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_files
+      foreign_key_column: id
+  - collection: site_settings
+    field: default_og_image
+    type: uuid
+    meta:
+      collection: site_settings
+      conditions: null
+      display: image
+      display_options: null
+      field: default_og_image
+      group: null
+      hidden: false
+      interface: file-image
+      note: null
+      options:
+        folder: 22222222-2222-4222-8222-222222222222
+      readonly: false
+      required: false
+      searchable: true
+      sort: 9
+      special:
+        - file
+      translations:
+        - language: zh-CN
+          translation: 默认分享图片
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: default_og_image
+      table: site_settings
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_files
+      foreign_key_column: id
+  - collection: site_settings
+    field: social_links
+    type: alias
+    meta:
+      collection: site_settings
+      conditions: null
+      display: related-values
+      display_options:
+        template: "{{label}}"
+      field: social_links
+      group: null
+      hidden: false
+      interface: list-o2m
+      note: null
+      options:
+        template: "{{label}} — {{url}}"
+      readonly: false
+      required: false
+      searchable: true
+      sort: 10
+      special:
+        - o2m
+      translations:
+        - language: zh-CN
+          translation: 社交链接
+      validation: null
+      validation_message: null
+      width: full
+  - collection: site_settings
+    field: footer_text
+    type: text
+    meta:
+      collection: site_settings
+      conditions: null
+      display: null
+      display_options: null
+      field: footer_text
+      group: null
+      hidden: false
+      interface: input-multiline
+      note: null
+      options: null
+      readonly: false
+      required: false
+      searchable: true
+      sort: 11
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 页脚文字
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: footer_text
+      table: site_settings
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: site_settings
+    field: locale
+    type: string
+    meta:
+      collection: site_settings
+      conditions: null
+      display: labels
+      display_options:
+        choices:
+          - text: 简体中文
+            value: zh-CN
+      field: locale
+      group: null
+      hidden: false
+      interface: select-dropdown
+      note: null
+      options:
+        choices:
+          - text: 简体中文
+            value: zh-CN
+      readonly: false
+      required: true
+      searchable: true
+      sort: 12
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 语言
+      validation:
+        locale:
+          _eq: zh-CN
+      validation_message: 当前站点语言必须为 zh-CN。
+      width: half
+    schema:
+      name: locale
+      table: site_settings
+      data_type: character varying
+      default_value: zh-CN
+      max_length: 16
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: site_settings
+    field: timezone
+    type: string
+    meta:
+      collection: site_settings
+      conditions: null
+      display: labels
+      display_options:
+        choices:
+          - text: 中国标准时间
+            value: Asia/Shanghai
+      field: timezone
+      group: null
+      hidden: false
+      interface: select-dropdown
+      note: null
+      options:
+        choices:
+          - text: 中国标准时间
+            value: Asia/Shanghai
+      readonly: false
+      required: true
+      searchable: true
+      sort: 13
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 显示时区
+      validation:
+        timezone:
+          _eq: Asia/Shanghai
+      validation_message: 当前显示时区必须为 Asia/Shanghai。
+      width: half
+    schema:
+      name: timezone
+      table: site_settings
+      data_type: character varying
+      default_value: Asia/Shanghai
+      max_length: 64
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: site_settings
+    field: user_created
+    type: uuid
+    meta:
+      collection: site_settings
+      conditions: null
+      display: user
+      display_options: null
+      field: user_created
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 14
+      special:
+        - user-created
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: user_created
+      table: site_settings
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_users
+      foreign_key_column: id
+  - collection: site_settings
+    field: date_created
+    type: timestamp
+    meta:
+      collection: site_settings
+      conditions: null
+      display: datetime
+      display_options:
+        relative: true
+      field: date_created
+      group: null
+      hidden: true
+      interface: datetime
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 15
+      special:
+        - date-created
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: date_created
+      table: site_settings
+      data_type: timestamp with time zone
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: site_settings
+    field: user_updated
+    type: uuid
+    meta:
+      collection: site_settings
+      conditions: null
+      display: user
+      display_options: null
+      field: user_updated
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 16
+      special:
+        - user-updated
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: user_updated
+      table: site_settings
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_users
+      foreign_key_column: id
+  - collection: site_settings
+    field: date_updated
+    type: timestamp
+    meta:
+      collection: site_settings
+      conditions: null
+      display: datetime
+      display_options:
+        relative: true
+      field: date_updated
+      group: null
+      hidden: true
+      interface: datetime
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 17
+      special:
+        - date-updated
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: date_updated
+      table: site_settings
+      data_type: timestamp with time zone
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: social_links
+    field: id
+    type: uuid
+    meta:
+      collection: social_links
+      conditions: null
+      display: null
+      display_options: null
+      field: id
+      group: null
+      hidden: true
+      interface: input
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 1
+      special:
+        - uuid
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: id
+      table: social_links
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: true
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: social_links
+    field: site_settings_id
+    type: uuid
+    meta:
+      collection: social_links
+      conditions: null
+      display: null
+      display_options: null
+      field: site_settings_id
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: false
+      required: true
+      searchable: true
+      sort: 2
+      special:
+        - m2o
+      translations:
+        - language: zh-CN
+          translation: 站点设置
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: site_settings_id
+      table: social_links
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: true
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: site_settings
+      foreign_key_column: id
+  - collection: social_links
+    field: label
+    type: string
+    meta:
+      collection: social_links
+      conditions: null
+      display: null
+      display_options: null
+      field: label
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        trim: true
+      readonly: false
+      required: true
+      searchable: true
+      sort: 3
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 标签
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: label
+      table: social_links
+      data_type: character varying
+      default_value: null
+      max_length: 80
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: social_links
+    field: url
+    type: string
+    meta:
+      collection: social_links
+      conditions: null
+      display: null
+      display_options: null
+      field: url
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        iconLeft: link
+        trim: true
+      readonly: false
+      required: true
+      searchable: true
+      sort: 4
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 网址
+      validation:
+        url:
+          _regex: ^(?:https://[^\s]+|mailto:[^\s@]+@[^\s@]+)$
+      validation_message: "链接必须使用 https:// 或有效的 mailto: 地址。"
+      width: half
+    schema:
+      name: url
+      table: social_links
+      data_type: character varying
+      default_value: null
+      max_length: 500
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: social_links
+    field: icon
+    type: string
+    meta:
+      collection: social_links
+      conditions: null
+      display: labels
+      display_options: null
+      field: icon
+      group: null
+      hidden: false
+      interface: select-dropdown
+      note: null
+      options:
+        choices:
+          - text: github
+            value: github
+          - text: rss
+            value: rss
+          - text: email
+            value: email
+          - text: website
+            value: website
+          - text: mastodon
+            value: mastodon
+          - text: x
+            value: x
+          - text: linkedin
+            value: linkedin
+      readonly: false
+      required: true
+      searchable: true
+      sort: 5
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 图标
+      validation:
+        icon:
+          _in:
+            - github
+            - rss
+            - email
+            - website
+            - mastodon
+            - x
+            - linkedin
+      validation_message: 请选择受支持的图标。
+      width: half
+    schema:
+      name: icon
+      table: social_links
+      data_type: character varying
+      default_value: null
+      max_length: 32
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: social_links
+    field: sort
+    type: integer
+    meta:
+      collection: social_links
+      conditions: null
+      display: null
+      display_options: null
+      field: sort
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      searchable: true
+      sort: 6
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 排序
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: sort
+      table: social_links
+      data_type: integer
+      default_value: 1
+      max_length: null
+      numeric_precision: 32
+      numeric_scale: 0
+      is_nullable: false
+      is_unique: false
+      is_indexed: true
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: social_links
+    field: user_created
+    type: uuid
+    meta:
+      collection: social_links
+      conditions: null
+      display: user
+      display_options: null
+      field: user_created
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 7
+      special:
+        - user-created
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: user_created
+      table: social_links
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_users
+      foreign_key_column: id
+  - collection: social_links
+    field: date_created
+    type: timestamp
+    meta:
+      collection: social_links
+      conditions: null
+      display: datetime
+      display_options:
+        relative: true
+      field: date_created
+      group: null
+      hidden: true
+      interface: datetime
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 8
+      special:
+        - date-created
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: date_created
+      table: social_links
+      data_type: timestamp with time zone
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: social_links
+    field: user_updated
+    type: uuid
+    meta:
+      collection: social_links
+      conditions: null
+      display: user
+      display_options: null
+      field: user_updated
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 9
+      special:
+        - user-updated
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: user_updated
+      table: social_links
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_users
+      foreign_key_column: id
+  - collection: social_links
+    field: date_updated
+    type: timestamp
+    meta:
+      collection: social_links
+      conditions: null
+      display: datetime
+      display_options:
+        relative: true
+      field: date_updated
+      group: null
+      hidden: true
+      interface: datetime
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 10
+      special:
+        - date-updated
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: date_updated
+      table: social_links
+      data_type: timestamp with time zone
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: topics
+    field: id
+    type: uuid
+    meta:
+      collection: topics
+      conditions: null
+      display: null
+      display_options: null
+      field: id
+      group: null
+      hidden: true
+      interface: input
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 1
+      special:
+        - uuid
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: id
+      table: topics
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: true
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: topics
+    field: name
+    type: string
+    meta:
+      collection: topics
+      conditions: null
+      display: null
+      display_options: null
+      field: name
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        trim: true
+      readonly: false
+      required: true
+      searchable: true
+      sort: 2
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 名称
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: name
+      table: topics
+      data_type: character varying
+      default_value: null
+      max_length: 100
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: topics
+    field: slug
+    type: string
+    meta:
+      collection: topics
+      conditions: null
+      display: null
+      display_options: null
+      field: slug
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        slug: true
+        trim: true
+      readonly: false
+      required: true
+      searchable: true
+      sort: 3
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 固定链接
+      validation:
+        slug:
+          _regex: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+      validation_message: slug 只能包含小写字母、数字和单个连字符。
+      width: half
+    schema:
+      name: slug
+      table: topics
+      data_type: character varying
+      default_value: null
+      max_length: 100
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: topics
+    field: description
+    type: text
+    meta:
+      collection: topics
+      conditions: null
+      display: null
+      display_options: null
+      field: description
+      group: null
+      hidden: false
+      interface: input-multiline
+      note: null
+      options: null
+      readonly: false
+      required: false
+      searchable: true
+      sort: 4
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 简介
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: description
+      table: topics
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: topics
+    field: posts
+    type: alias
+    meta:
+      collection: topics
+      conditions: null
+      display: related-values
+      display_options:
+        template: "{{posts_id.title}}"
+      field: posts
+      group: null
+      hidden: false
+      interface: list-m2m
+      note: null
+      options:
+        template: "{{posts_id.title}}"
+      readonly: false
+      required: false
+      searchable: true
+      sort: 5
+      special:
+        - m2m
+      translations:
+        - language: zh-CN
+          translation: 内容
+      validation: null
+      validation_message: null
+      width: full
+  - collection: topics
+    field: user_created
+    type: uuid
+    meta:
+      collection: topics
+      conditions: null
+      display: user
+      display_options: null
+      field: user_created
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 6
+      special:
+        - user-created
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: user_created
+      table: topics
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_users
+      foreign_key_column: id
+  - collection: topics
+    field: date_created
+    type: timestamp
+    meta:
+      collection: topics
+      conditions: null
+      display: datetime
+      display_options:
+        relative: true
+      field: date_created
+      group: null
+      hidden: true
+      interface: datetime
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 7
+      special:
+        - date-created
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: date_created
+      table: topics
+      data_type: timestamp with time zone
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: topics
+    field: user_updated
+    type: uuid
+    meta:
+      collection: topics
+      conditions: null
+      display: user
+      display_options: null
+      field: user_updated
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 8
+      special:
+        - user-updated
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: user_updated
+      table: topics
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_users
+      foreign_key_column: id
+  - collection: topics
+    field: date_updated
+    type: timestamp
+    meta:
+      collection: topics
+      conditions: null
+      display: datetime
+      display_options:
+        relative: true
+      field: date_updated
+      group: null
+      hidden: true
+      interface: datetime
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 9
+      special:
+        - date-updated
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: date_updated
+      table: topics
+      data_type: timestamp with time zone
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+systemFields:
+  - collection: directus_activity
+    field: timestamp
+    schema:
+      is_indexed: true
+  - collection: directus_oauth_clients
+    field: date_created
+    schema:
+      is_indexed: true
+  - collection: directus_oauth_codes
+    field: expires_at
+    schema:
+      is_indexed: true
+  - collection: directus_oauth_codes
+    field: used_at
+    schema:
+      is_indexed: true
+  - collection: directus_oauth_consents
+    field: client
+    schema:
+      is_indexed: true
+  - collection: directus_oauth_tokens
+    field: code_hash
+    schema:
+      is_indexed: true
+  - collection: directus_oauth_tokens
+    field: expires_at
+    schema:
+      is_indexed: true
+  - collection: directus_oauth_tokens
+    field: previous_session
+    schema:
+      is_indexed: true
+  - collection: directus_oauth_tokens
+    field: session
+    schema:
+      is_indexed: true
+  - collection: directus_revisions
+    field: activity
+    schema:
+      is_indexed: true
+  - collection: directus_revisions
+    field: parent
+    schema:
+      is_indexed: true
+  - collection: directus_sessions
+    field: oauth_client
+    schema:
+      is_indexed: true
+relations:
+  - collection: posts
+    field: cover_image
+    related_collection: directus_files
+    meta:
+      junction_field: null
+      many_collection: posts
+      many_field: cover_image
+      one_allowed_collections: null
+      one_collection: directus_files
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: posts
+      column: cover_image
+      foreign_key_table: directus_files
+      foreign_key_column: id
+      constraint_name: posts_cover_image_foreign
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: posts
+    field: user_created
+    related_collection: directus_users
+    meta:
+      junction_field: null
+      many_collection: posts
+      many_field: user_created
+      one_allowed_collections: null
+      one_collection: directus_users
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: posts
+      column: user_created
+      foreign_key_table: directus_users
+      foreign_key_column: id
+      constraint_name: posts_user_created_foreign
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: posts
+    field: user_updated
+    related_collection: directus_users
+    meta:
+      junction_field: null
+      many_collection: posts
+      many_field: user_updated
+      one_allowed_collections: null
+      one_collection: directus_users
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: posts
+      column: user_updated
+      foreign_key_table: directus_users
+      foreign_key_column: id
+      constraint_name: posts_user_updated_foreign
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: posts_topics
+    field: posts_id
+    related_collection: posts
+    meta:
+      junction_field: topics_id
+      many_collection: posts_topics
+      many_field: posts_id
+      one_allowed_collections: null
+      one_collection: posts
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: topics
+      sort_field: null
+    schema:
+      table: posts_topics
+      column: posts_id
+      foreign_key_table: posts
+      foreign_key_column: id
+      constraint_name: posts_topics_posts_id_foreign
+      on_update: NO ACTION
+      on_delete: CASCADE
+  - collection: posts_topics
+    field: topics_id
+    related_collection: topics
+    meta:
+      junction_field: posts_id
+      many_collection: posts_topics
+      many_field: topics_id
+      one_allowed_collections: null
+      one_collection: topics
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: posts
+      sort_field: null
+    schema:
+      table: posts_topics
+      column: topics_id
+      foreign_key_table: topics
+      foreign_key_column: id
+      constraint_name: posts_topics_topics_id_foreign
+      on_update: NO ACTION
+      on_delete: CASCADE
+  - collection: site_settings
+    field: avatar
+    related_collection: directus_files
+    meta:
+      junction_field: null
+      many_collection: site_settings
+      many_field: avatar
+      one_allowed_collections: null
+      one_collection: directus_files
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: site_settings
+      column: avatar
+      foreign_key_table: directus_files
+      foreign_key_column: id
+      constraint_name: site_settings_avatar_foreign
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: site_settings
+    field: default_og_image
+    related_collection: directus_files
+    meta:
+      junction_field: null
+      many_collection: site_settings
+      many_field: default_og_image
+      one_allowed_collections: null
+      one_collection: directus_files
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: site_settings
+      column: default_og_image
+      foreign_key_table: directus_files
+      foreign_key_column: id
+      constraint_name: site_settings_default_og_image_foreign
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: site_settings
+    field: user_created
+    related_collection: directus_users
+    meta:
+      junction_field: null
+      many_collection: site_settings
+      many_field: user_created
+      one_allowed_collections: null
+      one_collection: directus_users
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: site_settings
+      column: user_created
+      foreign_key_table: directus_users
+      foreign_key_column: id
+      constraint_name: site_settings_user_created_foreign
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: site_settings
+    field: user_updated
+    related_collection: directus_users
+    meta:
+      junction_field: null
+      many_collection: site_settings
+      many_field: user_updated
+      one_allowed_collections: null
+      one_collection: directus_users
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: site_settings
+      column: user_updated
+      foreign_key_table: directus_users
+      foreign_key_column: id
+      constraint_name: site_settings_user_updated_foreign
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: social_links
+    field: site_settings_id
+    related_collection: site_settings
+    meta:
+      junction_field: null
+      many_collection: social_links
+      many_field: site_settings_id
+      one_allowed_collections: null
+      one_collection: site_settings
+      one_collection_field: null
+      one_deselect_action: delete
+      one_field: social_links
+      sort_field: sort
+    schema:
+      table: social_links
+      column: site_settings_id
+      foreign_key_table: site_settings
+      foreign_key_column: id
+      constraint_name: social_links_site_settings_id_foreign
+      on_update: NO ACTION
+      on_delete: CASCADE
+  - collection: social_links
+    field: user_created
+    related_collection: directus_users
+    meta:
+      junction_field: null
+      many_collection: social_links
+      many_field: user_created
+      one_allowed_collections: null
+      one_collection: directus_users
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: social_links
+      column: user_created
+      foreign_key_table: directus_users
+      foreign_key_column: id
+      constraint_name: social_links_user_created_foreign
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: social_links
+    field: user_updated
+    related_collection: directus_users
+    meta:
+      junction_field: null
+      many_collection: social_links
+      many_field: user_updated
+      one_allowed_collections: null
+      one_collection: directus_users
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: social_links
+      column: user_updated
+      foreign_key_table: directus_users
+      foreign_key_column: id
+      constraint_name: social_links_user_updated_foreign
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: topics
+    field: user_created
+    related_collection: directus_users
+    meta:
+      junction_field: null
+      many_collection: topics
+      many_field: user_created
+      one_allowed_collections: null
+      one_collection: directus_users
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: topics
+      column: user_created
+      foreign_key_table: directus_users
+      foreign_key_column: id
+      constraint_name: topics_user_created_foreign
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: topics
+    field: user_updated
+    related_collection: directus_users
+    meta:
+      junction_field: null
+      many_collection: topics
+      many_field: user_updated
+      one_allowed_collections: null
+      one_collection: directus_users
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: topics
+      column: user_updated
+      foreign_key_table: directus_users
+      foreign_key_column: id
+      constraint_name: topics_user_updated_foreign
+      on_update: NO ACTION
+      on_delete: SET NULL
