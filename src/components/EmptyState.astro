@@ -1,0 +1,21 @@
+---
+interface Props {
+  title: string;
+  actionHref?: string;
+  actionLabel?: string;
+}
+
+const { title, actionHref, actionLabel } = Astro.props;
+---
+
+<section class="empty-state surface--inset">
+  <h2>{title}</h2>
+  <div><slot /></div>
+  {
+    actionHref && actionLabel ? (
+      <a class="text-action" href={actionHref}>
+        {actionLabel}
+      </a>
+    ) : null
+  }
+</section>

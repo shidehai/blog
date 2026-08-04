@@ -1,0 +1,42 @@
+---
+import SiteFooter from "../components/SiteFooter.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  siteName?: string;
+  currentPath?: string;
+}
+
+const {
+  title,
+  description,
+  siteName = "个人知识站",
+  currentPath = Astro.url.pathname,
+} = Astro.props;
+const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
+const themeStorageKey = "pkj-theme";
+const themeBootstrap = `(()=>{try{const theme=localStorage.getItem(${JSON.stringify(themeStorageKey)});if(theme==="light"||theme==="dark")document.documentElement.dataset.theme=theme}catch{}})()`;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="light dark" />
+    <script is:inline set:html={themeBootstrap} />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">跳到正文</a>
+    <SiteHeader {siteName} {currentPath} {themeStorageKey} />
+    <main id="main-content" class="site-main" tabindex="-1">
+      <slot />
+    </main>
+    <SiteFooter {siteName} />
+  </body>
+</html>

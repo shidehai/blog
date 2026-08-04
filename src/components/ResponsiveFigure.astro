@@ -1,0 +1,24 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  caption?: string;
+  eager?: boolean;
+}
+
+const { src, alt, width, height, caption, eager = false } = Astro.props;
+---
+
+<figure class="responsive-figure">
+  <img
+    {src}
+    {alt}
+    {width}
+    {height}
+    loading={eager ? "eager" : "lazy"}
+    decoding="async"
+  />
+  {caption ? <figcaption>{caption}</figcaption> : null}
+</figure>

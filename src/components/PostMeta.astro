@@ -1,0 +1,21 @@
+---
+interface Props {
+  kind: "article" | "tutorial" | "note";
+  dateTime: string;
+  dateLabel: string;
+  readingMinutes?: number | undefined;
+}
+
+const { kind, dateTime, dateLabel, readingMinutes } = Astro.props;
+const kindLabels = {
+  article: "文章",
+  tutorial: "教程",
+  note: "笔记",
+} as const;
+---
+
+<ul class="post-meta" aria-label="文章信息">
+  <li>{kindLabels[kind]}</li>
+  <li><time datetime={dateTime}>{dateLabel}</time></li>
+  {readingMinutes ? <li>{readingMinutes} 分钟阅读</li> : null}
+</ul>

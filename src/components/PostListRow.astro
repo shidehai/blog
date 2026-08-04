@@ -1,0 +1,48 @@
+---
+import PostMeta from "./PostMeta.astro";
+import TopicLink from "./TopicLink.astro";
+
+interface Topic {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  href: string;
+  title: string;
+  summary: string;
+  kind: "article" | "tutorial" | "note";
+  dateTime: string;
+  dateLabel: string;
+  readingMinutes?: number;
+  topics?: readonly Topic[];
+}
+
+const {
+  href,
+  title,
+  summary,
+  kind,
+  dateTime,
+  dateLabel,
+  readingMinutes,
+  topics = [],
+} = Astro.props;
+---
+
+<article class="post-row surface--raised">
+  <div class="post-row-copy">
+    <PostMeta {kind} {dateTime} {dateLabel} {readingMinutes} />
+    <h3><a {href}>{title}</a></h3>
+    <p>{summary}</p>
+  </div>
+  {
+    topics.length > 0 ? (
+      <div class="topic-list" aria-label="主题">
+        {topics.map((topic) => (
+          <TopicLink {...topic} />
+        ))}
+      </div>
+    ) : null
+  }
+</article>

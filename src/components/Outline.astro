@@ -1,0 +1,26 @@
+---
+interface OutlineItem {
+  id: string;
+  text: string;
+  level: 2 | 3;
+}
+
+interface Props {
+  items: readonly OutlineItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<nav class="article-outline surface--inset" aria-label="文章目录">
+  <strong class="annotation-label">目录</strong>
+  <ol>
+    {
+      items.map((item) => (
+        <li data-level={item.level}>
+          <a href={`#${item.id}`}>{item.text}</a>
+        </li>
+      ))
+    }
+  </ol>
+</nav>

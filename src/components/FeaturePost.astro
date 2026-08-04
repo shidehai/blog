@@ -1,0 +1,76 @@
+---
+import PostMeta from "./PostMeta.astro";
+import TopicLink from "./TopicLink.astro";
+
+interface Media {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+}
+
+interface Props {
+  href: string;
+  title: string;
+  summary: string;
+  kind: "article" | "tutorial";
+  dateTime: string;
+  dateLabel: string;
+  readingMinutes: number;
+  topic: { href: string; label: string };
+  media?: Media;
+}
+
+const {
+  href,
+  title,
+  summary,
+  kind,
+  dateTime,
+  dateLabel,
+  readingMinutes,
+  topic,
+  media,
+} = Astro.props;
+---
+
+<article
+  class:list={["feature-post", "surface--raised", { "has-media": media }]}
+>
+  <div class="feature-post-copy">
+    <div class="feature-post-topline">
+      <span class="feature-label">当前推荐</span>
+      <TopicLink {...topic} />
+    </div>
+    <PostMeta {kind} {dateTime} {dateLabel} {readingMinutes} />
+    <h2><a {href}>{title}</a></h2>
+    <p>{summary}</p>
+    <a class="feature-action" {href}>
+      开始阅读
+      <svg aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M5 12h14M13 6l6 6-6 6"></path>
+      </svg>
+    </a>
+  </div>
+  {
+    media ? (
+      <div class="feature-post-media">
+        <img
+          src={media.src}
+          alt={media.alt}
+          width={media.width}
+          height={media.height}
+          loading="eager"
+          decoding="async"
+          fetchpriority="high"
+        />
+      </div>
+    ) : (
+      <div class="feature-post-signal" aria-hidden="true">
+        <span>POSTGRESQL</span>
+        <strong>→</strong>
+        <span>ASTRO</span>
+      </div>
+    )
+  }
+</article>
