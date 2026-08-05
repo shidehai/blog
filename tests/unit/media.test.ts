@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -6,6 +7,7 @@ import sharp from "sharp";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { IDS } from "../../directus/constants.mjs";
+import { loadSeedCoverFixture } from "../../directus/seed/fixtures.mjs";
 import {
   emitPublicMediaAsset,
   MAX_MEDIA_BYTES,
@@ -103,62 +105,105 @@ describe("Directus media records", () => {
 });
 
 describe("public media assets", () => {
-  it("derives intrinsic dimensions and deterministic responsive WebP assets", async () => {
-    const source = await sharp({
-      create: {
-        background: { alpha: 1, b: 180, g: 120, r: 40 },
-        channels: 4,
-        height: 450,
-        width: 800,
-      },
-    })
-      .png()
-      .toBuffer();
+  it("transforms the seed fixture into deterministic 640px and 960px WebP assets", async () => {
+    const fixture = await loadSeedCoverFixture();
+    const digest = createHash("sha256").update(fixture.bytes).digest("hex");
+    const record = fileRecord(fixture.bytes, {
+      filename_download: fixture.filename,
+      height: 540,
+      type: fixture.mimeType,
+      width: 960,
+    });
     const firstDirectory = await temporaryDirectory();
     const secondDirectory = await temporaryDirectory();
 
-    const first = await emitPublicMediaAsset(fileRecord(source), source, {
+    expect(fixture.bytes).toHaveLength(13_242);
+    expect(digest).toBe(
+      "d2e58e6a40b971a0fcfdf0a8225e2de2283f7691f0e63df02491596e505a0fa9",
+    );
+    expect(fixture).toMatchObject({
+      filename: "fixture-cover.webp",
+      mimeType: "image/webp",
+      title: "示例封面（非真实内容，SHA-256 d2e58e6a40b9）",
+    });
+    expect(parseDirectusMediaFile(record)).toMatchObject({
+      filename: fixture.filename,
+      filesize: fixture.bytes.byteLength,
+      height: 540,
+      mimeType: fixture.mimeType,
+      width: 960,
+    });
+
+    const first = await emitPublicMediaAsset(record, fixture.bytes, {
       outputDirectory: firstDirectory,
     });
-    const second = await emitPublicMediaAsset(fileRecord(source), source, {
+    const second = await emitPublicMediaAsset(record, fixture.bytes, {
       outputDirectory: secondDirectory,
     });
+    const expectedVariants = [
+      {
+        height: 360,
+        mimeType: "image/webp",
+        src: `/_media/${FILE_ID}-640w-565929a3fa9615bc.webp`,
+        width: 640,
+      },
+      {
+        height: 540,
+        mimeType: "image/webp",
+        src: `/_media/${FILE_ID}-960w-8ba5c70770b4deef.webp`,
+        width: 960,
+      },
+    ] as const;
 
     expect(first).toEqual(second);
-    expect(first.mimeType).toBe("image/webp");
-    expect(first.width).toBe(800);
-    expect(first.height).toBe(450);
-    expect(first.variants.map(({ width }) => width)).toEqual([640, 800]);
-    expect(first.srcset).toContain(" 640w");
-    expect(first.srcset).toContain(" 800w");
-    expect(first.src).toMatch(
-      new RegExp(`^/_media/${FILE_ID}-800w-[a-f0-9]{16}\\.webp$`),
-    );
-    expect((await readdir(firstDirectory)).sort()).toEqual(
-      (await readdir(secondDirectory)).sort(),
-    );
-
-    const emitted = await sharp(
-      join(firstDirectory, first.src.split("/").at(-1)!),
-    ).metadata();
-    expect({ height: emitted.height, width: emitted.width }).toEqual({
-      height: 450,
-      width: 800,
+    expect(first).toEqual({
+      height: 540,
+      id: FILE_ID,
+      mimeType: "image/webp",
+      src: expectedVariants[1].src,
+      srcset: `${expectedVariants[0].src} 640w, ${expectedVariants[1].src} 960w`,
+      variants: expectedVariants,
+      width: 960,
     });
+    const expectedFiles = expectedVariants.map(({ src }) =>
+      src.split("/").at(-1)!,
+    );
+    expect((await readdir(firstDirectory)).sort()).toEqual(expectedFiles);
+    expect((await readdir(secondDirectory)).sort()).toEqual(expectedFiles);
+
+    for (const variant of expectedVariants) {
+      const filename = variant.src.split("/").at(-1)!;
+      const firstBytes = await readFile(join(firstDirectory, filename));
+      const secondBytes = await readFile(join(secondDirectory, filename));
+      const metadata = await sharp(firstBytes).metadata();
+
+      expect(firstBytes).toEqual(secondBytes);
+      expect({
+        format: metadata.format,
+        height: metadata.height,
+        width: metadata.width,
+      }).toEqual({
+        format: "webp",
+        height: variant.height,
+        width: variant.width,
+      });
+    }
+
     await expect(
       emitPublicMediaAsset(
-        fileRecord(source, { filesize: source.byteLength + 1 }),
-        source,
+        { ...record, filesize: fixture.bytes.byteLength + 1 },
+        fixture.bytes,
         { outputDirectory: firstDirectory },
       ),
     ).rejects.toThrow(`Directus file ${FILE_ID}: filesize`);
     await expect(
       emitPublicMediaAsset(
-        fileRecord(source, {
-          filename_download: "diagram.jpg",
+        {
+          ...record,
+          filename_download: "fixture-cover.jpg",
           type: "image/jpeg",
-        }),
-        source,
+        },
+        fixture.bytes,
         { outputDirectory: firstDirectory },
       ),
     ).rejects.toThrow(`Directus file ${FILE_ID}: type`);

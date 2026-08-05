@@ -8,6 +8,7 @@ import {
   isDirectusError,
 } from "../directus/client.mjs";
 import { IDS } from "../directus/constants.mjs";
+import { loadSeedCoverFixture } from "../directus/seed/fixtures.mjs";
 
 const mode = process.argv[2];
 const admin = await adminClient();
@@ -25,9 +26,9 @@ const fixture = {
  * @typedef {{ collection: string, meta: { versioning?: boolean, singleton?: boolean, preview_url?: string } }} CollectionRecord
  * @typedef {{ collection: string, field: string, meta: { interface: string | null, validation: unknown }, schema: { is_unique: boolean, is_indexed: boolean, default_value: unknown } }} FieldRecord
  * @typedef {{ collection: string, field: string, related_collection: string | null }} RelationRecord
- * @typedef {{ id?: string, status?: string, kind?: string, title?: string, body?: string }} PostRecord
- * @typedef {{ id: string, locale: string, timezone: string }} SiteSettings
- * @typedef {{ id: string, folder: string | null }} FileRecord
+ * @typedef {{ id?: string, status?: string, kind?: string, title?: string, body?: string, slug?: string, featured?: boolean, cover_image?: string | null }} PostRecord
+ * @typedef {{ id: string, locale: string, timezone: string, default_og_image: string | null }} SiteSettings
+ * @typedef {{ id: string, folder: string | null, title: string | null, type: string | null, filename_download: string, filesize: string | number, width: number | null, height: number | null }} FileRecord
  * @typedef {{ name: string, admin_access: boolean, app_access: boolean, enforce_tfa: boolean }} PolicyRecord
  * @typedef {{ email: string | null, tfa_secret: string | null }} UserRecord
  * @typedef {{ id: string }} VersionRecord
@@ -88,6 +89,7 @@ async function rejects(request, path, options) {
 }
 
 async function schemaCheck() {
+  const coverFixture = await loadSeedCoverFixture();
   /** @type {Promise<[ServerInfo, License, CollectionRecord[], FieldRecord[], RelationRecord[], PostRecord[], SiteSettings, FileRecord[]]>} */
   const responses = Promise.all([
     admin("/server/info"),
@@ -95,9 +97,13 @@ async function schemaCheck() {
     admin("/collections?limit=-1&fields=*"),
     admin("/fields?limit=-1&fields=*"),
     admin("/relations?limit=-1&fields=*"),
-    admin("/items/posts?limit=-1&fields=id,status,kind,slug"),
-    admin("/items/site_settings?fields=id,locale,timezone"),
-    admin("/files?limit=-1&fields=id,title,type,folder"),
+    admin(
+      "/items/posts?limit=-1&fields=id,status,kind,slug,featured,cover_image",
+    ),
+    admin("/items/site_settings?fields=id,locale,timezone,default_og_image"),
+    admin(
+      "/files?limit=-1&fields=id,title,type,filename_download,filesize,width,height,folder",
+    ),
   ]);
   const [
     info,
@@ -195,15 +201,66 @@ async function schemaCheck() {
   );
   assert.equal(posts.filter((post) => post.status === "published").length, 3);
   assert.equal(posts.filter((post) => post.status === "archived").length, 1);
+  const currentCovers = files.filter(
+    (file) => file.title === coverFixture.title,
+  );
+  assert.equal(currentCovers.length, 1);
+  const [currentCover] = currentCovers;
+  assert.ok(currentCover);
+  assert.deepEqual(
+    {
+      filename: currentCover.filename_download,
+      filesize: Number(currentCover.filesize),
+      folder: currentCover.folder,
+      height: currentCover.height,
+      type: currentCover.type,
+      width: currentCover.width,
+    },
+    {
+      filename: coverFixture.filename,
+      filesize: coverFixture.bytes.byteLength,
+      folder: IDS.folders.publishable,
+      height: 540,
+      type: coverFixture.mimeType,
+      width: 960,
+    },
+  );
   assert.deepEqual(settings, {
+    default_og_image: currentCover.id,
     id: "f0000000-0000-4000-8000-000000000001",
     locale: "zh-CN",
     timezone: "Asia/Shanghai",
   });
-  assert.equal(
-    files.filter((file) => file.folder === IDS.folders.publishable).length,
-    1,
+  const featuredPosts = posts.filter((post) => post.featured);
+  assert.equal(featuredPosts.length, 1);
+  assert.equal(featuredPosts[0]?.cover_image, currentCover.id);
+  const oldCovers = files.filter(
+    (file) => file.title === "示例封面（非真实内容）",
   );
+  assert.ok(oldCovers.length <= 1);
+  const [oldCover] = oldCovers;
+  if (oldCover) {
+    assert.deepEqual(
+      {
+        filename: oldCover.filename_download,
+        filesize: Number(oldCover.filesize),
+        folder: oldCover.folder,
+        height: oldCover.height,
+        type: oldCover.type,
+        width: oldCover.width,
+      },
+      {
+        filename: "fixture-cover.png",
+        filesize: 70,
+        folder: IDS.folders.publishable,
+        height: 1,
+        type: "image/png",
+        width: 1,
+      },
+    );
+    assert.notEqual(settings.default_og_image, oldCover.id);
+    assert.ok(posts.every((post) => post.cover_image !== oldCover.id));
+  }
   assert.equal(
     files.filter((file) => file.folder === IDS.folders.private).length,
     1,

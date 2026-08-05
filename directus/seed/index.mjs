@@ -1,5 +1,6 @@
 import { adminClient, filterPath, isDirectusError } from "../client.mjs";
 import { IDS } from "../constants.mjs";
+import { loadSeedCoverFixture } from "./fixtures.mjs";
 
 const request = await adminClient();
 
@@ -102,15 +103,13 @@ async function ensureFile(title, folder, type, bytes, filename) {
   return request("/files", { method: "POST", body: form });
 }
 
+const coverFixture = await loadSeedCoverFixture();
 const cover = await ensureFile(
-  "示例封面（非真实内容）",
+  coverFixture.title,
   IDS.folders.publishable,
-  "image/png",
-  Buffer.from(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAFAgH/2cFzWQAAAABJRU5ErkJggg==",
-    "base64",
-  ),
-  "fixture-cover.png",
+  coverFixture.mimeType,
+  coverFixture.bytes,
+  coverFixture.filename,
 );
 await ensureFile(
   "示例私有草稿图（非真实内容）",
