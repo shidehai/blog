@@ -121,6 +121,27 @@ After implementation:
 - [ ] Checked that derived state points back to the source event identifier
       (`seq`, `id`, `version`) instead of inventing a second cursor
 
+## Build And Runtime Configuration Propagation
+
+Environment fields often cross more layers than application types can see:
+
+```text
+CI build args -> generated image -> Compose runtime env -> boundary parser -> route behavior -> integration probe
+```
+
+When adding or changing an environment field:
+
+- [ ] Search every build, runtime, Compose, development, browser-test, and
+      container-test entrypoint for the field.
+- [ ] Decide separately whether build and runtime require the value; do not
+      assume an image-build `ARG` becomes a runtime `ENV`.
+- [ ] Keep one runtime parser and make consumers use its parsed result rather
+      than adding local defaults.
+- [ ] Assert the rendered deployment configuration, not only source YAML text.
+- [ ] Add an end-to-end discriminator that proves which layer handled a
+      request. For example, proxy Basic Auth is proven by its exact `401`;
+      accepting an application's fail-closed `404` hides a missing proxy.
+
 ---
 
 ## Cross-Platform Template Consistency

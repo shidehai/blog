@@ -14,9 +14,11 @@ validated. `scripts/env.mjs` is the current boundary owner:
 - `readBuildEnv()` defaults to fixture content and requires
   `DIRECTUS_URL` plus `DIRECTUS_BUILD_TOKEN` when
   `CONTENT_SOURCE=directus`.
-- `readRuntimeEnv()` requires `SITE_URL`, `DIRECTUS_URL`,
-  `DIRECTUS_PREVIEW_TOKEN`, and `PREVIEW_TRUSTED_HEADER`; it validates the
-  host/port defaults as well.
+- `readRuntimeEnv()` requires an explicit `CONTENT_SOURCE` plus `SITE_URL`,
+  `DIRECTUS_URL`, `DIRECTUS_PREVIEW_TOKEN`, and
+  `PREVIEW_TRUSTED_HEADER`; it validates the host/port defaults as well.
+  Production Compose fixes the source to `directus`, while fixture browser
+  and container tests opt into `fixture`.
 - Errors name invalid fields but never print secret values.
 
 `astro.config.ts`, the container entrypoint, and `tests/unit/env.test.ts` reuse
