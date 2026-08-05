@@ -9,7 +9,7 @@
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
-		Permissions-Policy "camera=(), geolocation=(), microphone=()"
+		Permissions-Policy "camera=(), geolocation=(), microphone=(), payment=(), usb=()"
 	}
 	log {
 		output file /var/log/caddy/access.log {
@@ -27,6 +27,12 @@
 	@preview path /preview/*
 	log_skip @preview
 	handle @preview {
+		header {
+			Cache-Control "private, no-store"
+			Pragma "no-cache"
+			X-Robots-Tag "noindex, nofollow, noarchive"
+			Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; frame-ancestors https://{$CMS_DOMAIN}; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-a1yCLVeNHgCzsnIgFmiFDZ/NES9AcT4zUKir72YjCJI=' 'sha256-scqXIm4qQhU0lQ5Z4HNRerCanYtJCn6GV2xw6p1JlcE=' 'sha256-YIRQS+qf4E62czF0Pobfrmz/y7/XVDL7vOIwxVx/TFQ=' 'sha256-u1CAfAigCxhxLeo1L1aUxf5nvUA+/0rpC+Sj69zNOtY=' 'sha256-cQv/RgJAMtIb8p8PBlw9UDQYyLCcvl6U3G2u7l7UEn4='; connect-src 'self'; manifest-src 'self'"
+		}
 		basic_auth {
 			{$PREVIEW_BASIC_USER} {$PREVIEW_BASIC_PASSWORD_HASH}
 		}
@@ -37,6 +43,21 @@
 	}
 
 	handle {
+		@immutable path /_astro/* /_media/*
+		header @immutable Cache-Control "public, max-age=31536000, immutable"
+
+		@health path /healthz
+		header @health Cache-Control "no-store"
+
+		@revalidate not path /_astro/* /_media/* /healthz
+		header @revalidate Cache-Control "public, max-age=0, must-revalidate"
+
+		header {
+			Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self'; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-a1yCLVeNHgCzsnIgFmiFDZ/NES9AcT4zUKir72YjCJI=' 'sha256-scqXIm4qQhU0lQ5Z4HNRerCanYtJCn6GV2xw6p1JlcE=' 'sha256-YIRQS+qf4E62czF0Pobfrmz/y7/XVDL7vOIwxVx/TFQ=' 'sha256-u1CAfAigCxhxLeo1L1aUxf5nvUA+/0rpC+Sj69zNOtY=' 'sha256-cQv/RgJAMtIb8p8PBlw9UDQYyLCcvl6U3G2u7l7UEn4=' 'wasm-unsafe-eval'; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'"
+			Cross-Origin-Opener-Policy "same-origin"
+			Cross-Origin-Resource-Policy "same-origin"
+			X-Frame-Options "DENY"
+		}
 		reverse_proxy site:4321 {
 			header_up -X-Preview-Trusted
 		}
@@ -45,5 +66,10 @@
 
 {$CMS_DOMAIN} {
 	import common
+	header {
+		Cache-Control "private, no-store"
+		Content-Security-Policy "frame-src 'self' https://{$SITE_DOMAIN}"
+		X-Frame-Options "SAMEORIGIN"
+	}
 	reverse_proxy directus:8055
 }

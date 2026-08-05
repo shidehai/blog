@@ -1,0 +1,38 @@
+---
+import type { Post, SiteSettings } from "../lib/content.ts";
+import { formatContentDate } from "../lib/content.ts";
+import PostListRow from "./PostListRow.astro";
+
+interface Props {
+  posts: readonly Post[];
+  settings: Pick<SiteSettings, "locale" | "timezone">;
+}
+
+const { posts, settings } = Astro.props;
+---
+
+<div class="post-list">
+  {
+    posts.map((post) => (
+      <PostListRow
+        href={post.route}
+        title={post.title}
+        summary={post.summary}
+        kind={post.kind}
+        dateTime={post.publishedAt}
+        dateLabel={formatContentDate(
+          post.publishedAt,
+          settings.timezone,
+          settings.locale,
+        )}
+        {...(post.kind === "note"
+          ? {}
+          : { readingMinutes: post.readingMinutes })}
+        topics={post.topics.map((topic) => ({
+          href: `/topics/${topic.slug}/`,
+          label: topic.name,
+        }))}
+      />
+    ))
+  }
+</div>

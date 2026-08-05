@@ -1,0 +1,11 @@
+[Unit]
+Description=Check personal journal public HTTPS every five minutes
+
+[Timer]
+OnBootSec=2m
+OnUnitActiveSec=5m
+Persistent=true
+Unit=blog-external-health.service
+
+[Install]
+WantedBy=timers.target

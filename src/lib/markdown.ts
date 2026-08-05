@@ -6,7 +6,7 @@ import type {
   RootContent,
   Text as HastText,
 } from "hast";
-import type { Code, Image, Link, Root as MdastRoot } from "mdast";
+import type { Code, Heading, Image, Link, Root as MdastRoot } from "mdast";
 import rehypeStringify from "rehype-stringify";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
@@ -287,6 +287,15 @@ function validateMarkdown(
   mediaIds: Set<string>,
 ) {
   return function transformer(tree: MdastRoot): void {
+    visit(tree, "heading", (node: Heading) => {
+      if (node.depth === 1) {
+        throw markdownError(
+          source,
+          nodeLine(node),
+          "body headings must start at level 2; the post title is the page heading",
+        );
+      }
+    });
     visit(tree, "link", (node: Link) => {
       const line = nodeLine(node);
       validateLink(node.url, source, line);
@@ -423,6 +432,15 @@ function transformDocument(
           node.properties.target = "_blank";
           node.properties.rel = ["noopener", "noreferrer"];
         }
+      }
+
+      if (
+        node.tagName === "input" &&
+        readStringProperty(node, "type") === "checkbox" &&
+        node.properties.disabled === true
+      ) {
+        node.properties.ariaLabel =
+          node.properties.checked === true ? "已完成" : "未完成";
       }
 
       if (node.tagName === "blockquote") {

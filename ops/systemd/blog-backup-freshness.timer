@@ -1,0 +1,11 @@
+[Unit]
+Description=Check personal journal backup freshness every six hours
+
+[Timer]
+OnBootSec=15m
+OnUnitActiveSec=6h
+Persistent=true
+Unit=blog-backup-freshness.service
+
+[Install]
+WantedBy=timers.target

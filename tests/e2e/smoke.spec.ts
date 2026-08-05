@@ -4,7 +4,7 @@ test("serves the public shell and health check", async ({ page, request }) => {
   await page.goto("/");
   await expect(
     page.getByRole("heading", {
-      name: "从一次失败回滚，设计真正可恢复的静态发布流水线",
+      name: "示例：静态发布的数据边界",
     }),
   ).toBeVisible();
   await expect(page.getByRole("navigation", { name: "主导航" })).toBeVisible();

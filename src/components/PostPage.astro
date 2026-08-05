@@ -1,0 +1,139 @@
+---
+import type { Post, PublishedSnapshot } from "../lib/content.ts";
+import { formatContentDate } from "../lib/content.ts";
+import type { MarkdownMedia, RenderedMarkdown } from "../lib/markdown.ts";
+import AppLayout from "../layouts/AppLayout.astro";
+import CodeCopyBehavior from "./CodeCopyBehavior.astro";
+import Outline from "./Outline.astro";
+import PostList from "./PostList.astro";
+import PostMeta from "./PostMeta.astro";
+import ReadingProgress from "./ReadingProgress.astro";
+import ResponsiveFigure from "./ResponsiveFigure.astro";
+import TopicLink from "./TopicLink.astro";
+
+interface Props {
+  media: ReadonlyMap<string, MarkdownMedia>;
+  output: RenderedMarkdown;
+  post: Post;
+  related: readonly Post[];
+  settings: PublishedSnapshot["settings"];
+}
+
+const { media, output, post, related, settings } = Astro.props;
+const cover = post.cover ? media.get(post.cover.id) : undefined;
+const description = post.seoDescription ?? post.summary;
+const isNote = post.kind === "note";
+const publishedDate = post.publishedAt.slice(0, 10);
+const publishedMonth = post.publishedAt.slice(0, 7);
+---
+
+<AppLayout
+  title={post.seoTitle ?? post.title}
+  {description}
+  siteName={settings.siteName}
+  metadataPost={post}
+  metadataSettings={settings}
+  metadataMedia={media}
+>
+  <ReadingProgress />
+  <article
+    class:list={["article-page", { "article-page--note": isNote }]}
+    data-pagefind-body
+    data-pagefind-filter={`kind:${post.kind}`}
+    data-pagefind-meta={`date:${publishedDate}`}
+  >
+    <header class="article-header">
+      <PostMeta
+        kind={post.kind}
+        dateTime={post.publishedAt}
+        dateLabel={formatContentDate(
+          post.publishedAt,
+          settings.timezone,
+          settings.locale,
+        )}
+        {...isNote ? {} : { readingMinutes: post.readingMinutes }}
+      />
+      <h1 data-pagefind-meta="title">{post.title}</h1>
+      {
+        !isNote ? (
+          <p class="article-summary" data-pagefind-meta="description">
+            {post.summary}
+          </p>
+        ) : (
+          <span class="visually-hidden" data-pagefind-meta="description">
+            {post.summary}
+          </span>
+        )
+      }
+      <span
+        class="visually-hidden"
+        data-pagefind-filter={`date:${publishedMonth}`}
+      >
+        {publishedMonth}
+      </span>
+      {
+        post.topics.length ? (
+          <div class="topic-list article-topics" aria-label="主题">
+            {post.topics.map((topic) => (
+              <span data-pagefind-filter={`topic:${topic.slug}`}>
+                <TopicLink href={`/topics/${topic.slug}/`} label={topic.name} />
+              </span>
+            ))}
+          </div>
+        ) : null
+      }
+    </header>
+
+    {
+      cover ? (
+        <ResponsiveFigure
+          src={cover.src}
+          {...(cover.srcset ? { srcset: cover.srcset } : {})}
+          alt={post.coverDecorative ? "" : (post.coverAlt ?? "")}
+          width={cover.width}
+          height={cover.height}
+          eager
+        />
+      ) : null
+    }
+
+    {
+      output.outline.length ? (
+        <details
+          class="article-outline-mobile surface--inset"
+          data-pagefind-ignore="all"
+        >
+          <summary>文章目录</summary>
+          <Outline items={output.outline} embedded />
+        </details>
+      ) : null
+    }
+
+    <div class="article-layout">
+      <div class="prose" data-reading-content set:html={output.html} />
+      {
+        output.outline.length ? (
+          <aside class="article-rail" data-pagefind-ignore="all">
+            <Outline items={output.outline} />
+          </aside>
+        ) : null
+      }
+    </div>
+
+    {
+      related.length ? (
+        <section
+          class="related-writing"
+          aria-labelledby="related-writing"
+          data-pagefind-ignore="all"
+        >
+          <div class="section-heading">
+            <h2 id="related-writing">继续阅读</h2>
+          </div>
+          <PostList posts={related} settings={settings} />
+        </section>
+      ) : null
+    }
+  </article>
+  <CodeCopyBehavior />
+</AppLayout>

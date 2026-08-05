@@ -198,7 +198,7 @@ const posts = {
     title: "示例：静态发布为何仍需要清晰的数据边界",
     slug: "static-publishing-data-boundary",
     summary: "从内容数据库到静态页面，逐层说明校验、快照和失败关闭如何协作。",
-    body: `# 静态发布的数据边界
+    body: `## 静态发布的数据边界
 
 这是一篇**完全虚构的开发夹具**，用于覆盖中英文混排、链接与脚注。[Astro](https://astro.build/) 负责生成页面。[^source]
 
@@ -235,9 +235,9 @@ assertPublished(records);
     title: "示例教程：从草稿版本发布一篇文章",
     slug: "publish-from-content-version",
     summary: "使用假数据演示草稿版本、比较、发布和恢复的完整路径。",
-    body: `# 从草稿版本发布
+    body: `本教程只用于测试工作流。
 
-本教程只用于测试工作流。
+![从 Directus 经过校验、构建到发布的夹具流程图](directus://${cover.id})
 
 1. 新建内容版本。
 2. 保存 Markdown。

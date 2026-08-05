@@ -12,9 +12,10 @@ const kindLabels = {
   tutorial: "教程",
   note: "笔记",
 } as const;
+const accessibleLabel = kind === "note" ? "笔记信息" : "文章信息";
 ---
 
-<ul class="post-meta" aria-label="文章信息">
+<ul class="post-meta" aria-label={accessibleLabel}>
   <li>{kindLabels[kind]}</li>
   <li><time datetime={dateTime}>{dateLabel}</time></li>
   {readingMinutes ? <li>{readingMinutes} 分钟阅读</li> : null}

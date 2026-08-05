@@ -1,0 +1,111 @@
+---
+import type { GetStaticPaths } from "astro";
+
+import EmptyState from "../../components/EmptyState.astro";
+import PageHeader from "../../components/PageHeader.astro";
+import PostList from "../../components/PostList.astro";
+import AppLayout from "../../layouts/AppLayout.astro";
+import { getPreparedSite } from "../../lib/site.ts";
+
+interface Props {
+  topicId: string;
+}
+
+export const prerender = true;
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const { snapshot } = await getPreparedSite();
+  return snapshot.topics.map((topic) => ({
+    params: { slug: topic.slug },
+    props: { topicId: topic.id },
+  }));
+};
+
+const { topicId } = Astro.props;
+const { snapshot } = await getPreparedSite();
+const topic = snapshot.topics.find((candidate) => candidate.id === topicId);
+if (!topic) throw new Error(`Could not render topic ${topicId}`);
+const topicPosts = snapshot.posts.filter((post) =>
+  post.topics.some((postTopic) => postTopic.id === topic.id),
+);
+const writing = topicPosts.filter((post) => post.kind !== "note");
+const notes = topicPosts.filter((post) => post.kind === "note");
+const { settings } = snapshot;
+---
+
+<AppLayout
+  title={topic.name}
+  description={topic.description ?? `${topic.name}主题下的全部公开内容。`}
+  siteName={settings.siteName}
+>
+  <div class="page-shell topic-page">
+    <PageHeader
+      title={topic.name}
+      description={topic.description ?? "这个主题下的全部公开内容。"}
+    />
+
+    <nav class="browse-toolbar surface--inset" aria-label="主题内容分类">
+      <a
+        class="filter-link is-current"
+        href={`/topics/${topic.slug}/`}
+        aria-current="page"
+      >
+        全部 <span>{topicPosts.length}</span>
+      </a>
+      {
+        writing.length ? (
+          <a class="filter-link" href="#topic-writing">
+            写作 <span>{writing.length}</span>
+          </a>
+        ) : null
+      }
+      {
+        notes.length ? (
+          <a class="filter-link" href="#topic-notes">
+            笔记 <span>{notes.length}</span>
+          </a>
+        ) : null
+      }
+      <a class="filter-link" href="/topics/">全部主题</a>
+    </nav>
+
+    {
+      topicPosts.length ? (
+        <div class="discovery-sections">
+          {writing.length ? (
+            <section
+              id="topic-writing"
+              class="content-section"
+              aria-labelledby="topic-writing-heading"
+            >
+              <div class="section-heading">
+                <h2 id="topic-writing-heading">文章与教程</h2>
+              </div>
+              <PostList posts={writing} settings={settings} />
+            </section>
+          ) : null}
+          {notes.length ? (
+            <section
+              id="topic-notes"
+              class="content-section notes-page"
+              aria-labelledby="topic-notes-heading"
+            >
+              <div class="section-heading">
+                <h2 id="topic-notes-heading">相关笔记</h2>
+              </div>
+              <PostList posts={notes} settings={settings} />
+            </section>
+          ) : null}
+        </div>
+      ) : (
+        <EmptyState
+          title="这个主题还没有公开内容"
+          actionHref="/topics/"
+          actionLabel="返回全部主题"
+        >
+          <p>主题说明会保留在这里，内容发布后会自动进入列表。</p>
+        </EmptyState>
+      )
+    }
+  </div>
+</AppLayout>

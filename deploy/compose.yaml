@@ -56,6 +56,7 @@ services:
     restart: unless-stopped
     init: true
     environment:
+      CONTENT_SOURCE: directus
       DIRECTUS_PREVIEW_TOKEN: ${DIRECTUS_PREVIEW_TOKEN:?Set DIRECTUS_PREVIEW_TOKEN}
       DIRECTUS_URL: http://directus:8055
       HOST: 0.0.0.0
@@ -173,10 +174,13 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      BACKUP_HOST: ${BACKUP_HOST:-personal-journal-vps}
+      BACKUP_TAG: ${BACKUP_TAG:-personal-journal}
       POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
       POSTGRES_HOST: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
       POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      RESTIC_CACHE_DIR: /tmp/restic-cache
       RESTIC_PASSWORD: ${RESTIC_PASSWORD:?Set RESTIC_PASSWORD}
       RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:?Set RESTIC_REPOSITORY}
     volumes:
@@ -188,12 +192,78 @@ services:
         source: ${BLOG_DATA_ROOT:-../.data}/backup-staging
         target: /backup-staging
     networks: [data, backup-egress]
+    read_only: true
+    tmpfs: [/tmp]
     security_opt: [no-new-privileges:true]
     cap_drop: [ALL]
     logging: *default-logging
     mem_limit: 512m
     cpus: 1.0
     pids_limit: 128
+
+  restore:
+    profiles: [restore]
+    build:
+      context: ..
+      dockerfile: deploy/backup.Dockerfile
+    entrypoint: ["/usr/local/bin/blog-restore"]
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      BACKUP_HOST: ${BACKUP_HOST:-personal-journal-vps}
+      BACKUP_TAG: ${BACKUP_TAG:-personal-journal}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
+      POSTGRES_HOST: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      RESTIC_CACHE_DIR: /tmp/restic-cache
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD:?Set RESTIC_PASSWORD}
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:?Set RESTIC_REPOSITORY}
+      RESTORE_CONFIRM: ${RESTORE_CONFIRM:-}
+      RESTORE_UPLOADS_TARGET: /restore/uploads
+    volumes:
+      - type: bind
+        source: ${BLOG_DATA_ROOT:-../.data}/directus/uploads
+        target: /restore/uploads
+      - type: bind
+        source: ${BLOG_DATA_ROOT:-../.data}/backup-staging
+        target: /backup-staging
+    networks: [data, backup-egress]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging: *default-logging
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 128
+
+  restic-maintenance:
+    profiles: [maintenance]
+    build:
+      context: ..
+      dockerfile: deploy/backup.Dockerfile
+    entrypoint: ["/usr/local/bin/restic-maintenance"]
+    restart: "no"
+    environment:
+      BACKUP_HOST: ${BACKUP_HOST:-personal-journal-vps}
+      BACKUP_MAX_AGE_SECONDS: ${BACKUP_MAX_AGE_SECONDS:-86400}
+      BACKUP_TAG: ${BACKUP_TAG:-personal-journal}
+      RESTIC_CACHE_DIR: /tmp/restic-cache
+      RESTIC_CHECK_SUBSET: ${RESTIC_CHECK_SUBSET:-}
+      RESTIC_PASSWORD: ${RESTIC_PASSWORD:?Set RESTIC_PASSWORD}
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:?Set RESTIC_REPOSITORY}
+    networks: [backup-egress]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    logging: *default-logging
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 64
 
 networks:
   web: {}

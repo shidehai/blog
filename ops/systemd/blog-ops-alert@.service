@@ -1,0 +1,9 @@
+[Unit]
+Description=Send a personal journal operations failure alert for %i
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/personal-journal/alerts.env
+ExecStart=/opt/personal-journal/current/scripts/notify-ops-failure.sh %i
+NoNewPrivileges=true
+PrivateTmp=true

@@ -1,0 +1,12 @@
+[Unit]
+Description=Check the personal journal public HTTPS routes
+After=network-online.target
+Wants=network-online.target
+OnFailure=blog-ops-alert@%n.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/personal-journal/deploy.env
+ExecStart=/opt/personal-journal/current/scripts/check-external-health.sh
+NoNewPrivileges=true
+PrivateTmp=true

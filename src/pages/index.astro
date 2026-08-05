@@ -1,44 +1,145 @@
 ---
+import EmptyState from "../components/EmptyState.astro";
 import FeaturePost from "../components/FeaturePost.astro";
-import PostListRow from "../components/PostListRow.astro";
+import PostList from "../components/PostList.astro";
 import TopicLink from "../components/TopicLink.astro";
 import AppLayout from "../layouts/AppLayout.astro";
+import type { Post } from "../lib/content.ts";
+import { formatContentDate } from "../lib/content.ts";
+import { getPreparedSite } from "../lib/site.ts";
 
 export const prerender = true;
+
+const { media, snapshot } = await getPreparedSite();
+const { posts, settings, topics } = snapshot;
+const isWritingPost = (
+  post: Post,
+): post is Post & { kind: "article" | "tutorial" } => post.kind !== "note";
+const writing = posts.filter(isWritingPost);
+const notes = posts.filter((post) => post.kind === "note");
+const featured = writing.find((post) => post.featured) ?? writing[0];
+const latestWriting = writing
+  .filter((post) => post.id !== featured?.id)
+  .slice(0, 4);
+const writingChoices = latestWriting.length
+  ? latestWriting
+  : writing.slice(0, 4);
+const recentNotes = notes.slice(0, 3);
+const activeTopics = topics
+  .map((topic) => ({
+    count: posts.filter((post) =>
+      post.topics.some((postTopic) => postTopic.id === topic.id),
+    ).length,
+    topic,
+  }))
+  .filter(({ count }) => count > 0)
+  .sort(
+    (left, right) =>
+      right.count - left.count ||
+      left.topic.slug.localeCompare(right.topic.slug),
+  )
+  .slice(0, 6);
+const featuredAsset = featured?.cover
+  ? media.get(featured.cover.id)
+  : undefined;
+const avatarAsset = settings.avatar ? media.get(settings.avatar.id) : undefined;
+const authorMark = Array.from(settings.authorName.trim())[0] ?? "知";
 ---
 
 <AppLayout
-  title="个人知识站"
-  description="技术文章、教程与随手笔记组成的个人知识站。"
+  title={settings.siteName}
+  description={settings.defaultSeoDescription}
+  siteName={settings.siteName}
 >
   <div class="home-page">
-    <h1 class="visually-hidden">个人知识站</h1>
+    <h1 class="visually-hidden">{settings.siteName}</h1>
 
     <section class="home-intro-grid" aria-label="作者与当前推荐">
-      <FeaturePost
-        href="/writing/recoverable-static-publishing/"
-        title="从一次失败回滚，设计真正可恢复的静态发布流水线"
-        summary="把内容校验、候选镜像预检和旧版本回滚串成一条能解释、能重跑、也能在凌晨放心交给自动化的路径。"
-        kind="tutorial"
-        dateTime="2026-08-04T02:30:00.000Z"
-        dateLabel="2026 年 8 月 4 日"
-        readingMinutes={12}
-        topic={{ href: "/topics/delivery/", label: "交付系统" }}
-      />
+      {
+        featured ? (
+          <FeaturePost
+            href={featured.route}
+            title={featured.title}
+            summary={featured.summary}
+            kind={featured.kind}
+            dateTime={featured.publishedAt}
+            dateLabel={formatContentDate(
+              featured.publishedAt,
+              settings.timezone,
+              settings.locale,
+            )}
+            readingMinutes={featured.readingMinutes}
+            {...(featured.topics[0]
+              ? {
+                  topic: {
+                    href: `/topics/${featured.topics[0].slug}/`,
+                    label: featured.topics[0].name,
+                  },
+                }
+              : {})}
+            {...(featuredAsset
+              ? {
+                  media: {
+                    src: featuredAsset.src,
+                    ...(featuredAsset.srcset
+                      ? { srcset: featuredAsset.srcset }
+                      : {}),
+                    alt: featured.coverDecorative
+                      ? ""
+                      : (featured.coverAlt ?? ""),
+                    width: featuredAsset.width,
+                    height: featuredAsset.height,
+                  },
+                }
+              : {})}
+          />
+        ) : (
+          <div class="home-feature-empty">
+            <EmptyState
+              title="还没有公开写作"
+              actionHref="/notes/"
+              actionLabel="先看看笔记"
+            >
+              <p>第一篇文章发布后，会在这里成为当前阅读入口。</p>
+            </EmptyState>
+          </div>
+        )
+      }
 
       <aside class="identity-module surface--raised">
         <div class="identity-lockup">
-          <span class="identity-avatar" aria-hidden="true">示</span>
+          {
+            avatarAsset ? (
+              <img
+                class="identity-avatar identity-avatar--image"
+                src={avatarAsset.src}
+                srcset={avatarAsset.srcset}
+                sizes="60px"
+                alt=""
+                width={avatarAsset.width}
+                height={avatarAsset.height}
+                loading="eager"
+                decoding="async"
+              />
+            ) : (
+              <span class="identity-avatar" aria-hidden="true">
+                {authorMark}
+              </span>
+            )
+          }
           <div>
-            <p class="identity-name">示例作者</p>
-            <p class="identity-role">软件工程与长期写作</p>
+            <p class="identity-name">{settings.authorName}</p>
+            <p class="identity-role">{settings.siteName}</p>
           </div>
         </div>
         <p class="identity-statement">
-          复杂想法，清晰写下；<br />微小念头，也被留下。
+          {settings.tagline ?? "复杂想法，清晰写下；微小念头，也被留下。"}
         </p>
         <p class="identity-note">
-          这里收录可复现的技术实践、教程，以及还值得继续想一想的片段。
+          {
+            settings.homepageIntro ??
+              "这里收录技术文章、教程，以及还值得继续想一想的片段。"
+          }
         </p>
       </aside>
     </section>
@@ -48,28 +149,15 @@ export const prerender = true;
         <h2 id="latest-writing">最近写作</h2>
         <a href="/writing/">查看全部</a>
       </div>
-      <div class="post-list">
-        <PostListRow
-          href="/writing/content-boundaries/"
-          title="内容边界不是类型声明：在构建时验证 CMS 数据"
-          summary="从不可信 API 响应到稳定页面模型，只保留一次解析、一次归一化和一条失败得足够清楚的路径。"
-          kind="article"
-          dateTime="2026-08-01T11:20:00.000Z"
-          dateLabel="2026 年 8 月 1 日"
-          readingMinutes={8}
-          topics={[{ href: "/topics/astro/", label: "Astro" }]}
-        />
-        <PostListRow
-          href="/writing/chinese-reading-rhythm/"
-          title="让中文技术长文读起来更稳：字宽、行高与注释脊线"
-          summary="用一组可测量的排版约束，让代码、图表与正文共享节奏，而不是彼此争夺注意力。"
-          kind="article"
-          dateTime="2026-07-28T08:10:00.000Z"
-          dateLabel="2026 年 7 月 28 日"
-          readingMinutes={6}
-          topics={[{ href: "/topics/reading/", label: "阅读设计" }]}
-        />
-      </div>
+      {
+        writingChoices.length ? (
+          <PostList posts={writingChoices} settings={settings} />
+        ) : (
+          <EmptyState title="写作列表暂时为空">
+            <p>公开的文章和教程会按发布时间出现在这里。</p>
+          </EmptyState>
+        )
+      }
     </section>
 
     <div class="home-secondary-grid">
@@ -81,34 +169,52 @@ export const prerender = true;
           <h2 id="recent-notes">近期笔记</h2>
           <a href="/notes/">全部笔记</a>
         </div>
-        <ul class="note-list">
-          <li>
-            <a href="/notes/native-popover/">
-              <time datetime="2026-08-03">08-03</time>
-              <span>原生 Popover 已经足够承担一个安静、可退出的移动导航。</span>
-            </a>
-          </li>
-          <li>
-            <a href="/notes/build-failures/">
-              <time datetime="2026-07-30">07-30</time>
-              <span>构建失败应该指出内容记录与字段，而不是只留下一段堆栈。</span
-              >
-            </a>
-          </li>
-        </ul>
+        {
+          recentNotes.length ? (
+            <ul class="note-list">
+              {recentNotes.map((note) => (
+                <li>
+                  <a href={note.route}>
+                    <time datetime={note.publishedAt}>
+                      {formatContentDate(
+                        note.publishedAt,
+                        settings.timezone,
+                        settings.locale,
+                      )}
+                    </time>
+                    <span>{note.title}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="module-empty">短笔记发布后，会在这里留下最近的入口。</p>
+          )
+        }
       </section>
 
       <section
         class="topics-module surface--raised"
         aria-labelledby="active-topics"
       >
-        <h2 id="active-topics">持续关注</h2>
-        <div class="topic-list">
-          <TopicLink href="/topics/astro/" label="Astro" />
-          <TopicLink href="/topics/delivery/" label="交付系统" />
-          <TopicLink href="/topics/reading/" label="阅读设计" />
-          <TopicLink href="/topics/postgresql/" label="PostgreSQL" />
+        <div class="section-heading">
+          <h2 id="active-topics">持续关注</h2>
+          <a href="/topics/">全部主题</a>
         </div>
+        {
+          activeTopics.length ? (
+            <div class="topic-list">
+              {activeTopics.map(({ count, topic }) => (
+                <TopicLink
+                  href={`/topics/${topic.slug}/`}
+                  label={`${topic.name} · ${count}`}
+                />
+              ))}
+            </div>
+          ) : (
+            <p class="module-empty">内容关联主题后，会在这里形成浏览线索。</p>
+          )
+        }
       </section>
     </div>
 

@@ -1,0 +1,10 @@
+[Unit]
+Description=Check personal journal disk and inode capacity
+OnFailure=blog-ops-alert@%n.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/personal-journal/production.env
+ExecStart=/opt/personal-journal/current/scripts/check-capacity.sh
+NoNewPrivileges=true
+PrivateTmp=true

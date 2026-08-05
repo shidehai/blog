@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+: "${MOCK_COMMAND_LOG:?Set MOCK_COMMAND_LOG}"
+printf '%s\n' "pg_restore $*" >>"$MOCK_COMMAND_LOG"
+if [ "${1:-}" = --list ] && [ "${MOCK_PG_RESTORE_LIST_FAIL:-0}" = 1 ]; then
+  exit 1
+fi

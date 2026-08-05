@@ -1,0 +1,10 @@
+[Unit]
+Description=Weekly personal journal Restic retention and prune
+
+[Timer]
+OnCalendar=Sun *-*-* 03:30:00
+Persistent=true
+Unit=blog-restic-forget.service
+
+[Install]
+WantedBy=timers.target

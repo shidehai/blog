@@ -1,0 +1,11 @@
+[Unit]
+Description=Check personal journal capacity every fifteen minutes
+
+[Timer]
+OnBootSec=5m
+OnUnitActiveSec=15m
+Persistent=true
+Unit=blog-capacity.service
+
+[Install]
+WantedBy=timers.target

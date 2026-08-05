@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+
+: "${MOCK_COMMAND_LOG:?Set MOCK_COMMAND_LOG}"
+printf '%s\n' "pg_dump $*" >>"$MOCK_COMMAND_LOG"
+output=
+while [ "$#" -gt 0 ]; do
+  if [ "$1" = --file ]; then
+    shift
+    output=${1:-}
+  fi
+  shift || true
+done
+[ -n "$output" ]
+printf 'fixture-postgresql-custom-dump\n' >"$output"

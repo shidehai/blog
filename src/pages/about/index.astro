@@ -1,0 +1,104 @@
+---
+import PageHeader from "../../components/PageHeader.astro";
+import AppLayout from "../../layouts/AppLayout.astro";
+import { getPreparedSite } from "../../lib/site.ts";
+
+export const prerender = true;
+
+const { media, snapshot } = await getPreparedSite();
+const { settings } = snapshot;
+const avatarAsset = settings.avatar ? media.get(settings.avatar.id) : undefined;
+const authorMark = Array.from(settings.authorName.trim())[0] ?? "知";
+---
+
+<AppLayout
+  title="关于"
+  description={settings.defaultSeoDescription}
+  siteName={settings.siteName}
+>
+  <div class="page-shell about-page">
+    <PageHeader title="关于" description={settings.homepageIntro} />
+
+    <div class="about-grid">
+      <section
+        class="about-identity surface--raised"
+        aria-labelledby="author-name"
+      >
+        {
+          avatarAsset ? (
+            <img
+              class="about-avatar"
+              src={avatarAsset.src}
+              srcset={avatarAsset.srcset}
+              sizes="112px"
+              alt=""
+              width={avatarAsset.width}
+              height={avatarAsset.height}
+              loading="eager"
+              decoding="async"
+            />
+          ) : (
+            <span
+              class="about-avatar about-avatar--fallback"
+              aria-hidden="true"
+            >
+              {authorMark}
+            </span>
+          )
+        }
+        <div>
+          <h2 id="author-name">{settings.authorName}</h2>
+          <p>{settings.tagline ?? settings.siteName}</p>
+        </div>
+      </section>
+
+      <section
+        class="about-biography surface--raised"
+        aria-labelledby="biography"
+      >
+        <h2 id="biography">个人与这份手记</h2>
+        <p>
+          {
+            settings.biography ??
+              settings.homepageIntro ??
+              settings.defaultSeoDescription
+          }
+        </p>
+      </section>
+
+      <section class="about-links surface--inset" aria-labelledby="elsewhere">
+        <h2 id="elsewhere">其他地方</h2>
+        {
+          settings.socialLinks.length ? (
+            <ul>
+              {settings.socialLinks.map((link) => (
+                <li>
+                  <a
+                    href={link.url}
+                    target={/^https?:/.test(link.url) ? "_blank" : undefined}
+                    rel={
+                      /^https?:/.test(link.url)
+                        ? "me noopener noreferrer"
+                        : undefined
+                    }
+                  >
+                    <span>{link.label}</span>
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>目前没有配置公开的站外链接。</p>
+          )
+        }
+      </section>
+    </div>
+
+    {
+      settings.footerText ? (
+        <p class="about-footer-note">{settings.footerText}</p>
+      ) : null
+    }
+  </div>
+</AppLayout>

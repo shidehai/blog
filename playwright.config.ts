@@ -20,6 +20,7 @@ export default defineConfig({
     command: "pnpm start",
     env: {
       ...process.env,
+      CONTENT_SOURCE: "fixture",
       DIRECTUS_PREVIEW_TOKEN: "test-preview-token-at-least-24-chars",
       DIRECTUS_URL: "http://127.0.0.1:8055",
       PREVIEW_TRUSTED_HEADER: "test-preview-header-at-least-24-chars",

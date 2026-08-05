@@ -1,6 +1,7 @@
 ---
 interface Props {
   src: string;
+  srcset?: string;
   alt: string;
   width: number;
   height: number;
@@ -8,12 +9,14 @@ interface Props {
   eager?: boolean;
 }
 
-const { src, alt, width, height, caption, eager = false } = Astro.props;
+const { src, srcset, alt, width, height, caption, eager = false } = Astro.props;
 ---
 
 <figure class="responsive-figure">
   <img
     {src}
+    srcset={srcset}
+    sizes={srcset ? "(max-width: 48rem) 100vw, 48rem" : undefined}
     {alt}
     {width}
     {height}

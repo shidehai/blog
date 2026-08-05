@@ -34,6 +34,7 @@ const buildSchema = z
   });
 
 const runtimeSchema = z.object({
+  CONTENT_SOURCE: z.enum(["fixture", "directus"]),
   DIRECTUS_PREVIEW_TOKEN: z.string().min(24),
   DIRECTUS_URL: z.url(),
   HOST: z.string().default("0.0.0.0"),

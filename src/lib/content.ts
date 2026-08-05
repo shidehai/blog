@@ -1,6 +1,7 @@
 import {
   createDirectus,
   readFiles,
+  readItem,
   readItems,
   readSingleton,
   rest,
@@ -28,6 +29,7 @@ const ALLOWED_IMAGE_TYPES = new Set([
 ]);
 
 export const PUBLISHABLE_ASSETS_FOLDER_ID = IDS.folders.publishable;
+export const PRIVATE_ASSETS_FOLDER_ID = IDS.folders.private;
 
 const POST_FIELDS = [
   "id",
@@ -297,6 +299,9 @@ function referencedFileIds(data: RawSnapshotBase, context?: z.RefinementCtx) {
 function validateSnapshot(
   data: RawSnapshotBase & { files: RawFile[] },
   context: z.RefinementCtx,
+  allowedMediaFolders: ReadonlySet<string> = new Set([
+    PUBLISHABLE_ASSETS_FOLDER_ID,
+  ]),
 ): void {
   addDuplicateIssues(data.posts, (post) => post.id, "posts", "id", context);
   addDuplicateIssues(data.posts, (post) => post.slug, "posts", "slug", context);
@@ -395,10 +400,10 @@ function validateSnapshot(
         path: ["files", index, "id"],
       });
     }
-    if (file.folder !== PUBLISHABLE_ASSETS_FOLDER_ID) {
+    if (!file.folder || !allowedMediaFolders.has(file.folder)) {
       context.addIssue({
         code: "custom",
-        message: `file ${file.id} is not in publishable-assets`,
+        message: `file ${file.id} is not in an allowed media folder`,
         path: ["files", index, "folder"],
       });
     }
@@ -420,10 +425,22 @@ export const directusSnapshotSchema = rawSnapshotBaseSchema
   .strict()
   .superRefine(validateSnapshot);
 
+const previewSnapshotSchema = rawSnapshotBaseSchema
+  .extend({ files: z.array(rawFileSchema) })
+  .strict()
+  .superRefine((data, context) =>
+    validateSnapshot(
+      data,
+      context,
+      new Set([PUBLISHABLE_ASSETS_FOLDER_ID, PRIVATE_ASSETS_FOLDER_ID]),
+    ),
+  );
+
 export interface MediaFile {
   description: string | null;
   filename: string;
   filesize: number;
+  folderId: string;
   height: number | null;
   id: string;
   mimeType: string;
@@ -501,6 +518,7 @@ function mediaFile(file: RawFile): MediaFile {
     description: file.description,
     filename: file.filename_download,
     filesize: file.filesize,
+    folderId: file.folder ?? "",
     height: file.height,
     id: file.id,
     mimeType: file.type,
@@ -521,8 +539,11 @@ function formatSchemaError(error: z.ZodError): Error {
   return new Error(`Invalid Directus content: ${details}`);
 }
 
-export function parsePublishedSnapshot(input: unknown): PublishedSnapshot {
-  const result = directusSnapshotSchema.safeParse(input);
+function parseSnapshot(
+  input: unknown,
+  schema: typeof directusSnapshotSchema,
+): PublishedSnapshot {
+  const result = schema.safeParse(input);
   if (!result.success) throw formatSchemaError(result.error);
   const raw = result.data;
 
@@ -621,6 +642,14 @@ export function parsePublishedSnapshot(input: unknown): PublishedSnapshot {
   return snapshot;
 }
 
+export function parsePublishedSnapshot(input: unknown): PublishedSnapshot {
+  return parseSnapshot(input, directusSnapshotSchema);
+}
+
+export function parsePreviewSnapshot(input: unknown): PublishedSnapshot {
+  return parseSnapshot(input, previewSnapshotSchema);
+}
+
 export function assertPublishedSnapshot(snapshot: PublishedSnapshot): void {
   const routes = new Set<string>();
   for (const post of snapshot.posts) {
@@ -692,6 +721,14 @@ export interface FixtureContentSource {
 }
 
 export type ContentSource = DirectusContentSource | FixtureContentSource;
+
+export interface PreviewContentSource {
+  fetch?: typeof fetch;
+  id: string;
+  token: string;
+  url: string;
+  version?: string;
+}
 
 async function loadDirectusInput(
   options: DirectusContentSource,
@@ -790,11 +827,114 @@ async function loadDirectusInput(
   }
 }
 
+export async function loadPreviewSnapshot(
+  options: PreviewContentSource,
+): Promise<PublishedSnapshot> {
+  const id = z.uuid().parse(options.id);
+  const version = options.version
+    ? z
+        .string()
+        .regex(/^[A-Za-z0-9_-]{1,128}$/)
+        .parse(options.version)
+    : undefined;
+  const client = createDirectus<DirectusSchema>(
+    options.url,
+    options.fetch ? { globals: { fetch: options.fetch } } : undefined,
+  )
+    .with(staticToken(options.token))
+    .with(rest());
+
+  try {
+    const postRequest = version
+      ? client.request(
+          readItem("posts", id, { fields: [...POST_FIELDS], version }),
+        )
+      : client.request(readItem("posts", id, { fields: [...POST_FIELDS] }));
+    const [post, topics, postTopics, settings, socialLinks] = await Promise.all(
+      [
+        postRequest,
+        readAll((page) =>
+          client.request(
+            readItems("topics", {
+              fields: [...TOPIC_FIELDS],
+              limit: PAGE_SIZE,
+              page,
+              sort: ["slug", "id"],
+            }),
+          ),
+        ),
+        readAll((page) =>
+          client.request(
+            readItems("posts_topics", {
+              fields: [...POST_TOPIC_FIELDS],
+              filter: { posts_id: { _eq: id } },
+              limit: PAGE_SIZE,
+              page,
+              sort: ["id"],
+            }),
+          ),
+        ),
+        client.request(
+          readSingleton("site_settings", { fields: [...SETTINGS_FIELDS] }),
+        ),
+        readAll((page) =>
+          client.request(
+            readItems("social_links", {
+              fields: [...SOCIAL_LINK_FIELDS],
+              limit: PAGE_SIZE,
+              page,
+              sort: ["sort", "id"],
+            }),
+          ),
+        ),
+      ],
+    );
+
+    const baseResult = rawSnapshotBaseSchema.safeParse({
+      postTopics,
+      posts: [post],
+      settings,
+      socialLinks,
+      topics,
+    });
+    if (!baseResult.success) throw formatSchemaError(baseResult.error);
+    const fileIds = [...referencedFileIds(baseResult.data)].sort();
+    const files = fileIds.length
+      ? await readAll((page) =>
+          client.request(
+            readFiles({
+              fields: [...FILE_FIELDS],
+              filter: { id: { _in: fileIds } },
+              limit: PAGE_SIZE,
+              page,
+              sort: ["id"],
+            }),
+          ),
+        )
+      : [];
+
+    return parsePreviewSnapshot({ ...baseResult.data, files });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.startsWith("Invalid Directus content:")
+    ) {
+      throw error;
+    }
+    throw new Error(
+      `Could not load Directus preview: ${error instanceof Error ? error.message : "request failed"}`,
+      { cause: error },
+    );
+  }
+}
+
 function fixtureInput(): unknown {
   const settingsId = "f0000000-0000-4000-8000-000000000001";
-  const topicId = "f1000000-0000-4000-8000-000000000001";
+  const astroTopicId = "f1000000-0000-4000-8000-000000000001";
+  const craftTopicId = "f1000000-0000-4000-8000-000000000002";
   const articleId = "f2000000-0000-4000-8000-000000000001";
   const noteId = "f2000000-0000-4000-8000-000000000002";
+  const tutorialId = "f2000000-0000-4000-8000-000000000003";
   const fileId = "f5000000-0000-4000-8000-000000000001";
   return {
     files: [
@@ -821,17 +961,22 @@ function fixtureInput(): unknown {
       {
         id: "f4000000-0000-4000-8000-000000000001",
         posts_id: articleId,
-        topics_id: topicId,
+        topics_id: astroTopicId,
       },
       {
         id: "f4000000-0000-4000-8000-000000000002",
         posts_id: noteId,
-        topics_id: topicId,
+        topics_id: astroTopicId,
+      },
+      {
+        id: "f4000000-0000-4000-8000-000000000003",
+        posts_id: tutorialId,
+        topics_id: craftTopicId,
       },
     ],
     posts: [
       {
-        body: "# 静态发布的数据边界\n\n公开构建只读取已经发布的完整快照。",
+        body: "## 静态发布的数据边界\n\n公开构建只读取已经发布的完整快照。",
         cover_alt: "浅蓝色的开发夹具封面",
         cover_decorative: false,
         cover_image: fileId,
@@ -864,6 +1009,53 @@ function fixtureInput(): unknown {
         summary: null,
         title: "示例随记：先让失败可诊断",
       },
+      {
+        body: `这是一篇完全虚构的开发夹具，不描述真实系统或真实发布记录。
+
+## 准备发布夹具
+
+先阅读[静态发布的数据边界](/writing/static-publishing-data-boundary/#静态发布的数据边界)，再用下表核对假数据。
+
+| 输入 | 预期结果 |
+| --- | --- |
+| 已发布文章 | 生成稳定路由 |
+| 已归档记录 | 不进入快照 |
+
+### 校验清单
+
+- [x] 使用固定 slug
+- [x] 只关联虚构主题
+- [ ] 替换为真实内容后再上线
+
+> [!IMPORTANT]
+> 此教程、作者和数据均为自动化测试夹具。
+
+![从 Directus 经过校验、构建到发布的夹具流程图](directus://${fileId})
+
+\`\`\`ts filename="fixture-check.ts" {2} diff
+const posts = await loadFixturePosts();
++assert(posts.every((post) => post.status === "published"));
+\`\`\`
+
+完成后可查看[诊断失败随记](/notes/diagnosable-failures-first/)。[^fixture]
+
+[^fixture]: 此脚注只用于验证 Markdown 渲染，不对应真实资料。
+`,
+        cover_alt: null,
+        cover_decorative: false,
+        cover_image: null,
+        date_updated: "2026-07-30T06:30:00.000Z",
+        featured: false,
+        id: tutorialId,
+        kind: "tutorial",
+        published_at: "2026-07-29T06:30:00.000Z",
+        seo_description: null,
+        seo_title: null,
+        slug: "validate-a-published-snapshot",
+        status: "published",
+        summary: "用完全虚构的数据演示标题、表格、清单、代码、脚注和内部链接。",
+        title: "示例教程：验证一份发布快照",
+      },
     ],
     settings: {
       author_name: "示例作者",
@@ -893,9 +1085,15 @@ function fixtureInput(): unknown {
     topics: [
       {
         description: "Astro 与静态内容交付。",
-        id: topicId,
+        id: astroTopicId,
         name: "Astro",
         slug: "astro",
+      },
+      {
+        description: "只用于测试校验、渲染和发布流程的虚构主题。",
+        id: craftTopicId,
+        name: "示例工程手艺",
+        slug: "fixture-engineering-craft",
       },
     ],
   };
@@ -919,9 +1117,15 @@ function sourceFromEnvironment(): ContentSource {
 export async function loadPublishedSnapshot(
   source: ContentSource = sourceFromEnvironment(),
 ): Promise<PublishedSnapshot> {
+  return parsePublishedSnapshot(await loadPublishedInput(source));
+}
+
+export async function loadPublishedInput(
+  source: ContentSource = sourceFromEnvironment(),
+): Promise<unknown> {
   const input =
     source.source === "fixture"
       ? fixtureInput()
       : await loadDirectusInput(source);
-  return parsePublishedSnapshot(input);
+  return input;
 }

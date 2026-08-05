@@ -541,6 +541,11 @@ const flowEnabled =
   process.env.DIRECTUS_ENABLE_BUILD_FLOW === "true" &&
   usableSecret(process.env.GITHUB_DISPATCH_TOKEN) &&
   Boolean(process.env.GITHUB_REPOSITORY);
+if (flowEnabled && !author) {
+  throw new Error(
+    "DIRECTUS_AUTHOR_EMAIL and an Author credential are required before enabling the build Flow.",
+  );
+}
 const flow = await upsert("flows", IDS.flow, {
   name: "Dispatch public site build",
   icon: "rocket_launch",
@@ -562,6 +567,28 @@ const flow = await upsert("flows", IDS.flow, {
     ],
   },
 });
+const dispatchFailure = await upsert(
+  "operations",
+  IDS.dispatchFailure,
+  {
+    flow: flow.id,
+    key: "dispatch_failure_notification",
+    type: "notification",
+    name: "Notify build dispatch failure",
+    position_x: 55,
+    position_y: 13,
+    options: {
+      recipient: author?.id ?? IDS.users.author,
+      subject: "Public site build dispatch failed",
+      message:
+        "GitHub build dispatch failed for {{$trigger.collection}} {{$trigger.event}}. Inspect the Flow log, then run the main-branch workflow manually.",
+      permissions: "$full",
+    },
+    resolve: null,
+    reject: null,
+  },
+  ["key", "dispatch_failure_notification"],
+);
 const dispatch = await upsert(
   "operations",
   IDS.dispatch,
@@ -577,16 +604,17 @@ const dispatch = await upsert(
       url: "https://api.github.com/repos/{{$env.GITHUB_REPOSITORY}}/dispatches",
       headers: [
         { header: "Accept", value: "application/vnd.github+json" },
+        { header: "Content-Type", value: "application/json" },
         {
           header: "Authorization",
           value: "Bearer {{$env.GITHUB_DISPATCH_TOKEN}}",
         },
         { header: "X-GitHub-Api-Version", value: "2022-11-28" },
       ],
-      body: '{"event_type":"directus-content","client_payload":{"collection":"{{ $trigger.collection }}","event":"{{ $trigger.event }}"}}',
+      body: '{"event_type":"directus-publish","client_payload":{"collection":"{{ $trigger.collection }}","event":"{{ $trigger.event }}"}}',
     },
     resolve: null,
-    reject: null,
+    reject: dispatchFailure.id,
   },
   ["key", "dispatch_build"],
 );

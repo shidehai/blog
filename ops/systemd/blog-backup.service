@@ -1,0 +1,14 @@
+[Unit]
+Description=Create an encrypted off-VPS personal journal backup
+Requires=docker.service
+After=docker.service
+OnFailure=blog-ops-alert@%n.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/personal-journal/current
+ExecStart=/usr/bin/docker compose --env-file /etc/personal-journal/production.env --file /opt/personal-journal/current/deploy/compose.yaml --profile backup run --rm backup
+TimeoutStartSec=2h
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true

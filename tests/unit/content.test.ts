@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import {
   formatContentDate,
+  loadPreviewSnapshot,
   loadPublishedSnapshot,
   parsePublishedSnapshot,
+  PRIVATE_ASSETS_FOLDER_ID,
   PUBLISHABLE_ASSETS_FOLDER_ID,
 } from "../../src/lib/content";
+import { renderMarkdown } from "../../src/lib/markdown";
 
 const IDS = {
   file: "15000000-0000-4000-8000-000000000001",
@@ -51,7 +54,7 @@ function validInput() {
     ],
     posts: [
       {
-        body: "# 边界\n\n中文 content 与 Latin words 共用同一份快照。",
+        body: "## 边界\n\n中文 content 与 Latin words 共用同一份快照。",
         cover_alt: nullable("蓝色数据边界示意图"),
         cover_decorative: false,
         cover_image: IDS.file,
@@ -114,16 +117,74 @@ describe("published content boundary", () => {
   it("loads and normalizes the built-in fixture without CMS credentials", async () => {
     const snapshot = await loadPublishedSnapshot({ source: "fixture" });
 
-    expect(snapshot.posts.map((post) => post.status)).toEqual([
-      "published",
-      "published",
+    expect(snapshot.posts.map((post) => post.status)).toEqual(
+      Array.from({ length: 3 }, () => "published"),
+    );
+    expect(snapshot.posts.map((post) => post.kind)).toEqual([
+      "note",
+      "tutorial",
+      "article",
     ]);
-    expect(snapshot.posts[0]?.route).toBe("/notes/diagnosable-failures-first/");
-    expect(snapshot.posts[0]?.summary).toContain("短记录");
-    expect(snapshot.posts[1]?.topics[0]?.slug).toBe("astro");
+    expect(snapshot.posts.map((post) => post.route)).toEqual([
+      "/notes/diagnosable-failures-first/",
+      "/writing/validate-a-published-snapshot/",
+      "/writing/static-publishing-data-boundary/",
+    ]);
+    expect(
+      first(snapshot.posts.filter((post) => post.kind === "note")).summary,
+    ).toContain("短记录");
+    expect(
+      first(snapshot.posts.filter((post) => post.kind === "article")).topics[0]
+        ?.slug,
+    ).toBe("astro");
+    expect(
+      first(snapshot.posts.filter((post) => post.kind === "tutorial")).topics[0]
+        ?.slug,
+    ).toBe("fixture-engineering-craft");
     expect(snapshot.settings.defaultOgImage?.id).toBe(
       "f5000000-0000-4000-8000-000000000001",
     );
+  });
+
+  it("renders the substantial fake tutorial through every planned Markdown primitive", async () => {
+    const snapshot = await loadPublishedSnapshot({ source: "fixture" });
+    const tutorial = first(
+      snapshot.posts.filter((post) => post.kind === "tutorial"),
+    );
+    const mediaId = "f5000000-0000-4000-8000-000000000001";
+    const rendered = await renderMarkdown(tutorial.body, {
+      media: new Map([
+        [
+          mediaId,
+          {
+            height: 900,
+            id: mediaId,
+            mimeType: "image/webp",
+            src: "/images/publishing-workbench.webp",
+            width: 1600,
+          },
+        ],
+      ]),
+      source: `post ${tutorial.id} body`,
+    });
+
+    expect(rendered.outline).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ level: 2, text: "准备发布夹具" }),
+        expect.objectContaining({ level: 3, text: "校验清单" }),
+      ]),
+    );
+    expect(rendered.html).toContain('class="table-wrapper"');
+    expect(rendered.html).toContain('type="checkbox"');
+    expect(rendered.html).toContain("callout--important");
+    expect(rendered.html).toContain('class="responsive-figure"');
+    expect(rendered.html).toContain('class="code-frame"');
+    expect(rendered.html).toContain("is-highlighted diff-add");
+    expect(rendered.html).toContain("data-footnotes");
+    expect(rendered.links.map((link) => link.href)).toEqual([
+      "/writing/static-publishing-data-boundary/#静态发布的数据边界",
+      "/notes/diagnosable-failures-first/",
+    ]);
   });
 
   it("normalizes timestamps to UTC and formats the configured local date", () => {
@@ -188,6 +249,44 @@ describe("published content boundary", () => {
         "/files",
       ]),
     );
+  });
+
+  it("loads a versioned preview with private draft media", async () => {
+    const input = validInput();
+    first(input.files).folder = PRIVATE_ASSETS_FOLDER_ID;
+    const requests: URL[] = [];
+    const mockFetch: typeof fetch = async (request) => {
+      const url = new URL(
+        request instanceof Request ? request.url : String(request),
+      );
+      requests.push(url);
+      let data: unknown;
+      if (url.pathname === `/items/posts/${IDS.post}`)
+        data = first(input.posts);
+      else if (url.pathname === "/items/topics") data = input.topics;
+      else if (url.pathname === "/items/posts_topics") data = input.postTopics;
+      else if (url.pathname === "/items/site_settings") data = input.settings;
+      else if (url.pathname === "/items/social_links") data = input.socialLinks;
+      else if (url.pathname === "/files") data = input.files;
+      else return new Response(null, { status: 404 });
+      return Response.json({ data });
+    };
+
+    const snapshot = await loadPreviewSnapshot({
+      fetch: mockFetch,
+      id: IDS.post,
+      token: "preview-reader-token-for-unit-tests",
+      url: "https://cms.example.test",
+      version: "draft",
+    });
+
+    expect(snapshot.posts).toHaveLength(1);
+    expect(first([...snapshot.files]).folderId).toBe(PRIVATE_ASSETS_FOLDER_ID);
+    const postRequest = requests.find(
+      (url) => url.pathname === `/items/posts/${IDS.post}`,
+    );
+    expect(postRequest?.searchParams.get("version")).toBe("draft");
+    expect(postRequest?.searchParams.get("fields")).not.toContain("*");
   });
 
   it.each([

@@ -44,6 +44,14 @@ describe("Markdown derivation", () => {
     expect(second.headings).toEqual(first.headings);
     expect(second.html).toBe(first.html);
   });
+
+  it("reserves the page heading for the post title", async () => {
+    await expect(
+      renderMarkdown("# Duplicate page title", { source: "post.md" }),
+    ).rejects.toThrow(
+      "post.md line 1: body headings must start at level 2; the post title is the page heading",
+    );
+  });
 });
 
 describe("Markdown extensions", () => {
@@ -64,6 +72,8 @@ describe("Markdown extensions", () => {
     expect(result.html).toContain("<table>");
     expect(result.html).toContain('class="contains-task-list"');
     expect(result.html).toContain('type="checkbox" checked disabled');
+    expect(result.html).toContain('aria-label="已完成"');
+    expect(result.html).toContain('aria-label="未完成"');
     expect(result.html).toContain("data-footnote-ref");
     expect(result.html).toContain('aria-describedby="footnote-label"');
     expect(result.html).toContain('id="footnote-label"');

@@ -1,0 +1,88 @@
+---
+import EmptyState from "../../components/EmptyState.astro";
+import PageHeader from "../../components/PageHeader.astro";
+import AppLayout from "../../layouts/AppLayout.astro";
+import { formatContentDate } from "../../lib/content.ts";
+import { getPreparedSite } from "../../lib/site.ts";
+
+export const prerender = true;
+
+const { snapshot } = await getPreparedSite();
+const { posts, settings } = snapshot;
+const topicRows = snapshot.topics.map((topic) => {
+  const topicPosts = posts.filter((post) =>
+    post.topics.some((postTopic) => postTopic.id === topic.id),
+  );
+  return { latest: topicPosts[0], posts: topicPosts, topic };
+});
+---
+
+<AppLayout
+  title="主题"
+  description="沿主题浏览文章、教程与笔记。"
+  siteName={settings.siteName}
+>
+  <div class="page-shell topics-page">
+    <PageHeader
+      title="主题"
+      description="主题把长文与短笔记放回同一条思考路径，而不是把内容切成互不相干的栏目。"
+    />
+
+    {
+      topicRows.length ? (
+        <ul class="topic-directory" aria-label="全部主题">
+          {topicRows.map(({ latest, posts: topicPosts, topic }) => (
+            <li>
+              <article class="topic-directory-row surface--raised">
+                <div class="topic-directory-copy">
+                  <div class="topic-directory-heading">
+                    <h2>
+                      <a href={`/topics/${topic.slug}/`}>{topic.name}</a>
+                    </h2>
+                    <span aria-label={`${topicPosts.length} 篇内容`}>
+                      {topicPosts.length} 篇
+                    </span>
+                  </div>
+                  <p>
+                    {topic.description ??
+                      (topicPosts.length
+                        ? "查看这个主题下的全部公开内容。"
+                        : "这个主题还没有关联公开内容。")}
+                  </p>
+                </div>
+                {latest ? (
+                  <p class="topic-directory-latest">
+                    <span>最近更新</span>
+                    <a href={latest.route}>{latest.title}</a>
+                    <time datetime={latest.publishedAt}>
+                      {formatContentDate(
+                        latest.publishedAt,
+                        settings.timezone,
+                        settings.locale,
+                      )}
+                    </time>
+                  </p>
+                ) : (
+                  <a
+                    class="topic-directory-action"
+                    href={`/topics/${topic.slug}/`}
+                  >
+                    查看主题
+                  </a>
+                )}
+              </article>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <EmptyState
+          title="还没有公开主题"
+          actionHref="/archive/"
+          actionLabel="浏览完整归档"
+        >
+          <p>所有已发布内容仍可按时间连续浏览。</p>
+        </EmptyState>
+      )
+    }
+  </div>
+</AppLayout>

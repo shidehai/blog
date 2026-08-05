@@ -1,0 +1,10 @@
+[Unit]
+Description=Weekly personal journal Restic integrity check
+
+[Timer]
+OnCalendar=Wed *-*-* 03:30:00
+Persistent=true
+Unit=blog-restic-check.service
+
+[Install]
+WantedBy=timers.target

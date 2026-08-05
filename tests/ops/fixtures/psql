@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+
+: "${MOCK_COMMAND_LOG:?Set MOCK_COMMAND_LOG}"
+printf '%s\n' "psql $*" >>"$MOCK_COMMAND_LOG"
+printf '%s\n' "${MOCK_USER_TABLES:-0}"

@@ -1,6 +1,11 @@
 ---
+import MetadataHead from "../components/MetadataHead.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
+import type { Post, SiteSettings } from "../lib/content.ts";
+import type { MarkdownMedia } from "../lib/markdown.ts";
+import type { MetadataImage } from "../lib/metadata.ts";
+import { getPreparedSite } from "../lib/site.ts";
 import "../styles/global.css";
 
 interface Props {
@@ -8,30 +13,112 @@ interface Props {
   description: string;
   siteName?: string;
   currentPath?: string;
+  metadataMedia?: ReadonlyMap<string, MarkdownMedia>;
+  metadataPost?: Post;
+  metadataSettings?: SiteSettings;
 }
 
-const {
-  title,
-  description,
-  siteName = "个人知识站",
-  currentPath = Astro.url.pathname,
-} = Astro.props;
+const { title, description, currentPath = Astro.url.pathname } = Astro.props;
+const { metadataMedia, metadataPost, metadataSettings } = Astro.props;
+const metadataPropCount = [
+  metadataMedia,
+  metadataPost,
+  metadataSettings,
+].filter((value) => value !== undefined).length;
+if (metadataPropCount !== 0 && metadataPropCount !== 3) {
+  throw new Error(
+    "AppLayout metadataMedia, metadataPost, and metadataSettings must be provided together",
+  );
+}
+
+let media: ReadonlyMap<string, MarkdownMedia>;
+let post: Post | undefined;
+let settings: SiteSettings;
+if (metadataMedia && metadataPost && metadataSettings) {
+  media = metadataMedia;
+  post = metadataPost;
+  settings = metadataSettings;
+} else {
+  const prepared = await getPreparedSite();
+  media = prepared.media;
+  settings = prepared.snapshot.settings;
+  post = prepared.snapshot.posts.find((entry) => entry.route === currentPath);
+}
+const siteName = Astro.props.siteName ?? settings.siteName;
 const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
+const siteUrl = new URL("/", Astro.site ?? Astro.url.origin).href;
+const canonicalUrl = new URL(currentPath, siteUrl).href;
+const noindex =
+  currentPath === "/404" ||
+  currentPath === "/404/" ||
+  currentPath.startsWith("/preview/");
+const selectedFile = post?.cover ?? settings.defaultOgImage;
+const selectedAsset = selectedFile ? media.get(selectedFile.id) : undefined;
+const image: MetadataImage = selectedAsset
+  ? {
+      alt: post
+        ? post.coverDecorative
+          ? post.title
+          : (post.coverAlt ?? post.title)
+        : `${settings.siteName}默认分享图`,
+      height: selectedAsset.height,
+      mimeType: selectedAsset.mimeType,
+      src: selectedAsset.src,
+      width: selectedAsset.width,
+    }
+  : {
+      alt: `${settings.siteName}默认分享图`,
+      height: 630,
+      mimeType: "image/png",
+      src: "/images/default-social.png",
+      width: 1200,
+    };
+const avatarAsset = settings.avatar ? media.get(settings.avatar.id) : undefined;
+const authorAvatar: MetadataImage | undefined = avatarAsset
+  ? {
+      alt: settings.authorName,
+      height: avatarAsset.height,
+      mimeType: avatarAsset.mimeType,
+      src: avatarAsset.src,
+      width: avatarAsset.width,
+    }
+  : undefined;
+const isIndexablePost = Boolean(post) && !noindex;
 const themeStorageKey = "pkj-theme";
 const themeBootstrap = `(()=>{try{const theme=localStorage.getItem(${JSON.stringify(themeStorageKey)});if(theme==="light"||theme==="dark")document.documentElement.dataset.theme=theme}catch{}})()`;
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang={settings.locale}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
     <meta name="color-scheme" content="light dark" />
+    <MetadataHead
+      {...post
+        ? {
+            article: {
+              kind: post.kind,
+              publishedAt: post.publishedAt,
+              title: post.title,
+              topics: post.topics.map((topic) => topic.name),
+              updatedAt: post.updatedAt,
+            },
+          }
+        : {}}
+      {...authorAvatar ? { authorAvatar } : {}}
+      {canonicalUrl}
+      {description}
+      {image}
+      {noindex}
+      {pageTitle}
+      {settings}
+      {siteUrl}
+    />
     <script is:inline set:html={themeBootstrap} />
     <title>{pageTitle}</title>
   </head>
-  <body>
+  <body data-pagefind-ignore={isIndexablePost ? undefined : "all"}>
     <a class="skip-link" href="#main-content">跳到正文</a>
     <SiteHeader {siteName} {currentPath} {themeStorageKey} />
     <main id="main-content" class="site-main" tabindex="-1">

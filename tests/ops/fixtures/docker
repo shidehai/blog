@@ -1,0 +1,129 @@
+#!/bin/sh
+set -eu
+
+: "${MOCK_STATE_DIR:?Set MOCK_STATE_DIR}"
+log=$MOCK_STATE_DIR/docker.log
+printf '%s\n' "docker $*" >>"$log"
+
+command=${1:-}
+shift || true
+
+case "$command" in
+  compose)
+    compose_command=
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        ps | run | up | exec)
+          compose_command=$1
+          shift
+          break
+          ;;
+      esac
+      shift
+    done
+    case "$compose_command" in
+      ps)
+        echo site-container
+        ;;
+      run)
+        name=
+        while [ "$#" -gt 0 ]; do
+          if [ "$1" = --name ]; then
+            shift
+            name=${1:-}
+          fi
+          shift || true
+        done
+        printf '%s' "$SITE_IMAGE" >"$MOCK_STATE_DIR/candidate-image"
+        printf '%s' "$name" >"$MOCK_STATE_DIR/candidate-name"
+        echo candidate-container
+        ;;
+      up)
+        printf '%s\n' "compose-up $SITE_IMAGE" >>"$log"
+        if [ "${MOCK_REPLACE_FAIL:-0}" = 1 ] &&
+          [ ! -f "$MOCK_STATE_DIR/replace-failed" ]; then
+          : >"$MOCK_STATE_DIR/replace-failed"
+          exit 1
+        fi
+        printf '%s' "$SITE_IMAGE" >"$MOCK_STATE_DIR/running-image"
+        ;;
+      exec)
+        printf '%s\n' "caddy-reload $SITE_IMAGE" >>"$log"
+        ;;
+      *)
+        echo "Unexpected docker compose invocation" >&2
+        exit 1
+        ;;
+    esac
+    ;;
+  inspect)
+    format=
+    if [ "${1:-}" = --format ]; then
+      format=$2
+      shift 2
+    fi
+    container=${1:-}
+    case "$format" in
+      *Config.Image*) cat "$MOCK_STATE_DIR/running-image" ;;
+      *State.Status*)
+        if [ "$container" != site-container ] && [ "${MOCK_CANDIDATE_FAIL:-0}" = 1 ]; then
+          echo exited
+        else
+          echo running
+        fi
+        ;;
+      *State.Health*)
+        if [ "$container" != site-container ] && [ "${MOCK_CANDIDATE_FAIL:-0}" = 1 ]; then
+          echo unhealthy
+        else
+          echo healthy
+        fi
+        ;;
+      *)
+        echo "Unexpected inspect format" >&2
+        exit 1
+        ;;
+    esac
+    ;;
+  exec)
+    if [ "${MOCK_CANDIDATE_ROUTE_FAIL:-0}" = 1 ]; then
+      exit 1
+    fi
+    ;;
+  pull)
+    ;;
+  rm)
+    ;;
+  image)
+    image_command=${1:-}
+    shift || true
+    case "$image_command" in
+      ls)
+        printf '%s\n' "$(cat "$MOCK_STATE_DIR/running-image")"
+        if [ -f "$MOCK_STATE_DIR/target-image" ]; then
+          printf '%s\n' "$(cat "$MOCK_STATE_DIR/target-image")"
+        fi
+        if [ -f "$MOCK_STATE_DIR/stale-image" ]; then
+          printf '%s\n' "$(cat "$MOCK_STATE_DIR/stale-image")"
+        fi
+        ;;
+      rm)
+        printf '%s\n' "image-rm ${1:-}" >>"$log"
+        ;;
+      inspect)
+        echo '[]'
+        ;;
+      *) exit 1 ;;
+    esac
+    ;;
+  ps)
+    # No mock image is referenced by another container.
+    ;;
+  history)
+    echo 'fixture history'
+    ;;
+  *)
+    echo "Unexpected docker command: $command" >&2
+    exit 1
+    ;;
+esac

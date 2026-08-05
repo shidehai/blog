@@ -1,0 +1,34 @@
+---
+import type { GetStaticPaths } from "astro";
+
+import PostPage from "../../components/PostPage.astro";
+import { deriveRelatedPosts } from "../../lib/content.ts";
+import { getPreparedSite } from "../../lib/site.ts";
+
+interface Props {
+  postId: string;
+}
+
+export const prerender = true;
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const { snapshot } = await getPreparedSite();
+  return snapshot.posts
+    .filter((post) => post.kind === "note")
+    .map((post) => ({
+      params: { slug: post.slug },
+      props: { postId: post.id },
+    }));
+};
+
+const { postId } = Astro.props;
+const { media, renderedPosts, snapshot } = await getPreparedSite();
+const post = snapshot.posts.find((candidate) => candidate.id === postId);
+const output = renderedPosts.get(postId);
+if (!post || post.kind !== "note" || !output) {
+  throw new Error(`Could not render note ${postId}`);
+}
+const related = deriveRelatedPosts(post, snapshot.posts);
+---
+
+<PostPage {media} {output} {post} {related} settings={snapshot.settings} />

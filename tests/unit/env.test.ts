@@ -21,4 +21,21 @@ describe("environment validation", () => {
       "DIRECTUS_PREVIEW_TOKEN",
     );
   });
+
+  it("requires an explicit runtime content source", () => {
+    const runtime = {
+      DIRECTUS_PREVIEW_TOKEN: "preview-token-at-least-24-characters",
+      DIRECTUS_URL: "https://cms.example.com",
+      PREVIEW_TRUSTED_HEADER: "trusted-header-at-least-24-characters",
+      SITE_URL: "https://example.com",
+    };
+
+    expect(() => readRuntimeEnv(runtime)).toThrow("CONTENT_SOURCE");
+    expect(
+      readRuntimeEnv({ ...runtime, CONTENT_SOURCE: "fixture" }),
+    ).toMatchObject({ CONTENT_SOURCE: "fixture" });
+    expect(
+      readRuntimeEnv({ ...runtime, CONTENT_SOURCE: "directus" }),
+    ).toMatchObject({ CONTENT_SOURCE: "directus" });
+  });
 });

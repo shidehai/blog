@@ -4,6 +4,7 @@ import TopicLink from "./TopicLink.astro";
 
 interface Media {
   src: string;
+  srcset?: string;
   alt: string;
   width: number;
   height: number;
@@ -17,7 +18,7 @@ interface Props {
   dateTime: string;
   dateLabel: string;
   readingMinutes: number;
-  topic: { href: string; label: string };
+  topic?: { href: string; label: string };
   media?: Media;
 }
 
@@ -40,7 +41,7 @@ const {
   <div class="feature-post-copy">
     <div class="feature-post-topline">
       <span class="feature-label">当前推荐</span>
-      <TopicLink {...topic} />
+      {topic ? <TopicLink {...topic} /> : null}
     </div>
     <PostMeta {kind} {dateTime} {dateLabel} {readingMinutes} />
     <h2><a {href}>{title}</a></h2>
@@ -57,6 +58,12 @@ const {
       <div class="feature-post-media">
         <img
           src={media.src}
+          srcset={media.srcset}
+          sizes={
+            media.srcset
+              ? "(max-width: 48rem) 100vw, (max-width: 62rem) 68vw, 38rem"
+              : undefined
+          }
           alt={media.alt}
           width={media.width}
           height={media.height}

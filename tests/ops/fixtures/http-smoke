@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+: "${MOCK_STATE_DIR:?Set MOCK_STATE_DIR}"
+printf '%s\n' "smoke $*" >>"$MOCK_STATE_DIR/smoke.log"
+if [ "${MOCK_SMOKE_FAIL_ONCE:-0}" = 1 ] &&
+  [ ! -f "$MOCK_STATE_DIR/smoke-failed" ]; then
+  : >"$MOCK_STATE_DIR/smoke-failed"
+  exit 1
+fi

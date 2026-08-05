@@ -1,0 +1,33 @@
+<script>
+  document.documentElement.dataset.codeCopy = "ready";
+
+  for (const label of document.querySelectorAll<HTMLElement>(
+    "[data-copy-label]",
+  )) {
+    label.setAttribute("aria-live", "polite");
+  }
+
+  document.addEventListener("click", async (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const button = target.closest<HTMLButtonElement>("[data-copy-code]");
+    const block = button?.closest<HTMLElement>("[data-code-block]");
+    const code = block?.querySelector("code")?.textContent;
+    const label = button?.querySelector<HTMLElement>("[data-copy-label]");
+    if (!button || !code || !label) return;
+
+    try {
+      await navigator.clipboard.writeText(code);
+      label.textContent = "已复制";
+      button.dataset.copied = "true";
+    } catch {
+      label.textContent = "复制失败";
+    }
+
+    window.setTimeout(() => {
+      label.textContent = "复制";
+      delete button.dataset.copied;
+    }, 1800);
+  });
+</script>
