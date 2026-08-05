@@ -44,3 +44,25 @@ Completed the local blog application, publication pipeline, operations contracts
 - Activate an applicable Directus OIG/commercial license and rerun scoped access tests.
 - Exercise GHCR/SSH/VPS deployment and rollback plus an offsite Restic clean-room restore with production credentials.
 - Replace fixture identity and content with owner-provided launch data.
+
+
+## Session 2: Complete blog production readiness
+
+**Date**: 2026-08-05
+**Task**: Complete blog production readiness
+**Branch**: `main`
+
+### Summary
+
+Replaced the invalid Directus media fixture with a digest-addressed committed WebP, proved the real Directus publication path and current runtime image locally, preserved external launch gates, and added regression/schema/spec coverage for migrated and clean installations.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `4168cb0` | (see git log) |
+| `d36dd0f` | (see git log) |
+
+### Status
+
+[OK] **Completed**
