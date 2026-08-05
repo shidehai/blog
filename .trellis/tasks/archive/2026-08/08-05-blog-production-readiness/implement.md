@@ -78,7 +78,7 @@ longer useful. Do not prune unrelated Docker state.
       evidence.
 - [x] Run Trellis quality check and update specs if a reusable fixture rule was
       learned.
-- [ ] Commit the work, archive the task, and record the session.
+- [x] Commit the work, archive the task, and record the session.
 
 High-risk files:
 
