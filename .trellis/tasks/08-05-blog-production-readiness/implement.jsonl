@@ -1,0 +1,7 @@
+{"file":".trellis/tasks/archive/2026-08/07-31-blog-system/verification.md","reason":"Historical AC1-AC14 evidence and explicit external launch gates to preserve."}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Shared build/runtime environment boundary and Directus content-source contract."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Application verification and focused-test conventions."}
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"PostgreSQL/Directus authority, immutable media, and schema rules."}
+{"file":".trellis/spec/backend/error-handling.md","reason":"Fail-closed diagnostics without credential leakage."}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"Executable image, Compose, proxy, and runtime validation contracts."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Trace the fixture through seed, Directus, media transform, build, and discovery output."}

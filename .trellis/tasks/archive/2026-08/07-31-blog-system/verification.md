@@ -86,3 +86,29 @@ Status meanings:
 - The public header test now requires an exact Caddy `401` for unauthenticated
   preview. Astro's trusted-header `404` can no longer mask a missing proxy Basic
   Auth boundary.
+
+## Follow-up Evidence: 2026-08-05
+
+This section records later evidence from
+`.trellis/tasks/08-05-blog-production-readiness`; it does not rewrite the
+historical verdict or convert external launch gates into local claims.
+
+- The invalid 70-byte seeded PNG was replaced by a digest-addressed committed
+  960x540 WebP. Two seeds kept one new file identity, redirected settings and
+  featured-post references, and preserved the old unreferenced original.
+- A diagnostic administrator session, held only in process memory, completed a
+  real Directus-backed Astro/Pagefind build. It emitted the expected three
+  published routes and responsive media, indexed `zh-cn`, and excluded the
+  archived record from routes, RSS, sitemap, and decoded Pagefind fragments.
+  This strengthens AC3, AC6, and AC8 data-path evidence but does not satisfy
+  Build Reader or AC12 permission evidence.
+- Three exact Dockerfile builds still timed out resolving the Docker Hub
+  frontend before project layers. A clearly labeled, in-memory official ECR
+  Node mirror diagnostic built the current source as
+  `sha256:22175843ed26d1622c19a3441bd82e265012286c5f1cf657281074f4b3a7f202`.
+  Its health, non-root/read-only runtime, dropped-capability, and secret-layer
+  checks passed. This strengthens AC11 local image evidence but is not GHCR/VPS
+  publication evidence.
+- Directus remains Core; Build and Preview tokens remain unauthorized. Real
+  fine-grained permissions, GHCR/VPS release and rollback, offsite restore,
+  public-domain checks, and owner data remain unchanged external gates.

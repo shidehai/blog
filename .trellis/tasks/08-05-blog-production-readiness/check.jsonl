@@ -1,0 +1,6 @@
+{"file":".trellis/tasks/archive/2026-08/07-31-blog-system/verification.md","reason":"Ensure new claims strengthen rather than contradict historical evidence."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Required lint, type, unit, build, and browser quality gates."}
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"Audit immutable files and avoid destructive fixture repair."}
+{"file":".trellis/spec/backend/error-handling.md","reason":"Audit temporary credentials and secret-free failures."}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"Audit current runtime image, Compose, and proxy contracts."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Check seed-to-build propagation and evidence strength across layers."}

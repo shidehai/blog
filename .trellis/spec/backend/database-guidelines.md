@@ -30,3 +30,92 @@ must not be followed by a blind schema apply.
 Do not add speculative SQL migrations before a real Directus snapshot exists.
 Database constraints and CMS validation added in Phase 2 must agree on slug,
 status, required-field, and relationship rules.
+
+## Scenario: Immutable Seeded Media Fixture
+
+### 1. Scope / Trigger
+
+Apply this contract whenever a Directus seed adds or changes raster media used
+by public builds. A fixture that only exposes readable metadata is not valid;
+the exact uploaded bytes must pass the same transform path as production media.
+
+### 2. Signatures
+
+- Fixture owner: `loadSeedCoverFixture()` returns `bytes`, `filename`,
+  `mimeType`, and a digest-addressed `title`.
+- Seed boundary: `ensureFile(title, folder, type, bytes, filename)` uses the
+  title as its idempotency key and never replaces an existing original's bytes.
+- Regression boundary: `emitPublicMediaAsset(record, bytes, options)` emits and
+  decodes every expected responsive variant.
+
+### 3. Contracts
+
+- Read fixture bytes from a committed raster asset relative to
+  `import.meta.url`; do not embed opaque Base64 raster bytes in the seed.
+- Include the first 12 lowercase hexadecimal characters of SHA-256 in the
+  Directus title. Identical bytes reuse one file identity; changed bytes create
+  a new identity.
+- After a byte change, update settings and post relations to the new file. Keep
+  the old original unmodified and unreferenced; hard deletion is an explicit
+  administrator maintenance action.
+- The unit test imports the same fixture helper as the seed. A generated
+  lookalike or metadata-only Sharp check does not cover this contract.
+
+### 4. Validation & Error Matrix
+
+| Input/state | Required result |
+| --- | --- |
+| Identical bytes seeded twice | One digest-addressed file; stable references |
+| Fixture bytes change | New title and Directus file identity |
+| Fresh database has no legacy original | Pass without manufacturing an orphan |
+| Old invalid original exists | Leave bytes intact; move references away |
+| Metadata reads but variant transform fails | Test and Directus build fail closed |
+| MIME, byte length, or dimensions disagree | Media validation fails with file context |
+| File is outside the publishable folder | Public build rejects it |
+
+### 5. Good/Base/Bad Cases
+
+- Good: a committed WebP is digest-addressed, seeded twice idempotently, and
+  transformed from the exact helper bytes into deterministic 640/960 outputs.
+- Base: the current bytes reuse the existing file and refresh only safe
+  metadata such as title/folder plus content references.
+- Bad: an inline Base64 image, a stable human-only title across byte changes,
+  overwriting an existing Directus original, deleting the orphan automatically,
+  or testing a separately generated image.
+
+### 6. Tests Required
+
+- Import the seed fixture helper and assert its full digest, MIME, filename,
+  byte length, and intrinsic dimensions.
+- Run `emitPublicMediaAsset` twice in separate directories and compare the
+  returned model plus emitted bytes.
+- Decode every emitted WebP and assert deterministic paths and 640/960
+  dimensions.
+- Seed a real local Directus twice, query uniqueness and references, then run a
+  Directus-backed Astro/Pagefind build.
+- Make the schema check accept a clean install with no legacy original. When a
+  legacy fixture is present, assert that it remains unchanged and unreferenced.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```javascript
+const bytes = Buffer.from("opaque-raster-base64", "base64");
+await ensureFile("fixture-cover", folder, "image/png", bytes, "cover.png");
+// The test creates a different valid image, so corrupt seed bytes are missed.
+```
+
+#### Correct
+
+```javascript
+const fixture = await loadSeedCoverFixture();
+await ensureFile(
+  fixture.title,
+  folder,
+  fixture.mimeType,
+  fixture.bytes,
+  fixture.filename,
+);
+// The media test imports loadSeedCoverFixture and transforms fixture.bytes.
+```
