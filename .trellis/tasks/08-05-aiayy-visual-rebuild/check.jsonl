@@ -1,0 +1,7 @@
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Audit semantic controls, keyboard/focus behavior, centralized tokens, reduced motion, forced colors, and JavaScript-independent content."}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Verify presentation changes do not bypass validated SiteSettings/Post/media boundaries or raw Directus contracts."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Run and interpret the complete formatting, lint, type, build, Pagefind, operations, accessibility, and browser quality gate."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Check palette/metadata/icon/fixture consistency and preserve Directus-to-normalization-to-rendering and Pagefind data flow."}
+{"file":".trellis/tasks/08-05-aiayy-visual-rebuild/research/local-frontend-audit.md","reason":"Cross-check full route/state coverage, likely change map, generated-media ownership, and known test gaps."}
+{"file":".trellis/tasks/08-05-aiayy-visual-rebuild/research/reference-desktop-tokens.md","reason":"Compare implemented desktop values and geometry against the hashed public-source and computed-style evidence."}
+{"file":".trellis/tasks/08-05-aiayy-visual-rebuild/research/reference-responsive-behavior.md","reason":"Compare breakpoints, theme, navigation, touch targets, motion, overflow, and accessibility against browser evidence and deliberate deviations."}

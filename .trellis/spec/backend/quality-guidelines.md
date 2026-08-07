@@ -16,6 +16,7 @@ storage, and backup boundaries.
 - Backup: `docker compose --env-file .env -f deploy/compose.yaml --profile backup run --rm backup`
 - Health: `GET /healthz` and Directus public liveness `GET /server/ping`
 - Public header probe: `pnpm test:headers -- --url <https-origin>`
+- Inline-script CSP sync: `node scripts/verify-csp-hash.mjs [dist/client] [deploy/Caddyfile]`
 
 ### 3. Contracts
 
@@ -40,6 +41,11 @@ storage, and backup boundaries.
   Astro route's generic `404` proves only its trusted-header check, not Basic
   Auth, so a public header probe must not accept the two statuses
   interchangeably.
+- Every executable inline script emitted into `dist/client/**/*.html` has a
+  SHA-256 source expression in both the public and preview Caddy policies.
+  External scripts, empty scripts, and `application/ld+json` are excluded.
+  The generated hash set and configured hash set must match exactly: each
+  current hash occurs twice and no stale hash remains.
 
 ### 4. Validation & Error Matrix
 
@@ -56,6 +62,8 @@ storage, and backup boundaries.
 | Incoming `X-Preview-Trusted` | Caddy strips it; authenticated preview injects the trusted value |
 | Unauthenticated preview through Caddy | exact `401` with private/no-store and noindex headers |
 | Direct site request without trusted preview header | generic `404`; never count this as proxy-auth evidence |
+| Generated inline-script hash missing from Caddy | `verify-csp-hash.mjs` fails and reports the hash plus occurrence count |
+| Caddy contains a stale inline-script hash | `verify-csp-hash.mjs` fails before deployment |
 
 ### 5. Good/Base/Bad Cases
 
@@ -66,7 +74,8 @@ storage, and backup boundaries.
   runtime test explicitly sets `CONTENT_SOURCE=fixture`.
 - Bad: implicit runtime fixture fallback, accepting an application `404` as
   proof of proxy authentication, mutable production site tag, public database
-  port, secret build arg, anonymous data volume, or broad Docker prune.
+  port, secret build arg, anonymous data volume, broad Docker prune, or editing
+  an inline Astro script without rebuilding and synchronizing both CSPs.
 
 ### 6. Tests Required
 
@@ -82,6 +91,10 @@ storage, and backup boundaries.
 - Run `pnpm test:headers` through the real Caddyfile and assert that an
   unauthenticated preview is exactly `401`, not an allow-list containing
   Astro's fail-closed `404`.
+- After changing any inline Astro component/layout script, run a fresh
+  `pnpm build` followed by `pnpm test:operations`; assert CSP verification finds
+  the same generated hash set in public and preview policies with no stale
+  entries.
 - Start PostgreSQL/Directus and assert both health checks plus localhost-only
   published development ports with `docker port`; Compose rendering alone is
   insufficient.
@@ -124,4 +137,15 @@ services:
 
 ```javascript
 assert(preview.status === 401);
+```
+
+Do not keep a superseded hash after a bundled component script changes:
+
+```caddyfile
+# Wrong: a generated hash is missing or an obsolete hash remains.
+script-src 'self' 'sha256-old=';
+
+# Correct: every generated executable inline-script hash appears in both
+# public and preview policies, and no other inline-script hash is configured.
+script-src 'self' 'sha256-current-a=' 'sha256-current-b=';
 ```

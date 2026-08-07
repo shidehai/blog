@@ -18,9 +18,10 @@ marks the path through the site. The primary visual reference is
 homepage, paired soft shadows, clipped media hero, and light/dark behavior.
 
 This is an adaptation, not a clone. The reference's avatar, wording, navigation,
-stock image, visitor statistics, clock, 3D module, category icons, exact colors,
-and implementation are not reused. Its low-contrast metadata, sub-44px controls,
-uniform category-card grid, and opacity-gated content motion are corrected.
+stock image, visitor statistics, clock, 3D module, category icons, and
+implementation are not reused. Its measured material constants are reproduced,
+while low-contrast metadata, sub-44px controls, uniform category-card grid, and
+opacity-gated content motion are corrected.
 
 **Physical scene:** a quiet developer at a matte graphite desk after sunset,
 with a few blue instrument lights guiding a focused reading session; in daylight
@@ -39,11 +40,11 @@ are **sculpted, focused, lucid**.
 
 ## Colors
 
-Use a restrained strategy modeled on the reference: a cool light relief surface,
-a matte graphite dark surface, strong ink, and one medium-blue signal family.
-Small semantic green/red/amber values are reserved for actual state or code
-diffs, not decoration. Exact OKLCH tokens will be resolved and contrast-tested
-during implementation rather than copying the reference hex values.
+Use the calibrated reference materials: `#e8e6e3` in light mode, `#1e1e2a` in
+dark mode, strong theme-specific ink, and `#4a8fe7` as the signal. Small
+semantic green/red/amber values are reserved for actual state or code diffs,
+not decoration. Meaningful text uses separate AA-safe ink/signal tokens where
+the observed reference color fails contrast.
 
 **The Signal Color Rule.** Blue identifies selection, focus, links, progress,
 and the one hero emphasis. It never becomes gradient text or washes the article
@@ -51,21 +52,21 @@ body.
 
 **The Single-Surface Rule.** A theme has one dominant base material. Raised and
 inset states come from light/shadow relationships around that same material,
-not a stack of unrelated gray cards. The light theme stays cool-neutral rather
-than reproducing the reference's warmer beige cast.
+not a stack of unrelated gray cards.
 
 ## Typography
 
-Use one carefully selected sans-serif direction for display and prose, with a
-robust Simplified Chinese system fallback. The reference's external Inter import
-is not copied: mixed-script quality, self-hosting cost, and Chinese metrics decide
-the final family. Weight, scale, and spacing create hierarchy; a separate
-monospace face is reserved for code and technical literals only.
+Use the self-hosted Inter v20 Latin face for weights 300-900, with a robust
+Simplified Chinese platform fallback. The font binary and OFL license ship with
+the site; no runtime Google Fonts request is allowed. Weight, scale, and spacing
+create hierarchy, while a separate monospace face is reserved for code and
+technical literals only.
 
-Body copy stays near 34–42 Han glyphs or 65–75 Latin characters per line, uses
-roughly 1.75–1.9 line height for Chinese prose, and never falls below 17px on a
-mobile reading surface. Headings balance naturally and use zero letter spacing
-rather than compressed display tracking.
+Body copy stays near 34–42 Han glyphs or 65–75 Latin characters per line. The
+shell uses the measured 16px base; long-form prose uses 17px on wider reading
+surfaces and 16px on narrow screens, with roughly 1.75–1.9 line height for
+Chinese prose. Headings balance naturally and use zero letter spacing rather
+than compressed display tracking.
 
 **The Mixed-Script Rule.** Chinese and Latin text must feel intentional in the
 same line. Reject any font choice that makes one script appear like a fallback
@@ -73,11 +74,12 @@ afterthought.
 
 ## Elevation
 
-Neumorphic depth is a core shell material, expressed through only four semantic
-states: `flat`, `raised`, `inset`, and `floating`. Raised modules use one dark
-and one light shadow tuned per theme; pressed controls switch to inset shadows.
-No component nests a fully raised card inside another fully raised card, and no
-raised surface also receives a decorative border or glow.
+Neumorphic depth is a core shell material, expressed through semantic `flat`,
+`raised`, `raised-compact`, `inset`, `pressed`, and `floating` recipes. Raised
+modules use one dark and one light shadow tuned per theme; pressed controls
+switch to inset shadows. No component nests a fully raised card inside another
+fully raised card, and no raised surface also receives a decorative border or
+glow.
 
 **The Reading Plane Rule.** Homepage modules, archive rows, search controls, and
 small utility surfaces may use relief. The prose column itself stays flat, with
@@ -144,8 +146,8 @@ screens. Desktop preserves the profile-plus-featured asymmetric composition.
 
 ### Don't:
 
-- **Don't** copy the reference site's identity, content, imagery, exact palette,
-  route set, visitor counters, clock, 3D module, or source implementation.
+- **Don't** copy the reference site's identity, content, imagery, route set,
+  visitor counters, clock, 3D module, or source implementation.
 - **Don't** turn every route into an identical icon-card grid; reserve asymmetric
   Bento structure for the homepage and use quieter lists for discovery pages.
 - **Don't** use beige editorial templates, italic-display-serif affectation, or

@@ -23,11 +23,51 @@ keep that island local instead of adding a site-wide client runtime.
 
 ## Composition
 
-There is not yet a reusable component API. Create a component when two real
-routes share a semantic unit, then type its props in the component frontmatter.
-Do not create variant factories, a UI kit, or speculative primitives ahead of
-Phase 4's real shell.
+The application has an established semantic component layer. `AppLayout` owns
+the document shell; `SiteHeader`, `SiteFooter`, and `PageHeader` own shared
+navigation and page framing; `PostList`, `FeaturePost`, and `PostPage` own the
+repeated discovery, feature, and reading surfaces. Reuse those boundaries
+before creating another route-local version, and type component props in the
+frontmatter.
 
-The current `src/styles/global.css` is only a readable foundation. New visual
-tokens must follow `DESIGN.md` and stay centralized rather than embedding
-private shadow/color formulas in components.
+Do not turn those components into a variant factory or speculative UI kit.
+Create another component only when two real consumers share a semantic unit.
+
+`src/styles/global.css` is the authoritative visual-token and material-state
+layer, with local font declarations in `src/styles/fonts.css`. Components and
+route-local styles consume those semantic values instead of embedding private
+shadow, color, radius, breakpoint, or motion formulas.
+
+## Calibrated Material Contract
+
+The shell reproduces the measured reference material while keeping meaningful
+text WCAG 2.2 AA-safe. Preserve the shared roles instead of substituting the
+signal swatch directly for text:
+
+```css
+:root {
+  --surface: #e8e6e3;
+  --signal: #4a8fe7;
+  --signal-text: #2367ba;
+  --signal-ink: #132842;
+  --depth-raised:
+    6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light);
+}
+
+:root[data-theme="dark"] {
+  --surface: #1e1e2a;
+  --signal-text: #76b2ff;
+  --signal-ink: #10131d;
+}
+```
+
+The desktop/tablet/mobile boundaries are inclusive `64rem`, `48rem`, and
+`40rem`. Image `sizes` hints must follow the same boundary that changes the
+rendered grid. CMS-driven modules use the measured height as `min-block-size`,
+not `block-size`, so normal fixture content retains the calibrated geometry and
+long valid content expands without overlap.
+
+When a `type="search"` field has a project-owned reset button, suppress the
+WebKit cancel pseudo-element as well as applying `appearance: none`; otherwise
+Chromium renders two clear controls. Keep the semantic search input and the
+accessible reset button rather than replacing either with a generic element.

@@ -21,6 +21,10 @@ independently runnable for diagnosis.
   the page heading and `/healthz` response.
 - A passing build includes Pagefind indexing from `dist/client`, not merely
   Astro compilation.
+- Material-system changes extend `tests/e2e/visual-contract.spec.ts` with
+  computed geometry/style, responsive-boundary, overflow, and interaction
+  assertions. Retained screenshots support human comparison but never replace
+  semantic browser assertions.
 
 ## Formatting Scope
 

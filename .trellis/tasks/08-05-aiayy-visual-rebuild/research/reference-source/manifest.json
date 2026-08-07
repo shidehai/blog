@@ -1,0 +1,80 @@
+{
+  "origin": "https://aiayy.cn/",
+  "capturedAt": "2026-08-05T06:21:20.732Z",
+  "browserViewport": "1440x900",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+  "scope": "Public homepage HTML and CSS/JS resources loaded or linked by that page, plus external font-face declarations.",
+  "excluded": "Images, video/audio, API payloads, cookies, credentials, source maps, and font binaries.",
+  "files": [
+    {
+      "path": "assets/admin-Z49BMmm7.js",
+      "originUrl": "https://aiayy.cn/assets/admin-Z49BMmm7.js",
+      "contentType": "application/javascript",
+      "bytes": 1203,
+      "sha256": "96925b781db9d821828f33a12c63f0b73f16e1a09ea11649f126e933e654d042"
+    },
+    {
+      "path": "assets/HomeView-CFVxZpYC.css",
+      "originUrl": "https://aiayy.cn/assets/HomeView-CFVxZpYC.css",
+      "contentType": "text/css",
+      "bytes": 14022,
+      "sha256": "a0965e07bf512b7375c86c73feb94c4c4e71be72d64c95cdfe628b656c83c3b2"
+    },
+    {
+      "path": "assets/HomeView-D9C386vz.js",
+      "originUrl": "https://aiayy.cn/assets/HomeView-D9C386vz.js",
+      "contentType": "application/javascript",
+      "bytes": 7760,
+      "sha256": "b5a5e5c87f9700c9f5f097520a353cf3fcabf2bd3fa5f9a1ddf51a98d7c4e520"
+    },
+    {
+      "path": "assets/index-DOBNqoKs.js",
+      "originUrl": "https://aiayy.cn/assets/index-DOBNqoKs.js",
+      "contentType": "application/javascript",
+      "bytes": 147320,
+      "sha256": "dc754dddfc464bfe56e0c8c275429122fb3822b3c4bfa52d90cd71febcd1f36f"
+    },
+    {
+      "path": "assets/index-SiT6AZgS.css",
+      "originUrl": "https://aiayy.cn/assets/index-SiT6AZgS.css",
+      "contentType": "text/css",
+      "bytes": 10671,
+      "sha256": "5d8847c9f307cc471d613710fea892ff53e2da65bc30811a313e36dadd271414"
+    },
+    {
+      "path": "assets/pinia-BI8hbgut.js",
+      "originUrl": "https://aiayy.cn/assets/pinia-BI8hbgut.js",
+      "contentType": "application/javascript",
+      "bytes": 5991,
+      "sha256": "702187723f64586b414f965f6495ec926bffac995d4eb846c5c34eb8c78dfb98"
+    },
+    {
+      "path": "assets/request-DcnZbOy2.js",
+      "originUrl": "https://aiayy.cn/assets/request-DcnZbOy2.js",
+      "contentType": "application/javascript",
+      "bytes": 41875,
+      "sha256": "84414d76b475af696ce5d1d327f90bd0dc9c31322a7531db5c69c5d340b85dbd"
+    },
+    {
+      "path": "assets/runtime-core.esm-bundler-DA7TnSnV.js",
+      "originUrl": "https://aiayy.cn/assets/runtime-core.esm-bundler-DA7TnSnV.js",
+      "contentType": "application/javascript",
+      "bytes": 62711,
+      "sha256": "6a5dc696333728f5d628f8f5c4ae51f6430891c8b9b3a1072f3d10d0a636325a"
+    },
+    {
+      "path": "fonts/inter-google.css",
+      "originUrl": "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap",
+      "contentType": "text/css; charset=utf-8",
+      "bytes": 17297,
+      "sha256": "5a1e4e2125ee061a97fa81cf618425b969fd3c9e8f6bc69e55275963eaeda69d"
+    },
+    {
+      "path": "index.html",
+      "originUrl": "https://aiayy.cn/",
+      "contentType": "text/html",
+      "bytes": 3133,
+      "sha256": "8cd4ae072f24e6fd3dda3594414ce7b7afdaf03b3ee58da2505c4bb44a709b9b"
+    }
+  ]
+}

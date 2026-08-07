@@ -1,0 +1,7 @@
+{"file":".trellis/spec/frontend/directory-structure.md","reason":"Preserve Astro route placement, public prerendering, preview exception, and generated-content ownership while changing presentation."}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Follow the project's Astro-first component, centralized-token, accessibility, forced-colors, and no-JS presentation contracts."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Use the required production/Pagefind/browser verification gate and avoid forbidden client/runtime patterns."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Keep measured palette, radius, shadow, spacing, and motion values centralized rather than duplicating route formulas."}
+{"file":".trellis/tasks/08-05-aiayy-visual-rebuild/research/local-frontend-audit.md","reason":"Inventory of every route/state, existing visual boundary, media variant, test facility, and Directus/static risk affected by the migration."}
+{"file":".trellis/tasks/08-05-aiayy-visual-rebuild/research/reference-desktop-tokens.md","reason":"Exact public-bundle and Chromium evidence for desktop tokens, typography, geometry, elevation, interactions, and source hashes."}
+{"file":".trellis/tasks/08-05-aiayy-visual-rebuild/research/reference-responsive-behavior.md","reason":"Exact responsive, dark-theme, menu, compact-header, motion, overflow, target-size, and accessibility evidence."}

@@ -1,0 +1,116 @@
+.archive-view[data-v-329ebfbd] {
+  min-height: calc(100vh - 80px);
+  padding: 4rem 0 6rem;
+}
+.page-header[data-v-329ebfbd] {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+.page-title[data-v-329ebfbd] {
+  color: #3a3a4a;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+  font-size: 2rem;
+  font-weight: 800;
+}
+body.dark .page-title[data-v-329ebfbd] {
+  color: #e0e0ec;
+}
+.page-subtitle[data-v-329ebfbd] {
+  color: #9a9aaa;
+  font-size: 1rem;
+}
+body.dark .page-subtitle[data-v-329ebfbd] {
+  color: #6a6a80;
+}
+.timeline[data-v-329ebfbd] {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.year-group[data-v-329ebfbd] {
+  margin-bottom: 3rem;
+}
+.year-badge[data-v-329ebfbd] {
+  color: #fff;
+  background: linear-gradient(135deg, #4a8fe7, #5c9df0);
+  border-radius: 9999px;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  display: inline-flex;
+}
+.articles-list[data-v-329ebfbd] {
+  flex-direction: column;
+  gap: 0.5rem;
+  display: flex;
+}
+.article-item[data-v-329ebfbd] {
+  background: #e8e6e3;
+  border: none;
+  border-radius: 1rem;
+  grid-template-columns: 80px 1fr auto;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: grid;
+  box-shadow:
+    3px 3px 6px #c8c6c3,
+    -3px -3px 6px #fff;
+}
+.article-item[data-v-329ebfbd]:hover {
+  transform: translate(4px);
+  box-shadow:
+    8px 8px 20px #c8c6c3,
+    -8px -8px 20px #fff;
+}
+.article-item:hover .title[data-v-329ebfbd] {
+  color: #4a8fe7;
+}
+@media (width<=640px) {
+  .article-item[data-v-329ebfbd] {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+body.dark .article-item[data-v-329ebfbd] {
+  background: #1e1e2a;
+  box-shadow:
+    6px 6px 14px #16161f,
+    -6px -6px 14px #282838;
+}
+body.dark .article-item[data-v-329ebfbd]:hover {
+  box-shadow:
+    8px 8px 20px #16161f,
+    -8px -8px 20px #282838;
+}
+.date[data-v-329ebfbd] {
+  color: #9a9aaa;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+body.dark .date[data-v-329ebfbd] {
+  color: #6a6a80;
+}
+.title[data-v-329ebfbd] {
+  color: #3a3a4a;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+body.dark .title[data-v-329ebfbd] {
+  color: #e0e0ec;
+}
+.category[data-v-329ebfbd] {
+  color: #4a8fe7;
+  white-space: nowrap;
+  background: #4a8fe714;
+  border-radius: 9999px;
+  padding: 3px 1rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
