@@ -68,6 +68,7 @@ Sitemap: https://journal.example/sitemap-index.xml
 `);
 
     expect(buildManifest(snapshot)).toMatchObject({
+      background_color: "#e8e6e3",
       display: "browser",
       icons: [
         { sizes: "192x192", src: "/icon-192.png" },
@@ -75,6 +76,7 @@ Sitemap: https://journal.example/sitemap-index.xml
       ],
       lang: "zh-CN",
       name: snapshot.settings.siteName,
+      theme_color: "#4a8fe7",
     });
   });
 

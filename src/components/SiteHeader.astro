@@ -5,9 +5,17 @@ interface Props {
   siteName: string;
   currentPath: string;
   themeStorageKey: string;
+  authorName: string;
+  avatar?: {
+    src: string;
+    width: number;
+    height: number;
+  };
 }
 
-const { siteName, currentPath, themeStorageKey } = Astro.props;
+const { siteName, currentPath, themeStorageKey, authorName, avatar } =
+  Astro.props;
+const authorMark = Array.from(authorName.trim())[0] ?? "知";
 const navigation = [
   { href: "/", label: "首页" },
   { href: "/writing/", label: "写作" },
@@ -23,8 +31,24 @@ const isCurrent = (href: string) =>
 <div class="site-header-frame">
   <header class="site-header surface--floating" data-site-header>
     <a class="site-brand" href="/" aria-label={`${siteName}首页`}>
-      <span class="site-brand-mark" aria-hidden="true">知</span>
-      <span>{siteName}</span>
+      {
+        avatar ? (
+          <img
+            class="site-brand-avatar"
+            src={avatar.src}
+            alt=""
+            width={avatar.width}
+            height={avatar.height}
+            loading="eager"
+            decoding="async"
+          />
+        ) : (
+          <span class="site-brand-mark" aria-hidden="true">
+            {authorMark}
+          </span>
+        )
+      }
+      <span class="site-brand-name">{siteName}</span>
     </a>
 
     <nav class="desktop-navigation" aria-label="主导航">
@@ -48,11 +72,15 @@ const isCurrent = (href: string) =>
         type="button"
         popovertarget="mobile-navigation"
         aria-label="打开导航菜单"
+        aria-controls="mobile-navigation"
+        aria-expanded="false"
+        title="打开导航菜单"
+        data-mobile-navigation-trigger
       >
         <svg aria-hidden="true" viewBox="0 0 24 24">
           <path d="M4 6h16M4 12h16M4 18h16"></path>
         </svg>
-        <span>菜单</span>
+        <span class="visually-hidden">菜单</span>
       </button>
     </div>
   </header>
@@ -63,7 +91,10 @@ const isCurrent = (href: string) =>
     popover
   >
     <div class="mobile-navigation-heading">
-      <strong>导航</strong>
+      <div>
+        <strong>浏览</strong>
+        <span>{siteName}</span>
+      </div>
       <button
         class="icon-control control--raised"
         type="button"
@@ -98,13 +129,17 @@ const isCurrent = (href: string) =>
 
 <script>
   const header = document.querySelector<HTMLElement>("[data-site-header]");
+  const menu = document.querySelector<HTMLElement>("#mobile-navigation");
+  const menuTrigger = document.querySelector<HTMLButtonElement>(
+    "[data-mobile-navigation-trigger]",
+  );
 
   if (header) {
     let compact = false;
     let scheduled = false;
 
     const updateHeader = () => {
-      const nextCompact = window.scrollY > 72;
+      const nextCompact = window.scrollY > 100;
       if (nextCompact !== compact) {
         compact = nextCompact;
         header.dataset.compact = String(compact);
@@ -124,4 +159,15 @@ const isCurrent = (href: string) =>
     );
     updateHeader();
   }
+
+  menu?.addEventListener("beforetoggle", (event) => {
+    if (!menuTrigger || !(event instanceof ToggleEvent)) return;
+    const isOpen = event.newState === "open";
+    menuTrigger.setAttribute("aria-expanded", String(isOpen));
+    menuTrigger.setAttribute(
+      "aria-label",
+      isOpen ? "关闭导航菜单" : "打开导航菜单",
+    );
+    menuTrigger.title = isOpen ? "关闭导航菜单" : "打开导航菜单";
+  });
 </script>

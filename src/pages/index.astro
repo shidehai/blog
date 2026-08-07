@@ -25,6 +25,7 @@ const writingChoices = latestWriting.length
   ? latestWriting
   : writing.slice(0, 4);
 const recentNotes = notes.slice(0, 3);
+const latestNote = recentNotes[0];
 const activeTopics = topics
   .map((topic) => ({
     count: posts.filter((post) =>
@@ -141,14 +142,123 @@ const authorMark = Array.from(settings.authorName.trim())[0] ?? "知";
               "这里收录技术文章、教程，以及还值得继续想一想的片段。"
           }
         </p>
+        {
+          settings.socialLinks.length ? (
+            <nav class="identity-links" aria-label="作者链接">
+              {settings.socialLinks.slice(0, 3).map((link) => (
+                <a
+                  href={link.url}
+                  target={/^https?:/.test(link.url) ? "_blank" : undefined}
+                  rel={
+                    /^https?:/.test(link.url)
+                      ? "me noopener noreferrer"
+                      : undefined
+                  }
+                  aria-label={link.label}
+                  title={link.label}
+                >
+                  {link.icon === "email" ? (
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <path d="M4 5h16v14H4zM4 7l8 6 8-6" />
+                    </svg>
+                  ) : link.icon === "github" ? (
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.3-.4 6.8-1.6 6.8-7A5.5 5.5 0 0 0 19.3 4 5.1 5.1 0 0 0 19.2.5S18 0 15 2a13.4 13.4 0 0 0-7 0C5-.1 3.8.5 3.8.5A5.1 5.1 0 0 0 3.7 4a5.5 5.5 0 0 0-1.5 3.8c0 5.4 3.5 6.6 6.8 7A4.8 4.8 0 0 0 8 18v4" />
+                    </svg>
+                  ) : (
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1" />
+                    </svg>
+                  )}
+                </a>
+              ))}
+            </nav>
+          ) : null
+        }
       </aside>
     </section>
 
-    <section class="home-section" aria-labelledby="latest-writing">
-      <div class="section-heading">
-        <h2 id="latest-writing">最近写作</h2>
-        <a href="/writing/">查看全部</a>
+    <div class="home-info-grid">
+      <section
+        class="home-note-signal surface--raised"
+        aria-labelledby="recent-note"
+      >
+        <div class="module-heading">
+          <span>近期笔记</span>
+          <a href="/notes/" aria-label="查看全部笔记">→</a>
+        </div>
+        {
+          latestNote ? (
+            <div class="home-note-copy">
+              <time datetime={latestNote.publishedAt}>
+                {formatContentDate(
+                  latestNote.publishedAt,
+                  settings.timezone,
+                  settings.locale,
+                )}
+              </time>
+              <h2 id="recent-note">
+                <a href={latestNote.route}>{latestNote.title}</a>
+              </h2>
+              <p>{latestNote.summary}</p>
+            </div>
+          ) : (
+            <div class="home-note-copy">
+              <h2 id="recent-note">笔记正在整理</h2>
+              <p>短记录发布后，会在这里成为最近的思考入口。</p>
+            </div>
+          )
+        }
+      </section>
+
+      <section
+        class="home-snapshot surface--raised"
+        aria-labelledby="content-snapshot"
+      >
+        <div class="module-heading">
+          <span id="content-snapshot">内容快照</span>
+          <a href="/archive/" aria-label="查看完整归档">→</a>
+        </div>
+        <dl class="snapshot-list">
+          <div>
+            <dt>写作</dt>
+            <dd>{writing.length}</dd>
+          </div>
+          <div>
+            <dt>笔记</dt>
+            <dd>{notes.length}</dd>
+          </div>
+          <div>
+            <dt>主题</dt>
+            <dd>{activeTopics.length}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <a class="home-discovery-signal" href="/search/">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m20 20-4-4"></path>
+        </svg>
+        <strong>发现</strong>
+        <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+
+    <section
+      class="home-writing-module surface--inset"
+      aria-labelledby="latest-writing"
+    >
+      <div class="home-writing-header">
+        <nav class="home-writing-tabs" aria-label="写作浏览">
+          <span class="home-writing-tab is-current" aria-current="true">
+            最近
+          </span>
+          <a class="home-writing-tab" href="/archive/">时间线</a>
+        </nav>
+        <a class="home-writing-more" href="/writing/">探索更多写作 →</a>
       </div>
+      <h2 id="latest-writing" class="visually-hidden">最近写作</h2>
       {
         writingChoices.length ? (
           <PostList posts={writingChoices} settings={settings} />
@@ -160,39 +270,7 @@ const authorMark = Array.from(settings.authorName.trim())[0] ?? "知";
       }
     </section>
 
-    <div class="home-secondary-grid">
-      <section
-        class="notes-module surface--raised"
-        aria-labelledby="recent-notes"
-      >
-        <div class="section-heading">
-          <h2 id="recent-notes">近期笔记</h2>
-          <a href="/notes/">全部笔记</a>
-        </div>
-        {
-          recentNotes.length ? (
-            <ul class="note-list">
-              {recentNotes.map((note) => (
-                <li>
-                  <a href={note.route}>
-                    <time datetime={note.publishedAt}>
-                      {formatContentDate(
-                        note.publishedAt,
-                        settings.timezone,
-                        settings.locale,
-                      )}
-                    </time>
-                    <span>{note.title}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p class="module-empty">短笔记发布后，会在这里留下最近的入口。</p>
-          )
-        }
-      </section>
-
+    <div class="home-bottom-grid home-secondary-grid">
       <section
         class="topics-module surface--raised"
         aria-labelledby="active-topics"
@@ -216,30 +294,50 @@ const authorMark = Array.from(settings.authorName.trim())[0] ?? "知";
           )
         }
       </section>
-    </div>
 
-    <nav class="shortcut-grid" aria-label="更多浏览方式">
-      <a class="shortcut-link surface--raised" href="/search/">
-        <svg aria-hidden="true" viewBox="0 0 24 24">
-          <circle cx="11" cy="11" r="8"></circle>
-          <path d="m21 21-4.3-4.3"></path>
-        </svg>
-        <span>搜索全文</span>
-      </a>
-      <a class="shortcut-link surface--raised" href="/archive/">
-        <svg aria-hidden="true" viewBox="0 0 24 24">
-          <path d="M3 6h18M5 6v14h14V6M9 10h6"></path>
-          <path d="M4 3h16v3H4z"></path>
-        </svg>
-        <span>按时间归档</span>
-      </a>
-      <a class="shortcut-link surface--raised" href="/rss.xml">
-        <svg aria-hidden="true" viewBox="0 0 24 24">
-          <path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16"></path>
-          <circle cx="5" cy="19" r="1"></circle>
-        </svg>
-        <span>订阅 RSS</span>
-      </a>
-    </nav>
+      <section
+        class="discovery-module surface--raised"
+        aria-labelledby="discovery-paths"
+      >
+        <div class="section-heading">
+          <h2 id="discovery-paths">继续发现</h2>
+        </div>
+        <nav class="shortcut-grid" aria-label="更多浏览方式">
+          <a class="shortcut-link" href="/search/">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </svg>
+            <span>
+              <strong>搜索全文</strong>
+              <small>标题、正文与技术名词</small>
+            </span>
+            <span aria-hidden="true">→</span>
+          </a>
+          <a class="shortcut-link" href="/archive/">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M3 6h18M5 6v14h14V6M9 10h6"></path>
+              <path d="M4 3h16v3H4z"></path>
+            </svg>
+            <span>
+              <strong>按时间归档</strong>
+              <small>沿发布时间连续浏览</small>
+            </span>
+            <span aria-hidden="true">→</span>
+          </a>
+          <a class="shortcut-link" href="/rss.xml">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16"></path>
+              <circle cx="5" cy="19" r="1"></circle>
+            </svg>
+            <span>
+              <strong>订阅 RSS</strong>
+              <small>在自己的阅读器里更新</small>
+            </span>
+            <span aria-hidden="true">→</span>
+          </a>
+        </nav>
+      </section>
+    </div>
   </div>
 </AppLayout>

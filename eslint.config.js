@@ -11,6 +11,7 @@ export default defineConfig(
       ".data/**",
       ".trellis/.backup-*/**",
       ".trellis/.runtime/**",
+      ".trellis/tasks/**/research/**",
       "coverage/**",
       "dist/**",
       "node_modules/**",

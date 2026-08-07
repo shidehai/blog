@@ -65,6 +65,7 @@ const { storageKey } = Astro.props;
       theme = nextTheme;
       control.dataset.themeState = theme;
       control.setAttribute("aria-label", `主题：${labels[theme]}`);
+      control.title = `主题：${labels[theme]}，点击切换`;
       label.textContent = labels[theme];
 
       if (theme === "system") {

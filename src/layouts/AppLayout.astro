@@ -120,10 +120,23 @@ const themeBootstrap = `(()=>{try{const theme=localStorage.getItem(${JSON.string
   </head>
   <body data-pagefind-ignore={isIndexablePost ? undefined : "all"}>
     <a class="skip-link" href="#main-content">跳到正文</a>
-    <SiteHeader {siteName} {currentPath} {themeStorageKey} />
+    <SiteHeader
+      {siteName}
+      {currentPath}
+      {themeStorageKey}
+      authorName={settings.authorName}
+      {...authorAvatar ? { avatar: authorAvatar } : {}}
+    />
     <main id="main-content" class="site-main" tabindex="-1">
       <slot />
     </main>
-    <SiteFooter {siteName} />
+    <SiteFooter
+      {siteName}
+      authorName={settings.authorName}
+      tagline={settings.tagline}
+      footerText={settings.footerText}
+      {...authorAvatar ? { avatar: authorAvatar } : {}}
+      socialLinks={settings.socialLinks}
+    />
   </body>
 </html>

@@ -181,8 +181,8 @@ export function buildManifest(snapshot: PublishedSnapshot): object {
     lang: snapshot.settings.locale,
     dir: "ltr",
     display: "browser",
-    background_color: "#eef1f4",
-    theme_color: "#3d6fb6",
+    background_color: "#e8e6e3",
+    theme_color: "#4a8fe7",
     icons: [
       {
         src: "/icon-192.png",
