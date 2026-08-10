@@ -131,6 +131,78 @@ await ensureFile(
 // The media test imports loadSeedCoverFixture and transforms fixture.bytes.
 ```
 
+## Scenario: Idempotent Editorial Timestamps
+
+### 1. Scope / Trigger
+
+Apply this contract when seed data is upserted into collections with Directus
+`date_created` and `date_updated` system fields, or when public metadata exposes
+an editorial update date.
+
+### 2. Signatures
+
+- Seed comparison: `itemMatches(existing, desired)` compares only fields owned
+  by the seed and skips an unchanged `PATCH`.
+- Content input: posts request explicit `date_created` and `date_updated`.
+- Public model: `Post.updatedAt` is either a meaningful later-day update or
+  `null`; metadata and visible `更新于` consume the same normalized value.
+
+### 3. Contracts
+
+- Directus system timestamps are operational metadata, not automatically an
+  editorial revision. A creation/import or repeated seed on the same local day
+  must not produce `更新于`.
+- Normalize `date_updated` only when its configured-local calendar day is later
+  than both `published_at` and `date_created` (when creation is available).
+- Fixture records provide `date_created`; seed writes omit both system timestamp
+  fields and let Directus own them.
+- Exact-ID seed reruns skip unchanged topics, posts, joins, and settings so a
+  later maintenance run does not manufacture a new update date.
+
+### 4. Validation & Error Matrix
+
+| State | Public result |
+| --- | --- |
+| `date_updated` absent | `updatedAt = null` |
+| Update is on publication day | `updatedAt = null` |
+| Create/import and update are on the same local day | `updatedAt = null` |
+| Update is later than publication and creation days | Preserve exact timestamp |
+| Seeded fields are unchanged | No PATCH; Directus timestamp remains stable |
+| Seeded content actually changes | PATCH exact known ID; later date may surface |
+
+### 5. Good/Base/Bad Cases
+
+- Good: a real later-day edit is visible and matches JSON-LD `dateModified`.
+- Base: a fresh import has historical `published_at` but same-day system create
+  and update timestamps, so no false editorial update appears.
+- Bad: every seed rerun patches every post and displays the seed execution time
+  as the article's update date.
+
+### 6. Tests Required
+
+- Unit-test same-day creation/update normalization and a later-day update.
+- Assert Directus requests include `date_created` explicitly.
+- Seed twice and compare all canonical post timestamps after the first and
+  second run; they must be byte-for-byte equal.
+- Run a Directus-backed build and assert maintenance timestamps do not create
+  visible `更新于` or a later JSON-LD date.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```javascript
+await request(`/items/posts/${id}`, { method: "PATCH", body: desired });
+post.updatedAt = record.date_updated;
+```
+
+#### Correct
+
+```javascript
+if (!itemMatches(existing, desired)) await patchKnownPost(id, desired);
+post.updatedAt = meaningfulUpdatedAt(record, settings.timezone);
+```
+
 ## Scenario: Canonical Editorial Seed Migration
 
 ### 1. Scope / Trigger

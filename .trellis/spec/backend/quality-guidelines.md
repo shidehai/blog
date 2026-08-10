@@ -17,6 +17,8 @@ storage, and backup boundaries.
 - Health: `GET /healthz` and Directus public liveness `GET /server/ping`
 - Public header probe: `pnpm test:headers -- --url <https-origin>`
 - Inline-script CSP sync: `node scripts/verify-csp-hash.mjs [dist/client] [deploy/Caddyfile]`
+- Public assets: `pnpm assets:generate`; font-backed masters are redrawn only
+  with `REGENERATE_AUTHORED_RASTERS=1` in an authoring environment with fonts.
 
 ### 3. Contracts
 
@@ -46,6 +48,9 @@ storage, and backup boundaries.
   External scripts, empty scripts, and `application/ld+json` are excluded.
   The generated hash set and configured hash set must match exactly: each
   current hash occurs twice and no stale hash remains.
+- Normal builds never rasterize authored SVG text against ambient system fonts.
+  They resize the committed 1600px editorial master into deterministic 640/960
+  variants. This keeps Alpine/fontless builds identical to reviewed media.
 
 ### 4. Validation & Error Matrix
 
@@ -64,6 +69,8 @@ storage, and backup boundaries.
 | Direct site request without trusted preview header | generic `404`; never count this as proxy-auth evidence |
 | Generated inline-script hash missing from Caddy | `verify-csp-hash.mjs` fails and reports the hash plus occurrence count |
 | Caddy contains a stale inline-script hash | `verify-csp-hash.mjs` fails before deployment |
+| Fontless build runs normal asset generation | Reuse committed master; responsive hashes stay stable |
+| Explicit authored-raster redraw has no suitable fonts | Treat output as invalid; do not commit tofu/missing-glyph media |
 
 ### 5. Good/Base/Bad Cases
 
@@ -76,6 +83,9 @@ storage, and backup boundaries.
   proof of proxy authentication, mutable production site tag, public database
   port, secret build arg, anonymous data volume, broad Docker prune, or editing
   an inline Astro script without rebuilding and synchronizing both CSPs.
+- Good asset build: committed font-backed masters plus deterministic resizing.
+  Bad asset build: rendering text during every container build and silently
+  accepting Fontconfig errors or missing glyphs.
 
 ### 6. Tests Required
 
@@ -95,6 +105,10 @@ storage, and backup boundaries.
   `pnpm build` followed by `pnpm test:operations`; assert CSP verification finds
   the same generated hash set in public and preview policies with no stale
   entries.
+- Asset-generator changes must compare committed and Alpine/fontless responsive
+  hashes and decode all variants. `tests/unit/brand-assets.test.ts` owns committed
+  dimensions/digests; `tests/unit/media.test.ts` owns exact seeded bytes and
+  transform output.
 - Start PostgreSQL/Directus and assert both health checks plus localhost-only
   published development ports with `docker port`; Compose rendering alone is
   insufficient.
@@ -148,4 +162,15 @@ script-src 'self' 'sha256-old=';
 # Correct: every generated executable inline-script hash appears in both
 # public and preview policies, and no other inline-script hash is configured.
 script-src 'self' 'sha256-current-a=' 'sha256-current-b=';
+```
+
+Do not redraw font-backed masters in an ordinary build:
+
+```javascript
+// Wrong: depends on fonts installed in the build container.
+sharp(svgWithText).toFile("public/images/editorial.webp");
+
+// Correct: explicit authoring redraw, deterministic normal-build resize.
+const master = await readFile("public/images/editorial.webp");
+sharp(master).resize(960, 540).toFile("public/images/editorial-960.webp");
 ```

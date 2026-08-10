@@ -88,3 +88,6 @@ failure handlers may update the DOM only when their captured generation is
 still current, and reset/clear must invalidate any in-flight request before
 restoring the default state. Otherwise a slow Pagefind response can resurrect
 stale results after the user clears the search.
+
+Pagefind excerpts are parsed as HTML but rebuilt from text nodes plus `mark`
+elements only. Never inject a returned excerpt with `innerHTML`.

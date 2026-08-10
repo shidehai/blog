@@ -25,6 +25,9 @@ independently runnable for diagnosis.
   computed geometry/style, responsive-boundary, overflow, and interaction
   assertions. Retained screenshots support human comparison but never replace
   semantic browser assertions.
+- Search race regressions hold the Pagefind module request, clear the query,
+  then release the request and assert that stale results cannot replace the
+  restored default state.
 - Responsive overflow tests assert both document `scrollWidth <= clientWidth`
   and that no visible element bounding box crosses the viewport beyond the
   test tolerance. Page-level `overflow-x: clip` can hide the latter from the
