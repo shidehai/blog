@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Preserve the established Astro component boundaries, calibrated material system, responsive breakpoints, and accessibility behavior while fixing the featured card layout."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Use the repository's browser-first visual contracts, overflow assertions, and full verification gate for the layout change."}
+{"file":".trellis/tasks/08-10-fix-feature-card-overlap/research/reference-category.md","reason":"Apply the measured reference category geometry without copying reference identity, assets, content, or source code."}
+{"file":".trellis/tasks/08-10-fix-feature-card-overlap/research/typography-assessment.md","reason":"Apply selector-local type reductions while preserving the 16px body baseline, article prose, font loading, and mixed-script contract."}

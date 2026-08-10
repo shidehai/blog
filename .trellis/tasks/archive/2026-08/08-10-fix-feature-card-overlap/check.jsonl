@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Review the final feature component for semantic HTML, responsive behavior, keyboard states, and token reuse."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Review focused geometry assertions, visible overflow, formatting, lint, typecheck, and browser verification coverage."}
+{"file":".trellis/tasks/08-10-fix-feature-card-overlap/research/reference-category.md","reason":"Compare implemented category geometry and typography against the independently measured reference values."}
+{"file":".trellis/tasks/08-10-fix-feature-card-overlap/research/typography-assessment.md","reason":"Verify the requested compactness is scoped to display and topic selectors without regressing body or article readability."}
