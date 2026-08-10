@@ -88,3 +88,27 @@ Rebuilt the public Astro site around the measured aiayy material system, self-ho
 ### Status
 
 [OK] **Completed**
+
+
+## Session 4: AI publication polish and editorial collection
+
+**Date**: 2026-08-10
+**Task**: AI publication polish and editorial collection
+**Branch**: `main`
+
+### Summary
+
+Published a canonical 12-piece AI engineering collection for 海边的小卖部 by 关山, refined reading and discovery UX, captured responsive visual evidence, synchronized CSP contracts, and verified reproducible fixture and Directus-backed builds.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `29d5d85` | (see git log) |
+| `4649d37` | (see git log) |
+| `0f5b8a4` | (see git log) |
+| `7f63994` | (see git log) |
+
+### Status
+
+[OK] **Completed**
