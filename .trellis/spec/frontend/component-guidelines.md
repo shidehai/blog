@@ -67,6 +67,13 @@ rendered grid. CMS-driven modules use the measured height as `min-block-size`,
 not `block-size`, so normal fixture content retains the calibrated geometry and
 long valid content expands without overlap.
 
+When `FeaturePost` includes media, its copy and media siblings occupy separate
+grid cells while rendered side by side. Do not use absolute positioning or
+percentage child widths that cross their column boundary; curved media edges
+are clipping treatments only. At the established `48rem` boundary, return the
+siblings to source-ordered rows. Browser coverage must assert that their
+bounding boxes do not intersect at representative desktop and tablet widths.
+
 When a `type="search"` field has a project-owned reset button, suppress the
 WebKit cancel pseudo-element as well as applying `appearance: none`; otherwise
 Chromium renders two clear controls. Keep the semantic search input and the

@@ -20,8 +20,8 @@ homepage, paired soft shadows, clipped media hero, and light/dark behavior.
 This is an adaptation, not a clone. The reference's avatar, wording, navigation,
 stock image, visitor statistics, clock, 3D module, category icons, and
 implementation are not reused. Its measured material constants are reproduced,
-while low-contrast metadata, sub-44px controls, uniform category-card grid, and
-opacity-gated content motion are corrected.
+while low-contrast metadata, sub-44px controls, and opacity-gated content motion
+are corrected.
 
 **Physical scene:** a quiet developer at a matte graphite desk after sunset,
 with a few blue instrument lights guiding a focused reading session; in daylight
@@ -148,8 +148,9 @@ screens. Desktop preserves the profile-plus-featured asymmetric composition.
 
 - **Don't** copy the reference site's identity, content, imagery, route set,
   visitor counters, clock, 3D module, or source implementation.
-- **Don't** turn every route into an identical icon-card grid; reserve asymmetric
-  Bento structure for the homepage and use quieter lists for discovery pages.
+- **Don't** turn every route into an identical icon-card grid. The topic overview
+  may use a compact selector grid, while archive, search, and article discovery
+  remain quieter list or reading surfaces.
 - **Don't** use beige editorial templates, italic-display-serif affectation, or
   tiny monospace labels as a shortcut to sophistication.
 - **Don't** use dark neon developer dashboards, terminal cosplay, purple
