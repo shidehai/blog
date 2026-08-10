@@ -2,18 +2,26 @@
 import EmptyState from "../../components/EmptyState.astro";
 import PageHeader from "../../components/PageHeader.astro";
 import AppLayout from "../../layouts/AppLayout.astro";
-import { formatContentDate } from "../../lib/content.ts";
 import { getPreparedSite } from "../../lib/site.ts";
 
 export const prerender = true;
 
 const { snapshot } = await getPreparedSite();
 const { posts, settings } = snapshot;
-const topicRows = snapshot.topics.map((topic) => {
-  const topicPosts = posts.filter((post) =>
+const topicCards = snapshot.topics.map((topic) => {
+  const postCount = posts.filter((post) =>
     post.topics.some((postTopic) => postTopic.id === topic.id),
-  );
-  return { latest: topicPosts[0], posts: topicPosts, topic };
+  ).length;
+  const latinMarker = topic.name.match(/[A-Za-z]+/)?.[0];
+
+  return {
+    marker:
+      latinMarker?.slice(0, 3).toUpperCase() ??
+      Array.from(topic.name.trim())[0] ??
+      "题",
+    postCount,
+    topic,
+  };
 });
 ---
 
@@ -29,48 +37,21 @@ const topicRows = snapshot.topics.map((topic) => {
     />
 
     {
-      topicRows.length ? (
+      topicCards.length ? (
         <ul class="topic-directory" aria-label="全部主题">
-          {topicRows.map(({ latest, posts: topicPosts, topic }) => (
+          {topicCards.map(({ marker, postCount, topic }) => (
             <li>
-              <article class="topic-directory-row surface--raised">
-                <div class="topic-directory-copy">
-                  <div class="topic-directory-heading">
-                    <h2>
-                      <a href={`/topics/${topic.slug}/`}>{topic.name}</a>
-                    </h2>
-                    <span aria-label={`${topicPosts.length} 篇内容`}>
-                      {topicPosts.length} 篇
-                    </span>
-                  </div>
-                  <p>
-                    {topic.description ??
-                      (topicPosts.length
-                        ? "查看这个主题下的全部公开内容。"
-                        : "这个主题还没有关联公开内容。")}
-                  </p>
-                </div>
-                {latest ? (
-                  <p class="topic-directory-latest">
-                    <span>最近更新</span>
-                    <a href={latest.route}>{latest.title}</a>
-                    <time datetime={latest.publishedAt}>
-                      {formatContentDate(
-                        latest.publishedAt,
-                        settings.timezone,
-                        settings.locale,
-                      )}
-                    </time>
-                  </p>
-                ) : (
-                  <a
-                    class="topic-directory-action"
-                    href={`/topics/${topic.slug}/`}
-                  >
-                    查看主题
-                  </a>
-                )}
-              </article>
+              <a
+                class="topic-directory-card surface--raised"
+                href={`/topics/${topic.slug}/`}
+                aria-label={`${topic.name}，${postCount} 篇内容`}
+              >
+                <span class="topic-directory-mark" aria-hidden="true">
+                  {marker}
+                </span>
+                <h2>{topic.name}</h2>
+                <span class="topic-directory-count">{postCount} 篇内容</span>
+              </a>
             </li>
           ))}
         </ul>

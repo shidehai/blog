@@ -64,7 +64,7 @@ const fallbackPath = kind === "tutorial" ? "逐步验证" : "系统拆解";
           srcset={media.srcset}
           sizes={
             media.srcset
-              ? "(max-width: 48rem) 100vw, (max-width: 64rem) 68vw, 38rem"
+              ? "(max-width: 48rem) calc(100vw - 2rem), (max-width: 56rem) calc(36vw - 8rem), (max-width: 64rem) calc(40vw - 8.8rem), (max-width: 78rem) calc(40vw - 9.8rem), 21.5rem"
               : undefined
           }
           alt={media.alt}

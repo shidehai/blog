@@ -25,6 +25,8 @@ const themes = {
     raised:
       "rgb(22, 22, 31) 6px 6px 14px 0px, rgb(40, 40, 56) -6px -6px 14px 0px",
     raisedSurface: "rgb(36, 36, 51)",
+    pressed:
+      "rgb(22, 22, 31) 2px 2px 5px 0px inset, rgb(40, 40, 56) -2px -2px 5px 0px inset",
   },
   light: {
     background: "rgb(232, 230, 227)",
@@ -38,6 +40,8 @@ const themes = {
     raised:
       "rgb(200, 198, 195) 6px 6px 14px 0px, rgb(255, 255, 255) -6px -6px 14px 0px",
     raisedSurface: "rgb(232, 230, 227)",
+    pressed:
+      "rgb(200, 198, 195) 2px 2px 5px 0px inset, rgb(255, 255, 255) -2px -2px 5px 0px inset",
   },
 } as const;
 
@@ -178,6 +182,54 @@ test("desktop shell reproduces the measured container and Bento geometry", async
   await expectMinimumHitTarget(page.locator(".navigation-link").first());
 });
 
+test("featured copy and media occupy separate grid cells", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await installStoredTheme(page, "light");
+
+  for (const width of [1440, 1024] as const) {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto("/");
+
+    const feature = await measuredBox(page.locator(".feature-post"));
+    const copy = await measuredBox(page.locator(".feature-post-copy"));
+    const media = await measuredBox(page.locator(".feature-post-media"));
+    const title = await measuredBox(page.locator(".feature-post h2"));
+    const action = await measuredBox(page.locator(".feature-action"));
+    const image = page.locator(".feature-post-media img");
+
+    expect(copy.x + copy.width).toBeLessThanOrEqual(media.x + 1);
+    expectBoxNear(copy, { x: feature.x, y: feature.y });
+    expectBoxNear(media, {
+      height: feature.height,
+      x: copy.x + copy.width,
+      y: feature.y,
+    });
+    expect(media.x + media.width).toBeLessThanOrEqual(
+      feature.x + feature.width + 1,
+    );
+    expect(title.x + title.width).toBeLessThanOrEqual(copy.x + copy.width + 1);
+    expect(action.y + action.height).toBeLessThanOrEqual(
+      feature.y + feature.height + 1,
+    );
+    await expect(image).toHaveJSProperty("complete", true);
+    expect(
+      await image.evaluate((element) =>
+        element instanceof HTMLImageElement ? element.naturalWidth : 0,
+      ),
+    ).toBeGreaterThan(0);
+    expect(
+      await image.evaluate(
+        (element) => getComputedStyle(element).objectPosition,
+      ),
+    ).toBe("85% 58%");
+    await expect(image).toHaveAttribute(
+      "sizes",
+      "(max-width: 48rem) calc(100vw - 2rem), (max-width: 56rem) calc(36vw - 8rem), (max-width: 64rem) calc(40vw - 8.8rem), (max-width: 78rem) calc(40vw - 9.8rem), 21.5rem",
+    );
+    await expectNoHorizontalOverflow(page);
+  }
+});
+
 test("1024px is the inclusive navigation and tablet-grid breakpoint", async ({
   page,
 }) => {
@@ -194,7 +246,7 @@ test("1024px is the inclusive navigation and tablet-grid breakpoint", async ({
   expectBoxNear(wideFeature, { y: wideIdentity.y });
   expect(
     (await computedMaterial(page.locator(".feature-post h2"))).fontSize,
-  ).toBe("52px");
+  ).toBe("40px");
 
   await page.setViewportSize({ width: 1024, height: 900 });
   await settleLayout(page);
@@ -210,7 +262,7 @@ test("1024px is the inclusive navigation and tablet-grid breakpoint", async ({
   expectBoxNear(tabletFeature, { y: tabletIdentity.y });
   expect(
     (await computedMaterial(page.locator(".feature-post h2"))).fontSize,
-  ).toBe("40px");
+  ).toBe("32px");
 });
 
 test("768px stacks hero and bottom modules with featured writing first", async ({
@@ -229,7 +281,7 @@ test("768px stacks hero and bottom modules with featured writing first", async (
   expectBoxNear(widePaths, { y: wideTopics.y });
   expect(
     (await computedMaterial(page.locator(".feature-post h2"))).fontSize,
-  ).toBe("40px");
+  ).toBe("32px");
 
   await page.setViewportSize({ width: 768, height: 1024 });
   await settleLayout(page);
@@ -295,6 +347,141 @@ test("640px is the inclusive single-column information breakpoint", async ({
   expect(
     (await computedMaterial(page.locator(".feature-post h2"))).fontSize,
   ).toBe("28px");
+});
+
+test("topic selector keeps its measured three, two, and one-column geometry", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await installStoredTheme(page, "light");
+
+  for (const layout of [
+    { cardWidth: 284, columns: 3, gridWidth: 900, width: 1440 },
+    { cardWidth: 284, columns: 3, gridWidth: 900, width: 1024 },
+    { cardWidth: 224, columns: 3, gridWidth: 720, width: 768 },
+    { cardWidth: 284, columns: 2, gridWidth: 592, width: 640 },
+    { cardWidth: 342, columns: 1, gridWidth: 342, width: 390 },
+  ] as const) {
+    await page.setViewportSize({ width: layout.width, height: 1000 });
+    await page.goto("/topics/");
+
+    const directory = page.locator(".topic-directory");
+    const cards = directory.locator(".topic-directory-card");
+    const first = await measuredBox(cards.first());
+    const firstInNextRow = await measuredBox(cards.nth(layout.columns));
+    const directoryBox = await measuredBox(directory);
+
+    await expect(cards).toHaveCount(6);
+    expectBoxNear(directoryBox, { width: layout.gridWidth });
+    expectBoxNear(first, { height: 234, width: layout.cardWidth });
+    expectBoxNear(firstInNextRow, {
+      x: first.x,
+      y: first.y + first.height + 24,
+    });
+    if (layout.columns > 1) {
+      const second = await measuredBox(cards.nth(1));
+      expectBoxNear(second, {
+        width: layout.cardWidth,
+        x: first.x + first.width + 24,
+        y: first.y,
+      });
+    }
+
+    const heading = await computedMaterial(page.locator(".page-heading h1"));
+    const lead = await computedMaterial(page.locator(".page-heading p"));
+    const marker = await measuredBox(
+      cards.first().locator(".topic-directory-mark"),
+    );
+    expect(heading.fontSize).toBe("32px");
+    expect(lead.fontSize).toBe("16px");
+    expectBoxNear(marker, { height: 64, width: 64 });
+    expect((await computedMaterial(cards.first())).borderRadius).toBe(
+      layout.width <= 768 ? "24px" : "30px",
+    );
+    await expect(cards.first().locator("h2")).toBeVisible();
+    await expect(cards.first().locator(".topic-directory-count")).toHaveText(
+      /\d+ 篇内容/,
+    );
+    await expectMinimumHitTarget(cards.first());
+    await expectNoHorizontalOverflow(page);
+  }
+});
+
+test("topic cards expose raised, lifted, focused, and pressed states", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize(DESKTOP_VIEWPORT);
+  await installStoredTheme(page, "light");
+  await page.goto("/topics/");
+
+  const card = page.locator(".topic-directory-card").first();
+  expect((await computedMaterial(card)).boxShadow).toBe(themes.light.raised);
+
+  await card.hover();
+  await settleLayout(page);
+  expect((await computedMaterial(card)).boxShadow).toBe(themes.light.floating);
+
+  await card.focus();
+  await expect(card).toBeFocused();
+  const focusedShadow = (await computedMaterial(card)).boxShadow;
+  expect(focusedShadow).toContain("rgb(35, 103, 186)");
+  expect(focusedShadow).toContain("8px 8px 20px");
+  expect(
+    durationInMilliseconds((await computedMaterial(card)).transitionDuration),
+  ).toBeLessThanOrEqual(0.01);
+
+  const box = await measuredBox(card);
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await settleLayout(page);
+  expect((await computedMaterial(card)).boxShadow).toBe(themes.light.pressed);
+  await page.mouse.move(0, 0);
+  await page.mouse.up();
+});
+
+test("topic cards and featured copy expand at two hundred percent text", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize(DESKTOP_VIEWPORT);
+
+  await page.goto("/topics/");
+  await page.locator("html").evaluate((element) => {
+    element.style.fontSize = "200%";
+  });
+  await settleLayout(page);
+  const topicCard = page.locator(".topic-directory-card").first();
+  const topicDimensions = await topicCard.evaluate((element) => ({
+    clientHeight: element.clientHeight,
+    scrollHeight: element.scrollHeight,
+  }));
+  expect(topicDimensions.clientHeight).toBeGreaterThan(234);
+  expect(topicDimensions.scrollHeight).toBeLessThanOrEqual(
+    topicDimensions.clientHeight,
+  );
+  await expectNoHorizontalOverflow(page);
+
+  await page.goto("/");
+  await page.locator("html").evaluate((element) => {
+    element.style.fontSize = "200%";
+  });
+  await settleLayout(page);
+  const feature = await measuredBox(page.locator(".feature-post"));
+  const copy = page.locator(".feature-post-copy");
+  const title = page.locator(".feature-post h2");
+  const copyDimensions = await copy.evaluate((element) => ({
+    clientHeight: element.clientHeight,
+    scrollHeight: element.scrollHeight,
+  }));
+  const titleBox = await measuredBox(title);
+  expect(copyDimensions.scrollHeight).toBeLessThanOrEqual(
+    copyDimensions.clientHeight,
+  );
+  expect(titleBox.y + titleBox.height).toBeLessThanOrEqual(
+    feature.y + feature.height + 1,
+  );
+  await expectNoHorizontalOverflow(page);
 });
 
 test("header compacts only above 100px without shrinking accessible targets", async ({
@@ -465,6 +652,7 @@ for (const route of representativeRoutes) {
 const denseOverflowRoutes = [
   ...representativeRoutes.map(({ path }) => path),
   "/notes/temperature-is-not-confidence/",
+  "/topics/",
   "/topics/retrieval-augmented-generation/",
   "/archive/",
   "/about/",
@@ -657,6 +845,7 @@ test("forced colors restores explicit boundaries across representative surfaces"
 
   for (const [path, selectors] of [
     ["/", [".site-header", ".feature-post", ".post-row"]],
+    ["/topics/", [".topic-directory-card"]],
     ["/search/", [".search-workbench"]],
     [
       "/writing/typescript-observable-rag-pipeline/",
@@ -670,4 +859,22 @@ test("forced colors restores explicit boundaries across representative surfaces"
       expect(material.boxShadow).toBe("none");
     }
   }
+
+  await page.goto("/topics/");
+  const topicCard = page.locator(".topic-directory-card").first();
+  await topicCard.hover();
+  expect((await computedMaterial(topicCard)).boxShadow).toBe("none");
+
+  await topicCard.focus();
+  await expect(topicCard).toBeFocused();
+  expect((await computedMaterial(topicCard)).boxShadow).toBe("none");
+
+  const topicCardBox = await measuredBox(topicCard);
+  await page.mouse.move(
+    topicCardBox.x + topicCardBox.width / 2,
+    topicCardBox.y + topicCardBox.height / 2,
+  );
+  await page.mouse.down();
+  expect((await computedMaterial(topicCard)).boxShadow).toBe("none");
+  await page.mouse.up();
 });
