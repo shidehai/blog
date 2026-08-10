@@ -17,12 +17,14 @@ const { items, embedded = false } = Astro.props;
   class:list={["article-outline", { "surface--inset": !embedded }]}
   aria-label="文章目录"
 >
-  <strong class="annotation-label">目录</strong>
+  {!embedded ? <strong class="annotation-label">目录</strong> : null}
   <ol>
     {
       items.map((item) => (
         <li data-level={item.level}>
-          <a href={`#${item.id}`}>{item.text}</a>
+          <a href={`#${item.id}`} data-outline-link>
+            {item.text}
+          </a>
         </li>
       ))
     }

@@ -25,6 +25,25 @@ const description = post.seoDescription ?? post.summary;
 const isNote = post.kind === "note";
 const publishedDate = post.publishedAt.slice(0, 10);
 const publishedMonth = post.publishedAt.slice(0, 7);
+const localDateFormatter = new Intl.DateTimeFormat("en", {
+  day: "2-digit",
+  month: "2-digit",
+  timeZone: settings.timezone,
+  year: "numeric",
+});
+const localDateKey = (timestamp: string) => {
+  const parts = Object.fromEntries(
+    localDateFormatter
+      .formatToParts(new Date(timestamp))
+      .map(({ type, value }) => [type, value]),
+  );
+  return `${parts.year}-${parts.month}-${parts.day}`;
+};
+const visibleUpdatedAt =
+  post.updatedAt &&
+  localDateKey(post.updatedAt) > localDateKey(post.publishedAt)
+    ? post.updatedAt
+    : undefined;
 ---
 
 <AppLayout
@@ -38,7 +57,6 @@ const publishedMonth = post.publishedAt.slice(0, 7);
   <ReadingProgress />
   <article
     class:list={["article-page", { "article-page--note": isNote }]}
-    data-pagefind-body
     data-pagefind-filter={`kind:${post.kind}`}
     data-pagefind-meta={`date:${publishedDate}`}
   >
@@ -51,6 +69,16 @@ const publishedMonth = post.publishedAt.slice(0, 7);
           settings.timezone,
           settings.locale,
         )}
+        {...visibleUpdatedAt
+          ? {
+              updatedDateTime: visibleUpdatedAt,
+              updatedDateLabel: formatContentDate(
+                visibleUpdatedAt,
+                settings.timezone,
+                settings.locale,
+              ),
+            }
+          : {}}
         {...isNote ? {} : { readingMinutes: post.readingMinutes }}
       />
       <h1 data-pagefind-meta="title">{post.title}</h1>
@@ -110,7 +138,12 @@ const publishedMonth = post.publishedAt.slice(0, 7);
     }
 
     <div class="article-layout">
-      <div class="prose" data-reading-content set:html={output.html} />
+      <div
+        class="prose"
+        data-pagefind-body
+        data-reading-content
+        set:html={output.html}
+      />
       {
         output.outline.length ? (
           <aside class="article-rail" data-pagefind-ignore="all">

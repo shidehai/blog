@@ -4,9 +4,18 @@ interface Props {
   dateTime: string;
   dateLabel: string;
   readingMinutes?: number | undefined;
+  updatedDateTime?: string | undefined;
+  updatedDateLabel?: string | undefined;
 }
 
-const { kind, dateTime, dateLabel, readingMinutes } = Astro.props;
+const {
+  kind,
+  dateTime,
+  dateLabel,
+  readingMinutes,
+  updatedDateTime,
+  updatedDateLabel,
+} = Astro.props;
 const kindLabels = {
   article: "文章",
   tutorial: "教程",
@@ -18,5 +27,12 @@ const accessibleLabel = kind === "note" ? "笔记信息" : "文章信息";
 <ul class="post-meta" aria-label={accessibleLabel}>
   <li>{kindLabels[kind]}</li>
   <li><time datetime={dateTime}>{dateLabel}</time></li>
+  {
+    updatedDateTime && updatedDateLabel ? (
+      <li class="post-meta-updated">
+        更新于 <time datetime={updatedDateTime}>{updatedDateLabel}</time>
+      </li>
+    ) : null
+  }
   {readingMinutes ? <li>{readingMinutes} 分钟阅读</li> : null}
 </ul>

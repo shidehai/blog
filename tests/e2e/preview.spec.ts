@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const previewPath = "/preview/f2000000-0000-4000-8000-000000000003";
+const previewPath = "/preview/f2000000-0000-4000-8000-000000000103";
 const trustedHeader = "test-preview-header-at-least-24-chars";
 
 test("preview fails closed without the proxy trust boundary", async ({
@@ -26,7 +26,7 @@ test("trusted preview reuses the public post layout without leaking secrets", as
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "示例教程：验证一份发布快照",
+      name: "实作：用 TypeScript 搭建可观测的 RAG 最小链路",
     }),
   ).toBeVisible();
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute(

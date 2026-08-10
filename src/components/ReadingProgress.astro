@@ -17,6 +17,19 @@
   const readingContent = document.querySelector<HTMLElement>(
     "[data-reading-content]",
   );
+  const outlineLinks = Array.from(
+    document.querySelectorAll<HTMLAnchorElement>("[data-outline-link]"),
+  );
+
+  const outlineTargets = outlineLinks.flatMap((link) => {
+    try {
+      const id = decodeURIComponent(link.hash.slice(1));
+      const heading = document.getElementById(id);
+      return heading ? [{ heading, id }] : [];
+    } catch {
+      return [];
+    }
+  });
 
   if (progress && readingContent) {
     const meter = progress.querySelector<HTMLElement>("span");
@@ -31,6 +44,23 @@
       );
       progress.setAttribute("aria-valuenow", String(Math.round(value)));
       if (meter) meter.style.inlineSize = `${value}%`;
+
+      if (outlineTargets.length > 0) {
+        const marker = Math.min(160, innerHeight * 0.25);
+        const atDocumentEnd =
+          Math.ceil(scrollY + innerHeight) >=
+          document.documentElement.scrollHeight - 1;
+        const current = atDocumentEnd
+          ? outlineTargets.at(-1)
+          : (outlineTargets.findLast(
+              ({ heading }) => heading.getBoundingClientRect().top <= marker,
+            ) ?? outlineTargets[0]);
+        for (const link of outlineLinks) {
+          const active = decodeURIComponent(link.hash.slice(1)) === current?.id;
+          if (active) link.setAttribute("aria-current", "location");
+          else link.removeAttribute("aria-current");
+        }
+      }
       scheduled = false;
     };
 

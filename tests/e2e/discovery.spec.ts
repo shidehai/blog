@@ -12,7 +12,7 @@ test("public pages expose canonical social and structured metadata", async ({
   );
   await expect(page.locator('meta[property="og:site_name"]')).toHaveAttribute(
     "content",
-    "示例知识手记",
+    "海边的小卖部",
   );
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
     "content",
@@ -32,7 +32,7 @@ test("public pages expose canonical social and structured metadata", async ({
   expect(homeJsonLd).toContain('"@type":"WebSite"');
   expect(homeJsonLd).toContain('"@type":"Person"');
 
-  await page.goto("/writing/static-publishing-data-boundary/");
+  await page.goto("/writing/typescript-observable-rag-pipeline/");
   await expect(page.locator('meta[property="og:type"]')).toHaveAttribute(
     "content",
     "article",
@@ -41,7 +41,8 @@ test("public pages expose canonical social and structured metadata", async ({
     .locator('script[type="application/ld+json"]')
     .textContent();
   expect(postJsonLd).toContain('"@type":"BlogPosting"');
-  expect(postJsonLd).toContain('"datePublished":"2026-07-28T02:00:00.000Z"');
+  expect(postJsonLd).toContain('"datePublished":"2026-06-04T01:00:00.000Z"');
+  expect(postJsonLd).toContain('"dateModified":"2026-08-09T03:00:00.000Z"');
 });
 
 test("preview is noindex and emits no public discovery metadata", async ({
@@ -50,7 +51,7 @@ test("preview is noindex and emits no public discovery metadata", async ({
   await page.setExtraHTTPHeaders({
     "x-preview-trusted": "test-preview-header-at-least-24-chars",
   });
-  await page.goto("/preview/f2000000-0000-4000-8000-000000000001");
+  await page.goto("/preview/f2000000-0000-4000-8000-000000000101");
 
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
     "content",
@@ -73,7 +74,7 @@ test("RSS, sitemap, robots, manifest, and icon assets are reachable", async ({
   expect(rss.ok()).toBe(true);
   expect(rss.headers()["content-type"]).toContain("application/xml");
   expect(await rss.text()).toContain(
-    "http://localhost:4321/writing/static-publishing-data-boundary/",
+    "http://localhost:4321/writing/production-llm-reliability-boundaries/",
   );
 
   const sitemapIndex = await request.get("/sitemap-index.xml");
@@ -121,10 +122,12 @@ test("search loads Pagefind only on use and finds Chinese fixture content", asyn
   await expect(page.getByRole("heading", { name: "最近发布" })).toBeVisible();
   expect(pagefindRequests).toHaveLength(0);
 
-  await page.getByLabel("关键词").fill("静态发布");
+  await page.getByLabel("关键词").fill("向量搜索");
   await expect(page.locator("[data-search-status]")).toContainText("找到");
   await expect(
-    page.getByRole("link", { name: "示例：静态发布的数据边界" }),
+    page.getByRole("link", {
+      name: "RAG 不是一次向量搜索：拆解检索、重排与答案归因",
+    }),
   ).toBeVisible();
   expect(
     pagefindRequests.some((url) => url.endsWith("/pagefind/pagefind.js")),
@@ -135,13 +138,15 @@ test("search loads Pagefind only on use and finds Chinese fixture content", asyn
     .getByRole("combobox", { name: "类型", exact: true })
     .selectOption("note");
   await expect(page.locator("[data-search-status]")).toContainText(
-    "找到 1 条结果",
+    "找到 3 条结果",
   );
   await expect(
-    page.getByRole("link", { name: "示例随记：先让失败可诊断" }),
+    page.getByRole("link", { name: "切块大小不是一个全局常数" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "示例：静态发布的数据边界" }),
+    page.getByRole("link", {
+      name: "RAG 不是一次向量搜索：拆解检索、重排与答案归因",
+    }),
   ).toHaveCount(0);
 
   await page
@@ -149,15 +154,17 @@ test("search loads Pagefind only on use and finds Chinese fixture content", asyn
     .selectOption("");
   await page
     .getByRole("combobox", { name: "主题", exact: true })
-    .selectOption("fixture-engineering-craft");
+    .selectOption("retrieval-augmented-generation");
   await expect(page.locator("[data-search-status]")).toContainText(
-    "找到 1 条结果",
+    "找到 3 条结果",
   );
   await expect(
-    page.getByRole("link", { name: "示例教程：验证一份发布快照" }),
+    page.getByRole("link", {
+      name: "实作：用 TypeScript 搭建可观测的 RAG 最小链路",
+    }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "示例随记：先让失败可诊断" }),
+    page.getByRole("link", { name: "缓存键应包含模型、提示词与工具版本" }),
   ).toHaveCount(0);
 
   await page
@@ -167,9 +174,31 @@ test("search loads Pagefind only on use and finds Chinese fixture content", asyn
     .getByRole("combobox", { name: "时间", exact: true })
     .selectOption("2026-07");
   await expect(page.locator("[data-search-status]")).toContainText(
-    "找到 3 条结果",
+    "找到 4 条结果",
   );
-  await expect(page.locator("[data-search-results] > li")).toHaveCount(3);
+  await expect(page.locator("[data-search-results] > li")).toHaveCount(4);
+});
+
+test("search shows one title, one metadata group, and a contextual excerpt", async ({
+  page,
+}) => {
+  await page.goto("/search/");
+  await page.getByLabel("关键词").fill("候选缺失");
+  await expect(page.locator("[data-search-status]")).toContainText("找到");
+
+  const result = page.locator(".search-result").first();
+  await expect(result.locator("h3")).toHaveCount(1);
+  await expect(result.locator(".search-result-meta")).toHaveCount(1);
+  await expect(result.locator(".search-result-excerpt")).toContainText("候选");
+  expect(
+    await result.locator(".search-result-excerpt mark").count(),
+  ).toBeGreaterThan(0);
+  await expect(
+    result.locator(".search-result-excerpt mark").first(),
+  ).toBeVisible();
+  await expect(result.locator(".search-result-excerpt")).not.toContainText(
+    "实作：用 TypeScript 搭建可观测的 RAG 最小链路",
+  );
 });
 
 test("search controls reflow without horizontal overflow", async ({ page }) => {

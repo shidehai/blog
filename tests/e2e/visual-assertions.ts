@@ -86,10 +86,19 @@ export async function expectNoHorizontalOverflow(page: Page): Promise<void> {
       document.body.querySelectorAll<HTMLElement>("*"),
     )
       .filter((element) => element.getClientRects().length > 0)
+      .filter((element) => {
+        const scroller = element.closest<HTMLElement>(
+          ".code-frame pre, .table-wrapper",
+        );
+        if (!scroller || scroller === element) return true;
+        return !["auto", "scroll"].includes(
+          getComputedStyle(scroller).overflowX,
+        );
+      })
       .map((element) => {
         const rect = element.getBoundingClientRect();
         return {
-          className: element.className,
+          className: element.getAttribute("class") ?? "",
           left: rect.left,
           name: element.tagName.toLowerCase(),
           right: rect.right,
@@ -109,4 +118,8 @@ export async function expectNoHorizontalOverflow(page: Page): Promise<void> {
     measurements.scrollWidth,
     `Horizontal overflow at ${page.url()}: ${JSON.stringify(measurements.offenders)}`,
   ).toBeLessThanOrEqual(measurements.clientWidth);
+  expect(
+    measurements.offenders,
+    `Visible elements are clipped at ${page.url()}`,
+  ).toEqual([]);
 }

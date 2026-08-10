@@ -30,7 +30,7 @@ const {
 } = Astro.props;
 ---
 
-<article class="post-row surface--raised">
+<article class:list={["post-row", "surface--raised", `post-row--${kind}`]}>
   <div class="post-row-copy">
     <PostMeta {kind} {dateTime} {dateLabel} {readingMinutes} />
     <h3><a {href}>{title}</a></h3>

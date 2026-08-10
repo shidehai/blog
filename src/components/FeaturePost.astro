@@ -33,6 +33,9 @@ const {
   topic,
   media,
 } = Astro.props;
+const fallbackSignal =
+  topic?.label ?? (kind === "tutorial" ? "实践教程" : "深度文章");
+const fallbackPath = kind === "tutorial" ? "逐步验证" : "系统拆解";
 ---
 
 <article
@@ -74,9 +77,9 @@ const {
       </div>
     ) : (
       <div class="feature-post-signal" aria-hidden="true">
-        <span>POSTGRESQL</span>
-        <strong>→</strong>
-        <span>ASTRO</span>
+        <span>{fallbackSignal}</span>
+        <strong>·</strong>
+        <span>{fallbackPath}</span>
       </div>
     )
   }

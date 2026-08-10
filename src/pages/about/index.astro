@@ -66,32 +66,43 @@ const authorMark = Array.from(settings.authorName.trim())[0] ?? "知";
         </p>
       </section>
 
-      <section class="about-links surface--inset" aria-labelledby="elsewhere">
-        <h2 id="elsewhere">其他地方</h2>
-        {
-          settings.socialLinks.length ? (
-            <ul>
-              {settings.socialLinks.map((link) => (
-                <li>
-                  <a
-                    href={link.url}
-                    target={/^https?:/.test(link.url) ? "_blank" : undefined}
-                    rel={
-                      /^https?:/.test(link.url)
-                        ? "me noopener noreferrer"
-                        : undefined
-                    }
-                  >
-                    <span>{link.label}</span>
-                    <span aria-hidden="true">↗</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>目前没有配置公开的站外链接。</p>
-          )
-        }
+      <section
+        class="about-links surface--inset"
+        aria-labelledby="keep-reading"
+      >
+        <h2 id="keep-reading">继续关注</h2>
+        <ul>
+          <li>
+            <a href="/archive/">
+              <span>浏览完整归档</span>
+              <span aria-hidden="true">→</span>
+            </a>
+          </li>
+          <li>
+            <a href="/rss.xml">
+              <span>订阅 RSS</span>
+              <span aria-hidden="true">→</span>
+            </a>
+          </li>
+          {
+            settings.socialLinks.map((link) => (
+              <li>
+                <a
+                  href={link.url}
+                  target={/^https?:/.test(link.url) ? "_blank" : undefined}
+                  rel={
+                    /^https?:/.test(link.url)
+                      ? "me noopener noreferrer"
+                      : undefined
+                  }
+                >
+                  <span>{link.label}</span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
       </section>
     </div>
 

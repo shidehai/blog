@@ -220,13 +220,44 @@ const description = `搜索${settings.siteName}中的文章、教程与笔记。
     return [];
   }
 
-  function plainExcerpt(data: SearchData): string {
+  function excerptFragment(data: SearchData): DocumentFragment {
     const source = data.excerpt || data.content;
     const parsed = new DOMParser().parseFromString(source, "text/html");
-    const text = (parsed.body.textContent ?? source)
-      .replace(/\s+/g, " ")
-      .trim();
-    return Array.from(text).slice(0, 180).join("");
+    const fragment = document.createDocumentFragment();
+    let remaining = 180;
+
+    const appendText = (value: string, parent: Node) => {
+      if (remaining <= 0) return;
+      const normalized = value.replace(/\s+/g, " ");
+      const characters = Array.from(normalized).slice(0, remaining);
+      if (characters.length > 0) {
+        parent.appendChild(document.createTextNode(characters.join("")));
+      }
+      remaining -= characters.length;
+    };
+
+    const appendNode = (node: Node, parent: Node) => {
+      if (remaining <= 0) return;
+      if (node.nodeType === Node.TEXT_NODE) {
+        appendText(node.textContent ?? "", parent);
+        return;
+      }
+      if (!(node instanceof HTMLElement)) return;
+      if (node.tagName === "MARK") {
+        const mark = document.createElement("mark");
+        for (const child of node.childNodes) appendNode(child, mark);
+        if (mark.textContent) parent.appendChild(mark);
+        return;
+      }
+      for (const child of node.childNodes) appendNode(child, parent);
+    };
+
+    for (const child of parsed.body.childNodes) {
+      appendNode(child, fragment);
+      appendText(" ", fragment);
+    }
+    if (!fragment.textContent?.trim()) fragment.append("打开内容查看详情");
+    return fragment;
   }
 
   function safeResultUrl(value: string): string | null {
@@ -360,7 +391,7 @@ const description = `搜索${settings.siteName}中的文章、教程与笔记。
 
         const excerpt = document.createElement("p");
         excerpt.className = "search-result-excerpt";
-        excerpt.textContent = plainExcerpt(data);
+        excerpt.append(excerptFragment(data));
         if (labels.length > 0) article.append(metadata);
         article.append(heading, excerpt);
         item.append(article);
@@ -390,6 +421,7 @@ const description = `搜索${settings.siteName}中的文章、教程与笔记。
       }
 
       async function runSearch(): Promise<void> {
+        const sequence = ++searchSequence;
         const query = searchInput.value.trim();
         const hasFilter = selects.some((select) => Boolean(select.value));
         updateLocation(query);
@@ -398,7 +430,6 @@ const description = `搜索${settings.siteName}中的文章、教程与笔记。
           return;
         }
 
-        const sequence = ++searchSequence;
         searchOutput.hidden = false;
         searchOutput.setAttribute("aria-busy", "true");
         recentContent.hidden = true;
@@ -646,6 +677,13 @@ const description = `搜索${settings.siteName}中的文章、教程与笔记。
     color: var(--ink-muted);
   }
 
+  :global(.search-result-excerpt mark) {
+    border-radius: 0.2em;
+    background: var(--signal-soft);
+    color: var(--ink);
+    font-weight: 650;
+  }
+
   :global(.search-empty) {
     padding: var(--space-6);
     border-radius: var(--radius-module);
@@ -662,8 +700,14 @@ const description = `搜索${settings.siteName}中的文章、教程与笔记。
     color: var(--ink-muted);
   }
 
+  :global(.search-result.surface--raised:has(h3 a:focus-visible)),
+  :global(.search-result.surface--raised:has(h3 a:active)) {
+    background: var(--surface-high);
+    box-shadow: var(--depth-pressed);
+  }
+
   @media (hover: hover) and (pointer: fine) {
-    :global(.search-result.surface--raised:hover) {
+    :global(.search-result.surface--raised:has(h3 a:hover)) {
       background: var(--surface-high);
       box-shadow: var(--depth-pressed);
     }

@@ -4,7 +4,7 @@ test("serves the public shell and health check", async ({ page, request }) => {
   await page.goto("/");
   await expect(
     page.getByRole("heading", {
-      name: "示例：静态发布的数据边界",
+      name: "从演示到生产：LLM 应用的五层可靠性边界",
     }),
   ).toBeVisible();
   await expect(page.getByRole("navigation", { name: "主导航" })).toBeVisible();

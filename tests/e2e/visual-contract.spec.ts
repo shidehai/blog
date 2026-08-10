@@ -411,7 +411,7 @@ const representativeRoutes = [
   {
     label: "reading",
     maxWidth: 1200,
-    path: "/writing/validate-a-published-snapshot/",
+    path: "/writing/typescript-observable-rag-pipeline/",
     radius: { desktop: "16px", mobile: "16px" },
     shadow: null,
     shell: ".article-page",
@@ -462,17 +462,27 @@ for (const route of representativeRoutes) {
   }
 }
 
-test("representative routes remain within the viewport at 320px", async ({
-  page,
-}) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.setViewportSize({ width: 320, height: 800 });
+const denseOverflowRoutes = [
+  ...representativeRoutes.map(({ path }) => path),
+  "/notes/temperature-is-not-confidence/",
+  "/topics/retrieval-augmented-generation/",
+  "/archive/",
+  "/about/",
+] as const;
 
-  for (const route of representativeRoutes) {
-    await page.goto(route.path);
-    await expectNoHorizontalOverflow(page);
-  }
-});
+for (const width of [320, 390] as const) {
+  test(`dense routes remain within the viewport at ${width}px`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.setViewportSize({ width, height: 844 });
+
+    for (const path of denseOverflowRoutes) {
+      await page.goto(path);
+      await expectNoHorizontalOverflow(page);
+    }
+  });
+}
 
 test("homepage modules expand around long CMS copy without overlap", async ({
   page,
@@ -565,22 +575,28 @@ test("search preserves loading, result, empty, reset, and URL-restored states", 
   for (const select of await page.locator(".search-filters select").all()) {
     await expectMinimumHitTarget(select);
   }
-  await page.getByLabel("关键词").fill("静态发布");
+  await page.getByLabel("关键词").fill("向量搜索");
   await requestSeen;
   await expect(page.locator("[data-search-output]")).toHaveAttribute(
     "aria-busy",
     "true",
   );
   await expect(page.locator("[data-search-status]")).toContainText("正在载入");
+  await page.getByRole("button", { name: "清除搜索" }).click();
+  await expect(page.locator("[data-search-default]")).toBeVisible();
   releaseIndex();
+  await page.waitForTimeout(100);
+  await expect(page.locator("[data-search-default]")).toBeVisible();
+  await expect(page.locator("[data-search-output]")).toBeHidden();
 
+  await page.getByLabel("关键词").fill("向量搜索");
   await expect(page.locator("[data-search-status]")).toContainText("找到");
   const result = page.locator(".search-result").first();
   const resultMaterial = await computedMaterial(result);
   expect(resultMaterial.borderRadius).toBe("24px");
   expect(resultMaterial.boxShadow).toBe(themes.light.compactRaised);
 
-  await page.getByLabel("关键词").fill("zzqxjkvw7391nomatch");
+  await page.getByLabel("关键词").fill("qzxvbnm987654321");
   await expect(page.locator("[data-search-status]")).toHaveText("没有匹配结果");
   await expect(page.locator(".search-empty")).toBeVisible();
 
@@ -595,14 +611,14 @@ test("search preserves loading, result, empty, reset, and URL-restored states", 
     page.getByRole("combobox", { name: "类型", exact: true }),
   ).toHaveValue("note");
   await expect(page.locator("[data-search-status]")).toContainText(
-    "找到 1 条结果",
+    "找到 3 条结果",
   );
 });
 
 test("search failure restores the useful default state", async ({ page }) => {
   await page.route("**/pagefind/pagefind.js", (route) => route.abort());
   await page.goto("/search/");
-  await page.getByLabel("关键词").fill("静态发布");
+  await page.getByLabel("关键词").fill("向量搜索");
 
   await expect(page.locator("[data-search-status]")).toHaveText(
     "搜索索引暂时不可用，以下仍可浏览最近发布内容。",
@@ -643,7 +659,7 @@ test("forced colors restores explicit boundaries across representative surfaces"
     ["/", [".site-header", ".feature-post", ".post-row"]],
     ["/search/", [".search-workbench"]],
     [
-      "/writing/validate-a-published-snapshot/",
+      "/writing/typescript-observable-rag-pipeline/",
       [".code-frame", ".table-wrapper"],
     ],
   ] as const) {
