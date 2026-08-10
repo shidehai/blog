@@ -1,0 +1,8 @@
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Review semantic reuse, accessibility, material consistency, and long CMS content behavior."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Required full gate, Pagefind output, computed browser assertions, and screenshot role."}
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"Review exact-ID migration, idempotency, immutable slugs, and digest-addressed media."}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"Review build/runtime/Compose/CSP and Directus-backed verification boundaries."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Trace catalog/settings/media through every public and operational consumer."}
+{"file":".trellis/tasks/08-10-polish-ai-content/research/content-plan.md","reason":"Check catalog counts, editorial quality, references, route/filter expectations, and migration caveats."}
+{"file":".trellis/tasks/08-10-polish-ai-content/research/ui-polish-audit.md","reason":"Verify each confirmed visual/interaction defect is actually resolved without speculative redesign."}
+{"file":".trellis/tasks/08-10-polish-ai-content/research/visual-validation.md","reason":"Run the required dense-content semantic and screenshot review matrix."}

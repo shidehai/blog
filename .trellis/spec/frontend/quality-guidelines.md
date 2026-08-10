@@ -25,6 +25,12 @@ independently runnable for diagnosis.
   computed geometry/style, responsive-boundary, overflow, and interaction
   assertions. Retained screenshots support human comparison but never replace
   semantic browser assertions.
+- Responsive overflow tests assert both document `scrollWidth <= clientWidth`
+  and that no visible element bounding box crosses the viewport beyond the
+  test tolerance. Page-level `overflow-x: clip` can hide the latter from the
+  width check. Exempt only descendants of named intentional scrollers, such as
+  `.code-frame pre` and `.table-wrapper`, and only when the ancestor's computed
+  `overflow-x` is `auto` or `scroll`.
 
 ## Formatting Scope
 

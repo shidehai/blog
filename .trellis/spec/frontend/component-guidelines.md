@@ -71,3 +71,20 @@ When a `type="search"` field has a project-owned reset button, suppress the
 WebKit cancel pseudo-element as well as applying `appearance: none`; otherwise
 Chromium renders two clear controls. Keep the semantic search input and the
 accessible reset button rather than replacing either with a generic element.
+
+## Article Artifact Layout
+
+In a code frame, the generated `pre.shiki` is the horizontal scroller. Keep it
+shrinkable with `min-inline-size: 0`, bounded by the prose column, and
+`overflow: auto`; preserve long source lines inside that scroller. Do not put
+`min-inline-size: max-content` on `.shiki`, because it expands the frame and can
+be hidden by page-level overflow clipping instead of scrolling internally.
+
+## Search Request Generations
+
+Every search execution must advance its request generation before inspecting
+query/filter state or taking an empty-query early return. Async success and
+failure handlers may update the DOM only when their captured generation is
+still current, and reset/clear must invalidate any in-flight request before
+restoring the default state. Otherwise a slow Pagefind response can resurrect
+stale results after the user clears the search.

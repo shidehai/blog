@@ -119,3 +119,96 @@ await ensureFile(
 );
 // The media test imports loadSeedCoverFixture and transforms fixture.bytes.
 ```
+
+## Scenario: Canonical Editorial Seed Migration
+
+### 1. Scope / Trigger
+
+Apply this contract when checked fixture content is added, replaced, or migrated
+through Directus. The same records feed local builds and real seed operations,
+so fixture, database, media, relation, and public-route behavior must stay in
+one reviewed boundary.
+
+### 2. Signatures
+
+- Canonical builder: `buildEditorialFixture({ coverId })` returns Directus-shaped
+  `topics`, `posts`, and `postTopics` arrays.
+- Seed writer: `upsertItem(collection, id, data)` reads and writes only the
+  supplied deterministic ID.
+- Known cleanup: `deleteKnownItem(collection, id)` deletes only an enumerated
+  deterministic fixture ID.
+- Build boundary: `fixtureInput()` composes the canonical records with settings,
+  media metadata, and fixture-only source details before Zod validation.
+
+### 3. Contracts
+
+- PostgreSQL/Directus remains the only live content authority. The checked
+  module is seed/build fixture data, not a runtime Markdown store.
+- Define editorial IDs, slugs, topics, joins, settings, and bodies once. Fixture
+  builds and Directus seed operations consume the same builder output.
+- Published post slugs are immutable. Legacy fixture posts are enumerated by
+  exact ID and archived under their existing slugs.
+- Seed upserts resolve only by deterministic ID. Never fall back to a title,
+  slug, label, or collection-wide match that could capture owner content.
+- Delete or replace only explicitly listed fake fixture records. Unknown posts,
+  topics, joins, files, and social links are untouched.
+- Junction IDs are deterministic, unique, and overwrite only known fixture
+  joins; no public join may reference an archived post.
+- Digest-addressed media follows the immutable media fixture scenario above.
+
+### 4. Validation & Error Matrix
+
+| Input/state | Required result |
+| --- | --- |
+| Seed runs twice with unchanged content | Stable counts, IDs, joins, slugs, and media reference |
+| Known legacy post exists | Archive it by exact ID and preserve its slug |
+| Known fake social link exists | Delete only its enumerated ID |
+| Unknown owner record exists | Leave every field and relation unchanged |
+| Deterministic ID exists with stale fixture data | Patch that exact record |
+| Expected relation points at an archived post | Schema/seed check fails |
+| Fixture and Directus catalogs diverge | Build/parity verification fails |
+| Cleanup lacks permission | Post-seed check must fail; do not treat the seed log alone as proof |
+
+### 5. Good/Base/Bad Cases
+
+- Good: one canonical 12-piece fixture seeds twice, preserves legacy slugs,
+  replaces known joins by ID, and produces the same Directus-backed public
+  catalog without touching an added unknown record.
+- Base: a clean database receives deterministic records and a fixture build
+  validates the same raw shapes through the normal snapshot parser.
+- Bad: deleting all non-canonical records, matching an upsert by slug/title,
+  rewriting a legacy slug, replacing existing media bytes, or maintaining a
+  second hand-copied fixture catalog.
+
+### 6. Tests Required
+
+- Unit tests assert record counts, kind mix, unique IDs/slugs/joins, one featured
+  post, used topics, representative related ordering, and normalized settings.
+- Seed a real local Directus twice and assert idempotent counts, exact archived
+  legacy mappings, no archived joins, and absence of only known fake socials.
+- Insert or preserve a sentinel record outside the deterministic fixture IDs and
+  assert the seed does not mutate or delete it.
+- Run fixture and Directus-backed Astro/Pagefind builds and compare the public
+  catalog, routes, media, search, feed, sitemap, metadata, and export projections.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```javascript
+const [existing] = await request(filterPath("items/posts", "slug", post.slug));
+await request(`/items/posts/${existing.id}`, { method: "PATCH", body: post });
+await request("/items/posts", { method: "DELETE", body: { filter: { id: { _nin: canonicalIds } } } });
+```
+
+#### Correct
+
+```javascript
+await upsertItem("posts", post.id, post);
+for (const legacy of LEGACY_FIXTURE_POSTS) {
+  await upsertItem("posts", legacy.id, { ...legacy, status: "archived" });
+}
+for (const socialId of KNOWN_FAKE_SOCIAL_IDS) {
+  await deleteKnownItem("social_links", socialId);
+}
+```

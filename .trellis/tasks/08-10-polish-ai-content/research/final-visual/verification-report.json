@@ -1,0 +1,532 @@
+{
+  "baseUrl": "http://127.0.0.1:4321",
+  "capturedAt": "2026-08-10T09:24:29.708Z",
+  "captures": [
+    {
+      "consoleErrors": [],
+      "file": "home-desktop-light.png",
+      "measurements": {
+        "clientWidth": 1440,
+        "images": [
+          {
+            "alt": "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界",
+            "naturalHeight": 342,
+            "naturalWidth": 608,
+            "src": "http://127.0.0.1:4321/images/ai-reliability-boundaries-640.webp"
+          }
+        ],
+        "scrollHeight": 2088,
+        "scrollWidth": 1440
+      },
+      "pageErrors": [],
+      "pathname": "/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "home-desktop-dark.png",
+      "measurements": {
+        "clientWidth": 1440,
+        "images": [
+          {
+            "alt": "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界",
+            "naturalHeight": 342,
+            "naturalWidth": 608,
+            "src": "http://127.0.0.1:4321/images/ai-reliability-boundaries-640.webp"
+          }
+        ],
+        "scrollHeight": 2088,
+        "scrollWidth": 1440
+      },
+      "pageErrors": [],
+      "pathname": "/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "home-mobile-light.png",
+      "measurements": {
+        "clientWidth": 390,
+        "images": [
+          {
+            "alt": "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界",
+            "naturalHeight": 219,
+            "naturalWidth": 390,
+            "src": "http://127.0.0.1:4321/images/ai-reliability-boundaries-640.webp"
+          }
+        ],
+        "scrollHeight": 3473,
+        "scrollWidth": 390
+      },
+      "pageErrors": [],
+      "pathname": "/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "light",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "home-mobile-dark.png",
+      "measurements": {
+        "clientWidth": 390,
+        "images": [
+          {
+            "alt": "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界",
+            "naturalHeight": 219,
+            "naturalWidth": 390,
+            "src": "http://127.0.0.1:4321/images/ai-reliability-boundaries-640.webp"
+          }
+        ],
+        "scrollHeight": 3473,
+        "scrollWidth": 390
+      },
+      "pageErrors": [],
+      "pathname": "/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "writing-desktop-light.png",
+      "measurements": {
+        "clientWidth": 1440,
+        "images": [],
+        "scrollHeight": 2294,
+        "scrollWidth": 1440
+      },
+      "pageErrors": [],
+      "pathname": "/writing/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "writing-mobile-dark.png",
+      "measurements": {
+        "clientWidth": 390,
+        "images": [],
+        "scrollHeight": 3134,
+        "scrollWidth": 390
+      },
+      "pageErrors": [],
+      "pathname": "/writing/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "notes-mobile-dark.png",
+      "measurements": {
+        "clientWidth": 390,
+        "images": [],
+        "scrollHeight": 1240,
+        "scrollWidth": 390
+      },
+      "pageErrors": [],
+      "pathname": "/notes/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "topics-desktop-light.png",
+      "measurements": {
+        "clientWidth": 1440,
+        "images": [],
+        "scrollHeight": 1465,
+        "scrollWidth": 1440
+      },
+      "pageErrors": [],
+      "pathname": "/topics/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "topic-mobile-light.png",
+      "measurements": {
+        "clientWidth": 390,
+        "images": [],
+        "scrollHeight": 1481,
+        "scrollWidth": 390
+      },
+      "pageErrors": [],
+      "pathname": "/topics/retrieval-augmented-generation/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "light",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "archive-desktop-light.png",
+      "measurements": {
+        "clientWidth": 1440,
+        "images": [],
+        "scrollHeight": 1782,
+        "scrollWidth": 1440
+      },
+      "pageErrors": [],
+      "pathname": "/archive/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "archive-mobile-dark.png",
+      "measurements": {
+        "clientWidth": 390,
+        "images": [],
+        "scrollHeight": 2682,
+        "scrollWidth": 390
+      },
+      "pageErrors": [],
+      "pathname": "/archive/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "tutorial-desktop-dark.png",
+      "measurements": {
+        "clientWidth": 1440,
+        "images": [
+          {
+            "alt": "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界",
+            "naturalHeight": 432,
+            "naturalWidth": 768,
+            "src": "http://127.0.0.1:4321/images/ai-reliability-boundaries-960.webp"
+          }
+        ],
+        "scrollHeight": 6132,
+        "scrollWidth": 1440
+      },
+      "pageErrors": [],
+      "pathname": "/writing/typescript-observable-rag-pipeline/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "tutorial-mobile-light.png",
+      "measurements": {
+        "clientWidth": 390,
+        "images": [
+          {
+            "alt": "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界",
+            "naturalHeight": 219,
+            "naturalWidth": 390,
+            "src": "http://127.0.0.1:4321/images/ai-reliability-boundaries-640.webp"
+          }
+        ],
+        "scrollHeight": 6563,
+        "scrollWidth": 390
+      },
+      "pageErrors": [],
+      "pathname": "/writing/typescript-observable-rag-pipeline/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "light",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "article-desktop-light.png",
+      "measurements": {
+        "clientWidth": 1440,
+        "images": [
+          {
+            "alt": "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界",
+            "naturalHeight": 432,
+            "naturalWidth": 768,
+            "src": "http://127.0.0.1:4321/images/ai-reliability-boundaries-960.webp"
+          },
+          {
+            "alt": "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界",
+            "naturalHeight": 432,
+            "naturalWidth": 768,
+            "src": "http://127.0.0.1:4321/images/ai-reliability-boundaries-960.webp"
+          }
+        ],
+        "scrollHeight": 5928,
+        "scrollWidth": 1440
+      },
+      "pageErrors": [],
+      "pathname": "/writing/production-llm-reliability-boundaries/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "article-mobile-dark.png",
+      "measurements": {
+        "clientWidth": 390,
+        "images": [
+          {
+            "alt": "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界",
+            "naturalHeight": 219,
+            "naturalWidth": 390,
+            "src": "http://127.0.0.1:4321/images/ai-reliability-boundaries-640.webp"
+          },
+          {
+            "alt": "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界",
+            "naturalHeight": 219,
+            "naturalWidth": 390,
+            "src": "http://127.0.0.1:4321/images/ai-reliability-boundaries-640.webp"
+          }
+        ],
+        "scrollHeight": 6489,
+        "scrollWidth": 390
+      },
+      "pageErrors": [],
+      "pathname": "/writing/production-llm-reliability-boundaries/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "note-desktop-dark.png",
+      "measurements": {
+        "clientWidth": 1440,
+        "images": [],
+        "scrollHeight": 1432,
+        "scrollWidth": 1440
+      },
+      "pageErrors": [],
+      "pathname": "/notes/temperature-is-not-confidence/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "note-mobile-light.png",
+      "measurements": {
+        "clientWidth": 390,
+        "images": [],
+        "scrollHeight": 1737,
+        "scrollWidth": 390
+      },
+      "pageErrors": [],
+      "pathname": "/notes/temperature-is-not-confidence/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "light",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "about-mobile-dark.png",
+      "measurements": {
+        "clientWidth": 390,
+        "images": [],
+        "scrollHeight": 1373,
+        "scrollWidth": 390
+      },
+      "pageErrors": [],
+      "pathname": "/about/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "search-desktop-light.png",
+      "measurements": {
+        "clientWidth": 1440,
+        "images": [],
+        "scrollHeight": 2045,
+        "scrollWidth": 1440
+      },
+      "pageErrors": [],
+      "pathname": "/search/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "light",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "search-mobile-dark.png",
+      "measurements": {
+        "clientWidth": 390,
+        "images": [],
+        "scrollHeight": 2401,
+        "scrollWidth": 390
+      },
+      "pageErrors": [],
+      "pathname": "/search/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "menu-mobile-light.png",
+      "measurements": {
+        "clientWidth": 390,
+        "images": [
+          {
+            "alt": "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界",
+            "naturalHeight": 219,
+            "naturalWidth": 390,
+            "src": "http://127.0.0.1:4321/images/ai-reliability-boundaries-640.webp"
+          }
+        ],
+        "scrollHeight": 3473,
+        "scrollWidth": 390
+      },
+      "pageErrors": [],
+      "pathname": "/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "light",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "menu-mobile-dark.png",
+      "measurements": {
+        "clientWidth": 390,
+        "images": [
+          {
+            "alt": "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界",
+            "naturalHeight": 219,
+            "naturalWidth": 390,
+            "src": "http://127.0.0.1:4321/images/ai-reliability-boundaries-640.webp"
+          }
+        ],
+        "scrollHeight": 3473,
+        "scrollWidth": 390
+      },
+      "pageErrors": [],
+      "pathname": "/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "consoleErrors": [],
+      "file": "tutorial-outline-mobile-dark.png",
+      "measurements": {
+        "clientWidth": 390,
+        "images": [
+          {
+            "alt": "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界",
+            "naturalHeight": 219,
+            "naturalWidth": 390,
+            "src": "http://127.0.0.1:4321/images/ai-reliability-boundaries-640.webp"
+          }
+        ],
+        "scrollHeight": 6915,
+        "scrollWidth": 390
+      },
+      "pageErrors": [],
+      "pathname": "/writing/typescript-observable-rag-pipeline/",
+      "requestFailures": [],
+      "status": 200,
+      "theme": "dark",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    }
+  ]
+}

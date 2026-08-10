@@ -1,0 +1,11 @@
+{"file":".trellis/spec/frontend/index.md","reason":"Astro-first package boundary, prerendering, and no local Markdown store."}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Shared component ownership, calibrated material tokens, accessibility, and CMS content expansion."}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Strict TypeScript/checkJs and one validated Directus content boundary."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Production/Pagefind build and observable browser test requirements."}
+{"file":".trellis/spec/backend/index.md","reason":"Directus/PostgreSQL source-of-truth and publication flow boundaries."}
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"Idempotent seed, immutable published slugs, exact media bytes, and safe migration rules."}
+{"file":".trellis/spec/backend/error-handling.md","reason":"Fail-closed behavior for content, media, and operational boundaries."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Canonical fixture data must survive seed, validation, rendering, discovery, and export projections."}
+{"file":".trellis/tasks/08-10-polish-ai-content/research/content-plan.md","reason":"Exact 12-piece catalog, taxonomy, IDs, content briefs, references, affected contracts, and migration caveats."}
+{"file":".trellis/tasks/08-10-polish-ai-content/research/ui-polish-audit.md","reason":"Evidence-ranked frontend defects and observable acceptance checks."}
+{"file":".trellis/tasks/08-10-polish-ai-content/research/visual-validation.md","reason":"Dense-content browser matrix, overflow gaps, and measurable visual thresholds."}
