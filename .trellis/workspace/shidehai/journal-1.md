@@ -112,3 +112,24 @@ Published a canonical 12-piece AI engineering collection for 海边的小卖部 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 5: Post-check editorial reliability contracts
+
+**Date**: 2026-08-10
+**Task**: Post-check editorial reliability contracts
+**Branch**: `main`
+
+### Summary
+
+Integrated the final check agent's contracts for idempotent Directus timestamps, deterministic authored raster builds, safe Pagefind excerpts, search race regression coverage, overflow assertions, and normalized Caddy formatting.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `6ff5db9` | (see git log) |
+
+### Status
+
+[OK] **Completed**
