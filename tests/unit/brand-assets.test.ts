@@ -78,6 +78,9 @@ describe("brand and font assets", () => {
       ["images/publishing-workbench-640.webp", [640, 360]],
       ["images/publishing-workbench-960.webp", [960, 540]],
       ["images/publishing-workbench.webp", [1600, 900]],
+      ["images/ai-reliability-boundaries-640.webp", [640, 360]],
+      ["images/ai-reliability-boundaries-960.webp", [960, 540]],
+      ["images/ai-reliability-boundaries.webp", [1600, 900]],
       ["images/default-social.png", [1200, 630]],
     ]);
 
@@ -88,7 +91,7 @@ describe("brand and font assets", () => {
     }
   });
 
-  test("does not recolor content-owned publishing workbench media", async () => {
+  test("does not alter digest-addressed content media", async () => {
     const expectedDigests = new Map<string, string>([
       [
         "publishing-workbench-640.webp",
@@ -101,6 +104,18 @@ describe("brand and font assets", () => {
       [
         "publishing-workbench.webp",
         "e5938adeb553bef5acc3ed200482895613cf84f1bb5fbbc8a5097617324b1875",
+      ],
+      [
+        "ai-reliability-boundaries-640.webp",
+        "acf0d2e76202551d4fb5c5af9ad4237d1f4bc96b93fb0a8fcf2f3ab8598410e5",
+      ],
+      [
+        "ai-reliability-boundaries-960.webp",
+        "ff8294f4b7b7c9b0c9c3e4d5450772f62d92dc51ce89b61600669db1e1652af9",
+      ],
+      [
+        "ai-reliability-boundaries.webp",
+        "a42601eaf1a2a89697f2666bfa261feceef6e20acd980c38b9803f146086395d",
       ],
     ]);
 

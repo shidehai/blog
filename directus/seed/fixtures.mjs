@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
 const COVER_ASSET_URL = new URL(
-  "../../public/images/publishing-workbench-960.webp",
+  "../../public/images/ai-reliability-boundaries-960.webp",
   import.meta.url,
 );
 
@@ -12,8 +12,8 @@ export async function loadSeedCoverFixture() {
 
   return {
     bytes,
-    filename: "fixture-cover.webp",
+    filename: "ai-reliability-boundaries-960.webp",
     mimeType: "image/webp",
-    title: `示例封面（非真实内容，SHA-256 ${digest}）`,
+    title: `AI 应用五层可靠性边界（SHA-256 ${digest}）`,
   };
 }

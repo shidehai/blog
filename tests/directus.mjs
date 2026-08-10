@@ -8,12 +8,17 @@ import {
   isDirectusError,
 } from "../directus/client.mjs";
 import { IDS } from "../directus/constants.mjs";
+import {
+  EDITORIAL_IDS,
+  EDITORIAL_POST_IDS,
+  LEGACY_FIXTURE_POSTS,
+} from "../directus/seed/content.mjs";
 import { loadSeedCoverFixture } from "../directus/seed/fixtures.mjs";
 
 const mode = process.argv[2];
 const admin = await adminClient();
 const fixture = {
-  published: "f2000000-0000-4000-8000-000000000001",
+  published: EDITORIAL_POST_IDS["production-llm-reliability-boundaries"],
   archived: "f2000000-0000-4000-8000-000000000004",
 };
 
@@ -27,8 +32,11 @@ const fixture = {
  * @typedef {{ collection: string, field: string, meta: { interface: string | null, validation: unknown }, schema: { is_unique: boolean, is_indexed: boolean, default_value: unknown } }} FieldRecord
  * @typedef {{ collection: string, field: string, related_collection: string | null }} RelationRecord
  * @typedef {{ id?: string, status?: string, kind?: string, title?: string, body?: string, slug?: string, featured?: boolean, cover_image?: string | null }} PostRecord
- * @typedef {{ id: string, locale: string, timezone: string, default_og_image: string | null }} SiteSettings
+ * @typedef {{ id: string, site_name: string, author_name: string, locale: string, timezone: string, default_og_image: string | null }} SiteSettings
  * @typedef {{ id: string, folder: string | null, title: string | null, type: string | null, filename_download: string, filesize: string | number, width: number | null, height: number | null }} FileRecord
+ * @typedef {{ id: string, name: string, slug: string }} TopicRecord
+ * @typedef {{ id: string, posts_id: string, topics_id: string }} PostTopicRecord
+ * @typedef {{ id: string }} SocialLinkRecord
  * @typedef {{ name: string, admin_access: boolean, app_access: boolean, enforce_tfa: boolean }} PolicyRecord
  * @typedef {{ email: string | null, tfa_secret: string | null }} UserRecord
  * @typedef {{ id: string }} VersionRecord
@@ -90,7 +98,7 @@ async function rejects(request, path, options) {
 
 async function schemaCheck() {
   const coverFixture = await loadSeedCoverFixture();
-  /** @type {Promise<[ServerInfo, License, CollectionRecord[], FieldRecord[], RelationRecord[], PostRecord[], SiteSettings, FileRecord[]]>} */
+  /** @type {Promise<[ServerInfo, License, CollectionRecord[], FieldRecord[], RelationRecord[], PostRecord[], SiteSettings, FileRecord[], TopicRecord[], PostTopicRecord[], SocialLinkRecord[]]>} */
   const responses = Promise.all([
     admin("/server/info"),
     admin("/license"),
@@ -100,10 +108,15 @@ async function schemaCheck() {
     admin(
       "/items/posts?limit=-1&fields=id,status,kind,slug,featured,cover_image",
     ),
-    admin("/items/site_settings?fields=id,locale,timezone,default_og_image"),
+    admin(
+      "/items/site_settings?fields=id,site_name,author_name,locale,timezone,default_og_image",
+    ),
     admin(
       "/files?limit=-1&fields=id,title,type,filename_download,filesize,width,height,folder",
     ),
+    admin("/items/topics?limit=-1&fields=id,name,slug"),
+    admin("/items/posts_topics?limit=-1&fields=id,posts_id,topics_id"),
+    admin("/items/social_links?limit=-1&fields=id"),
   ]);
   const [
     info,
@@ -114,6 +127,9 @@ async function schemaCheck() {
     posts,
     settings,
     files,
+    topics,
+    postTopics,
+    socialLinks,
   ] = await responses;
 
   assert.equal(info.version, "12.2.0");
@@ -195,12 +211,46 @@ async function schemaCheck() {
   assert.ok(relation("posts", "cover_image", "directus_files"));
   assert.ok(relation("social_links", "site_settings_id", "site_settings"));
 
+  const publishedPosts = posts.filter((post) => post.status === "published");
+  const archivedPosts = posts.filter((post) => post.status === "archived");
+  assert.equal(publishedPosts.length, 12);
   assert.deepEqual(
-    new Set(posts.map((post) => post.kind)),
-    new Set(["article", "tutorial", "note"]),
+    Object.fromEntries(
+      ["article", "tutorial", "note"].map((kind) => [
+        kind,
+        publishedPosts.filter((post) => post.kind === kind).length,
+      ]),
+    ),
+    { article: 5, tutorial: 4, note: 3 },
   );
-  assert.equal(posts.filter((post) => post.status === "published").length, 3);
-  assert.equal(posts.filter((post) => post.status === "archived").length, 1);
+  assert.equal(archivedPosts.length, 4);
+  assert.deepEqual(
+    new Map(archivedPosts.map((post) => [post.id, post.slug])),
+    new Map(LEGACY_FIXTURE_POSTS.map((post) => [post.id, post.slug])),
+  );
+  assert.equal(topics.length, 6);
+  assert.equal(postTopics.length, 28);
+  assert.equal(
+    new Set(postTopics.map((relation) => relation.topics_id)).size,
+    topics.length,
+  );
+  assert.equal(
+    new Set(
+      postTopics.map(
+        (relation) => `${relation.posts_id}:${relation.topics_id}`,
+      ),
+    ).size,
+    postTopics.length,
+  );
+  const archivedIds = new Set(archivedPosts.map((post) => post.id));
+  assert.ok(
+    postTopics.every((relation) => !archivedIds.has(relation.posts_id)),
+  );
+  assert.ok(
+    EDITORIAL_IDS.socialLinks.every(
+      (id) => !socialLinks.some((link) => link.id === id),
+    ),
+  );
   const currentCovers = files.filter(
     (file) => file.title === coverFixture.title,
   );
@@ -227,7 +277,9 @@ async function schemaCheck() {
   );
   assert.deepEqual(settings, {
     default_og_image: currentCover.id,
-    id: "f0000000-0000-4000-8000-000000000001",
+    id: EDITORIAL_IDS.settings,
+    site_name: "海边的小卖部",
+    author_name: "关山",
     locale: "zh-CN",
     timezone: "Asia/Shanghai",
   });

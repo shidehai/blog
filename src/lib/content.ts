@@ -10,6 +10,11 @@ import {
 import { z } from "zod";
 
 import { IDS } from "../../directus/constants.mjs";
+import {
+  buildEditorialFixture,
+  EDITORIAL_IDS,
+  EDITORIAL_SETTINGS,
+} from "../../directus/seed/content.mjs";
 import { readBuildEnv } from "../../scripts/env.mjs";
 import {
   deriveExcerpt,
@@ -46,6 +51,7 @@ const POST_FIELDS = [
   "cover_decorative",
   "seo_title",
   "seo_description",
+  "date_created",
   "date_updated",
 ] as const;
 const TOPIC_FIELDS = ["id", "name", "slug", "description"] as const;
@@ -130,6 +136,7 @@ const rawPostSchema = z
     cover_alt: optionalText,
     cover_decorative: z.boolean(),
     cover_image: z.uuid().nullable(),
+    date_created: nullableTimestamp.optional(),
     date_updated: nullableTimestamp,
     featured: z.boolean(),
     id: z.uuid(),
@@ -513,6 +520,38 @@ function compareStrings(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
+function localCalendarDate(timestamp: string, timezoneName: string): string {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en", {
+      day: "2-digit",
+      month: "2-digit",
+      timeZone: timezoneName,
+      year: "numeric",
+    })
+      .formatToParts(new Date(timestamp))
+      .map(({ type, value }) => [type, value]),
+  );
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
+function meaningfulUpdatedAt(
+  post: RawPost,
+  timezoneName: string,
+): string | null {
+  if (!post.date_updated) return null;
+  const updatedDate = localCalendarDate(post.date_updated, timezoneName);
+  if (updatedDate <= localCalendarDate(post.published_at, timezoneName)) {
+    return null;
+  }
+  if (
+    post.date_created &&
+    updatedDate <= localCalendarDate(post.date_created, timezoneName)
+  ) {
+    return null;
+  }
+  return post.date_updated;
+}
+
 function mediaFile(file: RawFile): MediaFile {
   return {
     description: file.description,
@@ -593,7 +632,7 @@ function parseSnapshot(
         summary: (post.summary ?? deriveExcerpt(post.body)) || post.title,
         title: post.title,
         topics: postTopics,
-        updatedAt: post.date_updated,
+        updatedAt: meaningfulUpdatedAt(post, raw.settings.timezone),
       };
     })
     .sort(
@@ -929,173 +968,38 @@ export async function loadPreviewSnapshot(
 }
 
 function fixtureInput(): unknown {
-  const settingsId = "f0000000-0000-4000-8000-000000000001";
-  const astroTopicId = "f1000000-0000-4000-8000-000000000001";
-  const craftTopicId = "f1000000-0000-4000-8000-000000000002";
-  const articleId = "f2000000-0000-4000-8000-000000000001";
-  const noteId = "f2000000-0000-4000-8000-000000000002";
-  const tutorialId = "f2000000-0000-4000-8000-000000000003";
-  const fileId = "f5000000-0000-4000-8000-000000000001";
+  const editorial = buildEditorialFixture({ coverId: EDITORIAL_IDS.cover });
   return {
     files: [
       {
-        description: "开发夹具封面",
+        description: "LLM 应用五层可靠性边界图",
         duration: null,
-        filename_disk: "fixture-cover.png",
-        filename_download: "fixture-cover.png",
-        filesize: 70,
+        filename_disk: "ai-reliability-boundaries-960.webp",
+        filename_download: "ai-reliability-boundaries-960.webp",
+        filesize: 19_344,
         focal_point_x: null,
         focal_point_y: null,
         folder: PUBLISHABLE_ASSETS_FOLDER_ID,
-        height: 1,
-        id: fileId,
+        height: 540,
+        id: EDITORIAL_IDS.cover,
         metadata: null,
-        modified_on: "2026-07-30T00:00:00.000Z",
+        modified_on: "2026-08-10T00:00:00.000Z",
         storage: "local",
-        title: "示例封面（非真实内容）",
-        type: "image/png",
-        width: 1,
+        title: "AI 应用五层可靠性边界",
+        type: "image/webp",
+        width: 960,
       },
     ],
-    postTopics: [
-      {
-        id: "f4000000-0000-4000-8000-000000000001",
-        posts_id: articleId,
-        topics_id: astroTopicId,
-      },
-      {
-        id: "f4000000-0000-4000-8000-000000000002",
-        posts_id: noteId,
-        topics_id: astroTopicId,
-      },
-      {
-        id: "f4000000-0000-4000-8000-000000000003",
-        posts_id: tutorialId,
-        topics_id: craftTopicId,
-      },
-    ],
-    posts: [
-      {
-        body: "## 静态发布的数据边界\n\n公开构建只读取已经发布的完整快照。",
-        cover_alt: "浅蓝色的开发夹具封面",
-        cover_decorative: false,
-        cover_image: fileId,
-        date_updated: "2026-07-30T03:00:00.000Z",
-        featured: true,
-        id: articleId,
-        kind: "article",
-        published_at: "2026-07-28T02:00:00.000Z",
-        seo_description: null,
-        seo_title: null,
-        slug: "static-publishing-data-boundary",
-        status: "published",
-        summary: "从内容数据库到静态页面，说明校验和完整快照如何协作。",
-        title: "示例：静态发布的数据边界",
-      },
-      {
-        body: "短记录也走同一条发布边界。失败必须可诊断。",
-        cover_alt: null,
-        cover_decorative: false,
-        cover_image: null,
-        date_updated: null,
-        featured: false,
-        id: noteId,
-        kind: "note",
-        published_at: "2026-07-30T16:30:00+00:00",
-        seo_description: null,
-        seo_title: null,
-        slug: "diagnosable-failures-first",
-        status: "published",
-        summary: null,
-        title: "示例随记：先让失败可诊断",
-      },
-      {
-        body: `这是一篇完全虚构的开发夹具，不描述真实系统或真实发布记录。
-
-## 准备发布夹具
-
-先阅读[静态发布的数据边界](/writing/static-publishing-data-boundary/#静态发布的数据边界)，再用下表核对假数据。
-
-| 输入 | 预期结果 |
-| --- | --- |
-| 已发布文章 | 生成稳定路由 |
-| 已归档记录 | 不进入快照 |
-
-### 校验清单
-
-- [x] 使用固定 slug
-- [x] 只关联虚构主题
-- [ ] 替换为真实内容后再上线
-
-> [!IMPORTANT]
-> 此教程、作者和数据均为自动化测试夹具。
-
-![从 Directus 经过校验、构建到发布的夹具流程图](directus://${fileId})
-
-\`\`\`ts filename="fixture-check.ts" {2} diff
-const posts = await loadFixturePosts();
-+assert(posts.every((post) => post.status === "published"));
-\`\`\`
-
-完成后可查看[诊断失败随记](/notes/diagnosable-failures-first/)。[^fixture]
-
-[^fixture]: 此脚注只用于验证 Markdown 渲染，不对应真实资料。
-`,
-        cover_alt: null,
-        cover_decorative: false,
-        cover_image: null,
-        date_updated: "2026-07-30T06:30:00.000Z",
-        featured: false,
-        id: tutorialId,
-        kind: "tutorial",
-        published_at: "2026-07-29T06:30:00.000Z",
-        seo_description: null,
-        seo_title: null,
-        slug: "validate-a-published-snapshot",
-        status: "published",
-        summary: "用完全虚构的数据演示标题、表格、清单、代码、脚注和内部链接。",
-        title: "示例教程：验证一份发布快照",
-      },
-    ],
+    postTopics: editorial.postTopics,
+    posts: editorial.posts,
     settings: {
-      author_name: "示例作者",
       avatar: null,
-      biography: "此身份仅用于开发测试。",
-      date_updated: "2026-07-30T00:00:00.000Z",
-      default_og_image: fileId,
-      default_seo_description: "一个中文优先个人出版系统的开发夹具。",
-      footer_text: "示例内容，不代表真实个人。",
-      homepage_intro: "这里展示文章、教程与随记。",
-      id: settingsId,
-      locale: "zh-CN",
-      site_name: "示例知识手记",
-      tagline: "把复杂问题写清楚",
-      timezone: "Asia/Shanghai",
+      date_updated: "2026-08-10T00:00:00.000Z",
+      default_og_image: EDITORIAL_IDS.cover,
+      ...EDITORIAL_SETTINGS,
     },
-    socialLinks: [
-      {
-        icon: "github",
-        id: "f3000000-0000-4000-8000-000000000001",
-        label: "示例代码仓库",
-        site_settings_id: settingsId,
-        sort: 1,
-        url: "https://example.com/source",
-      },
-    ],
-    topics: [
-      {
-        description: "Astro 与静态内容交付。",
-        id: astroTopicId,
-        name: "Astro",
-        slug: "astro",
-      },
-      {
-        description: "只用于测试校验、渲染和发布流程的虚构主题。",
-        id: craftTopicId,
-        name: "示例工程手艺",
-        slug: "fixture-engineering-craft",
-      },
-    ],
+    socialLinks: [],
+    topics: editorial.topics,
   };
 }
 

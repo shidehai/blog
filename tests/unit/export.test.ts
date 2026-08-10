@@ -18,7 +18,11 @@ describe("published portability export", () => {
       true,
     );
     for (const post of manifest.posts) {
-      expect(files.get(post.bodyFile)).toContain("边界");
+      expect(files.get(post.bodyFile)?.trimEnd()).toBe(
+        snapshot.posts
+          .find((candidate) => candidate.id === post.id)
+          ?.body.trimEnd(),
+      );
       expect(post.id).toMatch(/^[0-9a-f-]{36}$/);
     }
   });

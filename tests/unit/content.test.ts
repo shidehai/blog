@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  deriveRelatedPosts,
   formatContentDate,
   loadPreviewSnapshot,
   loadPublishedSnapshot,
@@ -117,39 +118,53 @@ describe("published content boundary", () => {
   it("loads and normalizes the built-in fixture without CMS credentials", async () => {
     const snapshot = await loadPublishedSnapshot({ source: "fixture" });
 
-    expect(snapshot.posts.map((post) => post.status)).toEqual(
-      Array.from({ length: 3 }, () => "published"),
+    expect(snapshot.posts).toHaveLength(12);
+    expect(snapshot.posts.every((post) => post.status === "published")).toBe(
+      true,
     );
-    expect(snapshot.posts.map((post) => post.kind)).toEqual([
-      "note",
-      "tutorial",
-      "article",
-    ]);
-    expect(snapshot.posts.map((post) => post.route)).toEqual([
-      "/notes/diagnosable-failures-first/",
-      "/writing/validate-a-published-snapshot/",
-      "/writing/static-publishing-data-boundary/",
-    ]);
     expect(
-      first(snapshot.posts.filter((post) => post.kind === "note")).summary,
-    ).toContain("短记录");
+      Object.fromEntries(
+        ["article", "tutorial", "note"].map((kind) => [
+          kind,
+          snapshot.posts.filter((post) => post.kind === kind).length,
+        ]),
+      ),
+    ).toEqual({ article: 5, note: 3, tutorial: 4 });
+    expect(snapshot.posts.map((post) => post.route)).toEqual(
+      expect.arrayContaining([
+        "/writing/production-llm-reliability-boundaries/",
+        "/writing/typescript-observable-rag-pipeline/",
+        "/notes/chunk-size-is-not-global/",
+      ]),
+    );
+    expect(snapshot.topics).toHaveLength(6);
     expect(
-      first(snapshot.posts.filter((post) => post.kind === "article")).topics[0]
-        ?.slug,
-    ).toBe("astro");
-    expect(
-      first(snapshot.posts.filter((post) => post.kind === "tutorial")).topics[0]
-        ?.slug,
-    ).toBe("fixture-engineering-craft");
+      snapshot.topics.every((topic) =>
+        snapshot.posts.some((post) =>
+          post.topics.some((candidate) => candidate.id === topic.id),
+        ),
+      ),
+    ).toBe(true);
+    expect(snapshot.posts.filter((post) => post.featured)).toHaveLength(1);
+    expect(snapshot.posts.find((post) => post.featured)?.slug).toBe(
+      "production-llm-reliability-boundaries",
+    );
+    expect(snapshot.settings).toMatchObject({
+      authorName: "关山",
+      siteName: "海边的小卖部",
+      socialLinks: [],
+    });
     expect(snapshot.settings.defaultOgImage?.id).toBe(
       "f5000000-0000-4000-8000-000000000001",
     );
   });
 
-  it("renders the substantial fake tutorial through every planned Markdown primitive", async () => {
+  it("renders the observable RAG tutorial through every Markdown primitive", async () => {
     const snapshot = await loadPublishedSnapshot({ source: "fixture" });
     const tutorial = first(
-      snapshot.posts.filter((post) => post.kind === "tutorial"),
+      snapshot.posts.filter(
+        (post) => post.slug === "typescript-observable-rag-pipeline",
+      ),
     );
     const mediaId = "f5000000-0000-4000-8000-000000000001";
     const rendered = await renderMarkdown(tutorial.body, {
@@ -160,7 +175,7 @@ describe("published content boundary", () => {
             height: 900,
             id: mediaId,
             mimeType: "image/webp",
-            src: "/images/publishing-workbench.webp",
+            src: "/images/ai-reliability-boundaries.webp",
             width: 1600,
           },
         ],
@@ -170,20 +185,50 @@ describe("published content boundary", () => {
 
     expect(rendered.outline).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ level: 2, text: "准备发布夹具" }),
-        expect.objectContaining({ level: 3, text: "校验清单" }),
+        expect.objectContaining({ level: 2, text: "先定义可追踪的数据形状" }),
+        expect.objectContaining({ level: 3, text: "校验引用没有越界" }),
       ]),
     );
     expect(rendered.html).toContain('class="table-wrapper"');
     expect(rendered.html).toContain('type="checkbox"');
     expect(rendered.html).toContain("callout--important");
+    expect(rendered.html).toContain("callout--note");
+    expect(rendered.html).toContain("callout--warning");
     expect(rendered.html).toContain('class="responsive-figure"');
     expect(rendered.html).toContain('class="code-frame"');
     expect(rendered.html).toContain("is-highlighted diff-add");
     expect(rendered.html).toContain("data-footnotes");
     expect(rendered.links.map((link) => link.href)).toEqual([
-      "/writing/static-publishing-data-boundary/#静态发布的数据边界",
-      "/notes/diagnosable-failures-first/",
+      "/notes/chunk-size-is-not-global/",
+      "/writing/prompt-regression-golden-set/#把失败写成可复现样本",
+      "/writing/rag-retrieval-reranking-attribution/#四个阶段四种责任",
+    ]);
+  });
+
+  it("derives stable related writing from the canonical topic assignments", async () => {
+    const snapshot = await loadPublishedSnapshot({ source: "fixture" });
+    const relatedSlugs = (slug: string) => {
+      const post = snapshot.posts.find((candidate) => candidate.slug === slug);
+      if (!post) throw new Error(`Missing canonical post ${slug}`);
+      return deriveRelatedPosts(post, snapshot.posts).map(
+        (candidate) => candidate.slug,
+      );
+    };
+
+    expect(relatedSlugs("production-llm-reliability-boundaries")).toEqual([
+      "llm-evaluation-regression-loop",
+      "streaming-llm-sse-cancellation",
+      "temperature-is-not-confidence",
+    ]);
+    expect(relatedSlugs("typescript-observable-rag-pipeline")).toEqual([
+      "prompt-regression-golden-set",
+      "temperature-is-not-confidence",
+      "llm-evaluation-regression-loop",
+    ]);
+    expect(relatedSlugs("safe-tool-calling-typescript")).toEqual([
+      "prompt-injection-data-flow",
+      "llm-cache-key-versioning",
+      "structured-output-schema-retry-validation",
     ]);
   });
 

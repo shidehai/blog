@@ -2,6 +2,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { readBuildEnv } from "./env.mjs";
+import { EDITORIAL_IDS } from "../directus/seed/content.mjs";
 import {
   loadPublishedInput,
   parsePublishedSnapshot,
@@ -32,35 +33,52 @@ const snapshot = parsePublishedSnapshot(input);
 await rm(mediaDirectory, { force: true, recursive: true });
 const media: Record<string, PublicMediaAsset> = {};
 if (source.source === "fixture") {
-  for (const file of snapshot.files) {
-    const variants = [
-      {
-        height: 360,
-        mimeType: "image/webp" as const,
-        src: "/images/publishing-workbench-640.webp",
-        width: 640,
-      },
-      {
-        height: 540,
-        mimeType: "image/webp" as const,
-        src: "/images/publishing-workbench-960.webp",
-        width: 960,
-      },
+  const fixtureAssets: ReadonlyMap<
+    string,
+    Omit<PublicMediaAsset, "id" | "mimeType" | "srcset">
+  > = new Map([
+    [
+      EDITORIAL_IDS.cover,
       {
         height: 900,
-        mimeType: "image/webp" as const,
-        src: "/images/publishing-workbench.webp",
+        src: "/images/ai-reliability-boundaries.webp",
+        variants: [
+          {
+            height: 360,
+            mimeType: "image/webp" as const,
+            src: "/images/ai-reliability-boundaries-640.webp",
+            width: 640,
+          },
+          {
+            height: 540,
+            mimeType: "image/webp" as const,
+            src: "/images/ai-reliability-boundaries-960.webp",
+            width: 960,
+          },
+          {
+            height: 900,
+            mimeType: "image/webp" as const,
+            src: "/images/ai-reliability-boundaries.webp",
+            width: 1600,
+          },
+        ],
         width: 1600,
       },
-    ];
+    ],
+  ]);
+  for (const file of snapshot.files) {
+    const asset = fixtureAssets.get(file.id);
+    if (!asset) throw new Error(`No fixture media mapping for ${file.id}`);
     media[file.id] = {
-      height: 900,
+      height: asset.height,
       id: file.id,
       mimeType: "image/webp",
-      src: "/images/publishing-workbench.webp",
-      srcset: variants.map(({ src, width }) => `${src} ${width}w`).join(", "),
-      variants,
-      width: 1600,
+      src: asset.src,
+      srcset: asset.variants
+        .map(({ src, width }) => `${src} ${width}w`)
+        .join(", "),
+      variants: asset.variants,
+      width: asset.width,
     };
   }
 } else {
