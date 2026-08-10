@@ -133,3 +133,25 @@ Integrated the final check agent's contracts for idempotent Directus timestamps,
 ### Status
 
 [OK] **Completed**
+
+
+## Session 6: Refine featured and topic layouts
+
+**Date**: 2026-08-10
+**Task**: Refine featured and topic layouts
+**Branch**: `main`
+
+### Summary
+
+Removed the featured copy/media overlap, rebuilt the topic overview as a responsive selector grid, calibrated display typography and responsive image hints, expanded visual regression coverage, and documented the non-overlapping media contract.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e361d37` | (see git log) |
+| `920d0e1` | (see git log) |
+
+### Status
+
+[OK] **Completed**
