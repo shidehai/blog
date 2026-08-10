@@ -23,8 +23,7 @@ function itemMatches(existing, data) {
   return Object.entries(data).every(([field, expected]) => {
     const actual = existing[field];
     return (
-      actual === expected ||
-      JSON.stringify(actual) === JSON.stringify(expected)
+      actual === expected || JSON.stringify(actual) === JSON.stringify(expected)
     );
   });
 }

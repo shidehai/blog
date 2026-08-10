@@ -47,6 +47,9 @@ the exact uploaded bytes must pass the same transform path as production media.
   title as its idempotency key and never replaces an existing original's bytes.
 - Regression boundary: `emitPublicMediaAsset(record, bytes, options)` emits and
   decodes every expected responsive variant.
+- Authored-raster boundary: `pnpm assets:generate` resizes committed masters;
+  `REGENERATE_AUTHORED_RASTERS=1 pnpm assets:generate` explicitly re-renders
+  font-backed masters before deriving variants.
 
 ### 3. Contracts
 
@@ -60,6 +63,10 @@ the exact uploaded bytes must pass the same transform path as production media.
   administrator maintenance action.
 - The unit test imports the same fixture helper as the seed. A generated
   lookalike or metadata-only Sharp check does not cover this contract.
+- Normal builds must not re-render font-backed authored masters. Host font
+  availability can change raster bytes even when the SVG template is unchanged;
+  master regeneration is an explicit authoring action, never a prebuild side
+  effect.
 
 ### 4. Validation & Error Matrix
 
@@ -72,6 +79,7 @@ the exact uploaded bytes must pass the same transform path as production media.
 | Metadata reads but variant transform fails | Test and Directus build fail closed |
 | MIME, byte length, or dimensions disagree | Media validation fails with file context |
 | File is outside the publishable folder | Public build rejects it |
+| Normal build changes an authored master | Build is non-reproducible; keep the committed master and resize only |
 
 ### 5. Good/Base/Bad Cases
 
@@ -95,6 +103,9 @@ the exact uploaded bytes must pass the same transform path as production media.
   Directus-backed Astro/Pagefind build.
 - Make the schema check accept a clean install with no legacy original. When a
   legacy fixture is present, assert that it remains unchanged and unreferenced.
+- After explicit master regeneration, run `pnpm assets:generate` twice and
+  compare committed master and variant SHA-256 values; the second run must leave
+  every raster byte unchanged.
 
 ### 7. Wrong vs Correct
 

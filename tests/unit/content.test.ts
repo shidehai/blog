@@ -24,6 +24,10 @@ function nullable(value: string): string | null {
   return value;
 }
 
+function nullableTimestamp(value: string | null): string | null {
+  return value;
+}
+
 function validInput() {
   return {
     files: [
@@ -59,7 +63,8 @@ function validInput() {
         cover_alt: nullable("蓝色数据边界示意图"),
         cover_decorative: false,
         cover_image: IDS.file,
-        date_updated: null,
+        date_created: "2026-08-01T00:30:00+08:00",
+        date_updated: nullableTimestamp(null),
         featured: true,
         id: IDS.post,
         kind: "article",
@@ -250,6 +255,22 @@ describe("published content boundary", () => {
     ]);
   });
 
+  it("ignores Directus maintenance timestamps until a later local day", () => {
+    const input = validInput();
+    const [post] = input.posts;
+    if (!post) throw new Error("test fixture is empty");
+    post.date_created = "2026-08-10T09:00:00.000Z";
+    post.date_updated = "2026-08-10T12:00:00.000Z";
+    expect(
+      first([...parsePublishedSnapshot(input).posts]).updatedAt,
+    ).toBeNull();
+
+    post.date_updated = "2026-08-11T00:00:00.000Z";
+    expect(first([...parsePublishedSnapshot(input).posts]).updatedAt).toBe(
+      "2026-08-11T00:00:00.000Z",
+    );
+  });
+
   it("uses explicit SDK fields and filters posts at the API", async () => {
     const input = validInput();
     const requests: URL[] = [];
@@ -283,6 +304,7 @@ describe("published content boundary", () => {
     expect(postsRequest).toBeDefined();
     expect(postsRequest?.search).toContain("published");
     expect(postsRequest?.searchParams.get("fields")).toContain("status");
+    expect(postsRequest?.searchParams.get("fields")).toContain("date_created");
     expect(postsRequest?.searchParams.get("fields")).not.toContain("*");
     expect(requests.map((url) => url.pathname)).toEqual(
       expect.arrayContaining([

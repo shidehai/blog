@@ -117,14 +117,14 @@ describe("public media assets", () => {
     const firstDirectory = await temporaryDirectory();
     const secondDirectory = await temporaryDirectory();
 
-    expect(fixture.bytes).toHaveLength(19_344);
+    expect(fixture.bytes).toHaveLength(18_500);
     expect(digest).toBe(
-      "ff8294f4b7b7c9b0c9c3e4d5450772f62d92dc51ce89b61600669db1e1652af9",
+      "666002f894f46da14b86f0bb2b9e963e1f69907cf714b089b939afd6fe8fc26b",
     );
     expect(fixture).toMatchObject({
       filename: "ai-reliability-boundaries-960.webp",
       mimeType: "image/webp",
-      title: "AI 应用五层可靠性边界（SHA-256 ff8294f4b7b7）",
+      title: "AI 应用五层可靠性边界（SHA-256 666002f894f4）",
     });
     expect(parseDirectusMediaFile(record)).toMatchObject({
       filename: fixture.filename,
@@ -144,13 +144,13 @@ describe("public media assets", () => {
       {
         height: 360,
         mimeType: "image/webp",
-        src: `/_media/${FILE_ID}-640w-cda34074e4f97d50.webp`,
+        src: `/_media/${FILE_ID}-640w-4f0011de2edeb027.webp`,
         width: 640,
       },
       {
         height: 540,
         mimeType: "image/webp",
-        src: `/_media/${FILE_ID}-960w-8ccae1d4b81420df.webp`,
+        src: `/_media/${FILE_ID}-960w-e59e2cf2a828fa42.webp`,
         width: 960,
       },
     ] as const;

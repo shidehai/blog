@@ -107,11 +107,11 @@ describe("brand and font assets", () => {
       ],
       [
         "ai-reliability-boundaries-640.webp",
-        "acf0d2e76202551d4fb5c5af9ad4237d1f4bc96b93fb0a8fcf2f3ab8598410e5",
+        "e414c2293428c371433b6cdcbd42a8e7a7458a34e7a8ee0be3ba52d368b94341",
       ],
       [
         "ai-reliability-boundaries-960.webp",
-        "ff8294f4b7b7c9b0c9c3e4d5450772f62d92dc51ce89b61600669db1e1652af9",
+        "666002f894f46da14b86f0bb2b9e963e1f69907cf714b089b939afd6fe8fc26b",
       ],
       [
         "ai-reliability-boundaries.webp",

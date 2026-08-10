@@ -976,7 +976,7 @@ function fixtureInput(): unknown {
         duration: null,
         filename_disk: "ai-reliability-boundaries-960.webp",
         filename_download: "ai-reliability-boundaries-960.webp",
-        filesize: 19_344,
+        filesize: 18_500,
         focal_point_x: null,
         focal_point_y: null,
         folder: PUBLISHABLE_ASSETS_FOLDER_ID,

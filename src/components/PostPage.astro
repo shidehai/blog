@@ -25,25 +25,6 @@ const description = post.seoDescription ?? post.summary;
 const isNote = post.kind === "note";
 const publishedDate = post.publishedAt.slice(0, 10);
 const publishedMonth = post.publishedAt.slice(0, 7);
-const localDateFormatter = new Intl.DateTimeFormat("en", {
-  day: "2-digit",
-  month: "2-digit",
-  timeZone: settings.timezone,
-  year: "numeric",
-});
-const localDateKey = (timestamp: string) => {
-  const parts = Object.fromEntries(
-    localDateFormatter
-      .formatToParts(new Date(timestamp))
-      .map(({ type, value }) => [type, value]),
-  );
-  return `${parts.year}-${parts.month}-${parts.day}`;
-};
-const visibleUpdatedAt =
-  post.updatedAt &&
-  localDateKey(post.updatedAt) > localDateKey(post.publishedAt)
-    ? post.updatedAt
-    : undefined;
 ---
 
 <AppLayout
@@ -69,11 +50,11 @@ const visibleUpdatedAt =
           settings.timezone,
           settings.locale,
         )}
-        {...visibleUpdatedAt
+        {...post.updatedAt
           ? {
-              updatedDateTime: visibleUpdatedAt,
+              updatedDateTime: post.updatedAt,
               updatedDateLabel: formatContentDate(
-                visibleUpdatedAt,
+                post.updatedAt,
                 settings.timezone,
                 settings.locale,
               ),

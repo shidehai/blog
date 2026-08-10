@@ -44,9 +44,10 @@ the stacked mobile composition. The complete matrix was recaptured afterward.
 
 ## Automated gate
 
-`pnpm verify` passed before the final visual-only CSS adjustment with 57 unit
-tests and 59 Chromium tests. The final gate is rerun after this evidence is
-recorded. Directus schema application, two idempotent seeds, schema checks, and
-a Directus-backed build passed in Workstream A. Scoped Directus build-token and
-permission checks remain unavailable under the installed Core license; the
+The final `pnpm verify` passed after the visual review and follow-up reliability
+fixes with 58 unit tests and 59 Chromium tests. It also rebuilt and indexed all
+12 content pages, passed the operations suite, and matched five inline-script
+CSP hashes. Directus schema application, two idempotent seeds, schema checks,
+and a Directus-backed build passed in Workstream A. Scoped Directus build-token
+and permission checks remain unavailable under the installed Core license; the
 license guard was not weakened.

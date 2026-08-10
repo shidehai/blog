@@ -126,39 +126,43 @@ const reliabilityMasterPath = join(
   outputDirectory,
   "ai-reliability-boundaries.webp",
 );
-const regenerateReliabilityMaster =
-  process.env.REGENERATE_EDITORIAL_MASTER === "1";
-const reliabilityMaster = regenerateReliabilityMaster
+// Font-backed masters are authored explicitly; normal builds only resize the committed master.
+const regenerateAuthoredRasters =
+  process.env.REGENERATE_AUTHORED_RASTERS === "1";
+const reliabilityMaster = regenerateAuthoredRasters
   ? await sharp(reliabilityDiagram(1600, 900))
       .webp({ effort: 4, quality: 90 })
       .toBuffer()
   : await readFile(reliabilityMasterPath);
-if (regenerateReliabilityMaster) {
+if (regenerateAuthoredRasters) {
   await writeFile(reliabilityMasterPath, reliabilityMaster);
 }
-await Promise.all([
-  ...[640, 960, 1600].map((width) =>
-    sharp(diagram(width, Math.round((width * 9) / 16), workbenchPalette))
-      .webp({ effort: 4, quality: 88 })
-      .toFile(
-        join(
-          outputDirectory,
-          width === 1600
-            ? "publishing-workbench.webp"
-            : `publishing-workbench-${width}.webp`,
-        ),
+const authoredRasterTasks = regenerateAuthoredRasters
+  ? [
+      ...[640, 960, 1600].map((width) =>
+        sharp(diagram(width, Math.round((width * 9) / 16), workbenchPalette))
+          .webp({ effort: 4, quality: 88 })
+          .toFile(
+            join(
+              outputDirectory,
+              width === 1600
+                ? "publishing-workbench.webp"
+                : `publishing-workbench-${width}.webp`,
+            ),
+          ),
       ),
-  ),
-  sharp(diagram(1200, 630, socialPalette))
-    .png({ compressionLevel: 9 })
-    .toFile(join(outputDirectory, "default-social.png")),
+      sharp(diagram(1200, 630, socialPalette))
+        .png({ compressionLevel: 9 })
+        .toFile(join(outputDirectory, "default-social.png")),
+    ]
+  : [];
+await Promise.all([
+  ...authoredRasterTasks,
   ...[640, 960].map((width) =>
     sharp(reliabilityMaster)
       .resize(width, Math.round((width * 9) / 16))
       .webp({ effort: 4, quality: 90 })
-      .toFile(
-        join(outputDirectory, `ai-reliability-boundaries-${width}.webp`),
-      ),
+      .toFile(join(outputDirectory, `ai-reliability-boundaries-${width}.webp`)),
   ),
   ...brandIconTargets.map(([filename, size]) =>
     sharp(mark)
