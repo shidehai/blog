@@ -25,7 +25,7 @@ const notes = snapshot.posts.filter((post) => post.kind === "note");
 
     <nav class="browse-toolbar surface--inset" aria-label="笔记浏览方式">
       <a class="filter-link is-current" href="/notes/" aria-current="page">
-        最新 <span>{notes.length}</span>
+        时间流 <span>{notes.length}</span>
       </a>
       <a class="filter-link" href="/topics/">按主题</a>
       <a class="filter-link" href="/archive/">完整归档</a>
@@ -33,7 +33,11 @@ const notes = snapshot.posts.filter((post) => post.kind === "note");
 
     {
       notes.length ? (
-        <section aria-labelledby="notes-stream-heading">
+        <section
+          class="notes-stream"
+          data-browse-mode="chronological"
+          aria-labelledby="notes-stream-heading"
+        >
           <h2 id="notes-stream-heading" class="visually-hidden">
             全部笔记
           </h2>

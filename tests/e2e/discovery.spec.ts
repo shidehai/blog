@@ -45,6 +45,42 @@ test("public pages expose canonical social and structured metadata", async ({
   expect(postJsonLd).toContain('"dateModified":"2026-08-09T03:00:00.000Z"');
 });
 
+test("writing and notes use distinct discovery modes without mixing content", async ({
+  page,
+}) => {
+  await page.goto("/writing/");
+  await expect(page.locator('[data-browse-mode="categorized"]')).toBeVisible();
+  await expect(page.locator(".writing-discovery .content-section")).toHaveCount(
+    2,
+  );
+  await expect(page.locator(".writing-discovery .post-row--note")).toHaveCount(
+    0,
+  );
+  expect(
+    await page
+      .locator(".writing-discovery .post-row")
+      .evaluateAll((rows) =>
+        rows.every(
+          (row) =>
+            row.classList.contains("post-row--article") ||
+            row.classList.contains("post-row--tutorial"),
+        ),
+      ),
+  ).toBe(true);
+
+  await page.goto("/notes/");
+  await expect(
+    page.locator('[data-browse-mode="chronological"]'),
+  ).toBeVisible();
+  await expect(page.locator(".notes-stream .post-row--note")).toHaveCount(
+    await page.locator(".notes-stream .post-row").count(),
+  );
+  await expect(page.locator(".notes-stream .post-row").first()).toHaveCSS(
+    "box-shadow",
+    "none",
+  );
+});
+
 test("preview is noindex and emits no public discovery metadata", async ({
   page,
 }) => {

@@ -33,6 +33,16 @@ frontmatter.
 Do not turn those components into a variant factory or speculative UI kit.
 Create another component only when two real consumers share a semantic unit.
 
+### Discovery Route Contract
+
+The `/writing/` and `/notes/` routes intentionally share `PostList` semantics
+but must communicate different browsing jobs. Writing discovery stays grouped
+by article/tutorial sections and may use scoped section accents. Notes discovery
+uses a chronological stream wrapper (`.notes-stream`) with lightweight rows;
+route-specific presentation belongs under `.writing-page` / `.notes-page` and
+must not change the shared post-row contract or content filters. Keep an
+observable route marker when a browser test needs to distinguish the modes.
+
 `src/styles/global.css` is the authoritative visual-token and material-state
 layer, with local font declarations in `src/styles/fonts.css`. Components and
 route-local styles consume those semantic values instead of embedding private

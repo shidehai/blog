@@ -25,9 +25,9 @@ const writingCount = tutorials.length + articles.length;
       description="较完整的技术文章与可跟随的教程，记录判断如何一步步落到可验证的实现。"
     />
 
-    <nav class="browse-toolbar surface--inset" aria-label="写作分类">
+    <nav class="browse-toolbar surface--inset" aria-label="按内容类型浏览写作">
       <a class="filter-link is-current" href="/writing/" aria-current="page">
-        全部 <span>{writingCount}</span>
+        分类总览 <span>{writingCount}</span>
       </a>
       {
         tutorials.length ? (
@@ -49,7 +49,10 @@ const writingCount = tutorials.length + articles.length;
 
     {
       writingCount ? (
-        <div class="discovery-sections">
+        <div
+          class="discovery-sections writing-discovery"
+          data-browse-mode="categorized"
+        >
           {tutorials.length ? (
             <section
               id="tutorials"
