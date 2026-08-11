@@ -1,0 +1,2 @@
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Quality review must cover observable browser behavior, responsive overflow, and the aggregate pnpm verify gate."}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Review semantic HTML, keyboard accessibility, theme behavior, and reuse of PostList/PostListRow."}
