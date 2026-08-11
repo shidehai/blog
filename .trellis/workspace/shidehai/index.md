@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 6
-- **Last Active**: 2026-08-10
+- **Total Sessions**: 7
+- **Last Active**: 2026-08-11
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~157 | Active |
+| `journal-1.md` | ~178 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -30,6 +30,7 @@
 
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 7 | 2026-08-11 | 区分写作与笔记浏览体验 | `b6583d3` | `main` |
 | 6 | 2026-08-10 | Refine featured and topic layouts | `e361d37`, `920d0e1` | `main` |
 | 5 | 2026-08-10 | Post-check editorial reliability contracts | `6ff5db9` | `main` |
 | 4 | 2026-08-10 | AI publication polish and editorial collection | `29d5d85`, `4649d37`, `0f5b8a4`, `7f63994` | `main` |
