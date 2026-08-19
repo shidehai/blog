@@ -10,9 +10,12 @@ services:
       target: development
     command: ["pnpm", "dev", "--host", "0.0.0.0"]
     environment:
-      CONTENT_SOURCE: fixture
+      CONTENT_SOURCE: ${CONTENT_SOURCE:-fixture}
+      DIRECTUS_PREVIEW_TOKEN: ${DIRECTUS_PREVIEW_TOKEN:-development-fixture-preview-token-24ch}
+      DIRECTUS_URL: ${DIRECTUS_URL:-http://directus:8055}
       NODE_ENV: development
-      SITE_URL: http://localhost:4321
+      PREVIEW_TRUSTED_HEADER: ${PREVIEW_TRUSTED_HEADER:-development-fixture-preview-header-24ch}
+      SITE_URL: ${SITE_URL:-http://localhost:4321}
     ports:
       - "127.0.0.1:4321:4321"
     volumes:

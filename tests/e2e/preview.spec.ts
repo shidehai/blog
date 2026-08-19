@@ -45,3 +45,18 @@ test("preview rejects malformed version selectors", async ({ request }) => {
 
   expect(response.status()).toBe(404);
 });
+
+test("preview returns 404 for unknown post id even with trusted header", async ({
+  request,
+}) => {
+  const response = await request.get(
+    "/preview/f2000000-0000-4000-8000-000000000999",
+    {
+      headers: { "x-preview-trusted": trustedHeader },
+    },
+  );
+
+  expect(response.status()).toBe(404);
+  expect(response.headers()["cache-control"]).toBe("private, no-store");
+  expect(await response.text()).toBe("预览不可用\n");
+});

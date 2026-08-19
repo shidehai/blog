@@ -71,19 +71,34 @@ curl --fail http://127.0.0.1:4321/healthz
 pnpm verify
 ```
 
-## Schema and fixtures
+## Schema, fixtures, and launch
 
 Apply the reviewed schema, database constraints, policy/bootstrap state, and
-fake fixtures explicitly; these commands do not reset existing data:
+editorial data explicitly; these commands do not reset existing data:
 
 ```bash
 test -f directus/schema.yaml
 pnpm directus:schema:diff
 pnpm directus:schema:apply
 pnpm directus:bootstrap
-pnpm directus:seed
+# Install development fixtures (requires explicit target confirmation):
+pnpm directus:seed --confirm=CONFIRM_FIXTURE_INSTALL_http://127.0.0.1:8055
 pnpm directus:schema:check
 ```
+
+### One-time editorial launch
+
+To transition canonical content to truthful publication timestamps for the first release:
+
+```bash
+# 1. Generate read-only launch manifest:
+pnpm launch:plan --base-time=2026-08-19T12:00:00.000Z
+
+# 2. Apply launch plan with explicit confirmation token printed by plan:
+pnpm launch:apply --manifest=.generated/launch-manifest.json --confirm=CONFIRM_LAUNCH_<digest>_FOR_http://127.0.0.1:8055
+```
+
+Subsequent authoring and article updates occur exclusively inside Directus Studio and are protected against fixture overwrites.
 
 ## Backup and teardown
 

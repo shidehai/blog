@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 
+import {
+  FIXTURE_PREVIEW_DEFAULTS,
+  resolveDevEnvironment,
+} from "../../scripts/dev.mjs";
 import { readBuildEnv, readRuntimeEnv } from "../../scripts/env.mjs";
 
 describe("environment validation", () => {
@@ -37,5 +41,50 @@ describe("environment validation", () => {
     expect(
       readRuntimeEnv({ ...runtime, CONTENT_SOURCE: "directus" }),
     ).toMatchObject({ CONTENT_SOURCE: "directus" });
+  });
+
+  it("supplies complete fixture defaults for local dev entrypoint", () => {
+    const customEnv: Record<string, string | undefined> = {};
+    const { build, runtime } = resolveDevEnvironment(customEnv, {
+      loadEnv: false,
+    });
+
+    expect(build.CONTENT_SOURCE).toBe("fixture");
+    expect(runtime.CONTENT_SOURCE).toBe("fixture");
+    expect(runtime.DIRECTUS_URL).toBe(FIXTURE_PREVIEW_DEFAULTS.DIRECTUS_URL);
+    expect(runtime.DIRECTUS_PREVIEW_TOKEN).toBe(
+      FIXTURE_PREVIEW_DEFAULTS.DIRECTUS_PREVIEW_TOKEN,
+    );
+    expect(runtime.PREVIEW_TRUSTED_HEADER).toBe(
+      FIXTURE_PREVIEW_DEFAULTS.PREVIEW_TRUSTED_HEADER,
+    );
+    expect(runtime.SITE_URL).toBe(FIXTURE_PREVIEW_DEFAULTS.SITE_URL);
+  });
+
+  it("preserves explicit custom values when resolving dev environment", () => {
+    const customEnv = {
+      CONTENT_SOURCE: "fixture",
+      DIRECTUS_PREVIEW_TOKEN: "custom-preview-token-at-least-24-chars",
+      DIRECTUS_URL: "http://127.0.0.1:9055",
+      PREVIEW_TRUSTED_HEADER: "custom-trusted-header-at-least-24-chars",
+      SITE_URL: "http://localhost:5000",
+    };
+    const { runtime } = resolveDevEnvironment(customEnv, { loadEnv: false });
+
+    expect(runtime.SITE_URL).toBe("http://localhost:5000");
+    expect(runtime.DIRECTUS_URL).toBe("http://127.0.0.1:9055");
+    expect(runtime.DIRECTUS_PREVIEW_TOKEN).toBe(
+      "custom-preview-token-at-least-24-chars",
+    );
+    expect(runtime.PREVIEW_TRUSTED_HEADER).toBe(
+      "custom-trusted-header-at-least-24-chars",
+    );
+  });
+
+  it("fails dev environment resolution when directus mode is missing credentials", () => {
+    const directusEnv = { CONTENT_SOURCE: "directus" };
+    expect(() =>
+      resolveDevEnvironment(directusEnv, { loadEnv: false }),
+    ).toThrow("DIRECTUS_URL");
   });
 });

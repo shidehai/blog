@@ -970,9 +970,18 @@ export const EDITORIAL_SETTINGS = Object.freeze({
 
 /**
  * Build the Directus-shaped editorial snapshot shared by local fixtures and seed data.
- * @param {{ coverId: string }} options
+ * @param {{ coverId: string, publishedAtMap?: Map<string, string> | Record<string, string> }} options
  */
-export function buildEditorialFixture({ coverId }) {
+export function buildEditorialFixture({ coverId, publishedAtMap }) {
+  const getPublishedAt = (
+    /** @type {string} */ postId,
+    /** @type {string} */ fallback,
+  ) => {
+    if (!publishedAtMap) return fallback;
+    if (publishedAtMap instanceof Map)
+      return publishedAtMap.get(postId) ?? fallback;
+    return publishedAtMap[postId] ?? fallback;
+  };
   const topicsByKey = new Map(TOPICS.map((topic) => [topic.key, topic]));
   const topics = TOPICS.map((topic) => ({
     description: topic.description,
@@ -980,26 +989,29 @@ export function buildEditorialFixture({ coverId }) {
     name: topic.name,
     slug: topic.slug,
   }));
-  const posts = POST_DEFINITIONS.map((definition) => ({
-    body: definition.body({ coverId }),
-    cover_alt: definition.featured
-      ? "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界"
-      : null,
-    cover_decorative: false,
-    cover_image: definition.featured ? coverId : null,
-    date_created: definition.published_at,
-    date_updated: definition.date_updated ?? null,
-    featured: definition.featured ?? false,
-    id: definition.id,
-    kind: definition.kind,
-    published_at: definition.published_at,
-    seo_description: definition.seo_description ?? null,
-    seo_title: definition.seo_title ?? null,
-    slug: definition.slug,
-    status: "published",
-    summary: definition.summary,
-    title: definition.title,
-  }));
+  const posts = POST_DEFINITIONS.map((definition) => {
+    const publishedAt = getPublishedAt(definition.id, definition.published_at);
+    return {
+      body: definition.body({ coverId }),
+      cover_alt: definition.featured
+        ? "一次 LLM 请求经过输入、上下文、模型、工具与验证五层边界"
+        : null,
+      cover_decorative: false,
+      cover_image: definition.featured ? coverId : null,
+      date_created: publishedAt,
+      date_updated: definition.date_updated ?? null,
+      featured: definition.featured ?? false,
+      id: definition.id,
+      kind: definition.kind,
+      published_at: publishedAt,
+      seo_description: definition.seo_description ?? null,
+      seo_title: definition.seo_title ?? null,
+      slug: definition.slug,
+      status: "published",
+      summary: definition.summary,
+      title: definition.title,
+    };
+  });
   let joinNumber = 0;
   const postTopics = POST_DEFINITIONS.flatMap((post) =>
     post.topics.map((topicKey) => {
