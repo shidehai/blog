@@ -176,3 +176,24 @@ Removed the featured copy/media overlap, rebuilt the topic overview as a respons
 ### Status
 
 [OK] **Completed**
+
+
+## Session 8: Prepare blog launch and explicit preview runtime
+
+**Date**: 2026-08-19
+**Task**: Prepare blog launch and explicit preview runtime
+**Branch**: `main`
+
+### Summary
+
+Added scripts/dev.mjs for explicit dev preview environment, separated deterministic fixture seed from launch plan/apply with state classification, and completed operations documentation.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1b5441e` | (see git log) |
+
+### Status
+
+[OK] **Completed**
