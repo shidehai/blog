@@ -197,3 +197,24 @@ Added scripts/dev.mjs for explicit dev preview environment, separated determinis
 ### Status
 
 [OK] **Completed**
+
+
+## Session 9: Complete frontend reading experience
+
+**Date**: 2026-08-19
+**Task**: Complete frontend reading experience
+**Branch**: `main`
+
+### Summary
+
+Implemented and verified article navigation, sharing and citation, progressive code-block controls, build-time sanitized Mermaid SVG rendering, heading permalinks, theme transition polish, regression tests, and frontend code-spec contracts. Archived task 08-19-frontend-reading-experience after pnpm verify passed.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `aed34c1` | (see git log) |
+
+### Status
+
+[OK] **Completed**

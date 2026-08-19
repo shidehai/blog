@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 8
+- **Total Sessions**: 9
 - **Last Active**: 2026-08-19
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~199 | Active |
+| `journal-1.md` | ~220 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -30,6 +30,7 @@
 
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 9 | 2026-08-19 | Complete frontend reading experience | `aed34c1` | `main` |
 | 8 | 2026-08-19 | Prepare blog launch and explicit preview runtime | `1b5441e` | `main` |
 | 7 | 2026-08-11 | 区分写作与笔记浏览体验 | `b6583d3` | `main` |
 | 6 | 2026-08-10 | Refine featured and topic layouts | `e361d37`, `920d0e1` | `main` |
