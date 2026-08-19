@@ -48,3 +48,26 @@ large documentation-only diffs as a side effect of a code change.
 - No public route that silently becomes runtime-rendered.
 - No dependency when an Astro, browser, CSS, or standard-library feature covers
   the behavior.
+
+## Reading Experience Regression Contract
+
+Reading-surface changes are cross-layer when Markdown becomes generated HTML
+and then receives native browser enhancement. Keep the following executable
+checks with any change to `src/lib/markdown.ts`, `src/lib/mermaid.ts`, or
+`CodeCopyBehavior.astro`:
+
+- Assert generated Mermaid output is an inline SVG and contains no `<script>`
+  or remote paint/font resource. Browser coverage must measure the rendered SVG
+  bounding box; checking only that an SVG tag exists can miss a blank diagram.
+- Assert malformed Mermaid rejects with the source label and line number. Do
+  not replace official Mermaid parsing with a partial regex parser that accepts
+  invalid connectors.
+- Assert long code is complete in the initial HTML, in a no-JavaScript browser,
+  and in print. JS-only tests must additionally check `aria-controls`,
+  `aria-expanded`, and the transition back to the collapsed state.
+- Assert heading-link and share/citation URLs use the article's public
+  `post.route`, including preview routes, rather than reconstructing a route
+  from the current browser pathname.
+- Run `pnpm audit --prod` when changing the Mermaid renderer or its JSDOM
+  dependencies; do not introduce a transitive package with known production
+  vulnerabilities merely to obtain server-side SVG measurement.

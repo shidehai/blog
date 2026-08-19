@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 const previewPath = "/preview/f2000000-0000-4000-8000-000000000103";
 const trustedHeader = "test-preview-header-at-least-24-chars";
+const testOrigin = `http://127.0.0.1:${process.env.E2E_PORT ?? "4321"}`;
 
 test("preview fails closed without the proxy trust boundary", async ({
   request,
@@ -15,8 +16,10 @@ test("preview fails closed without the proxy trust boundary", async ({
 });
 
 test("trusted preview reuses the public post layout without leaking secrets", async ({
+  context,
   page,
 }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.setExtraHTTPHeaders({ "x-preview-trusted": trustedHeader });
   const response = await page.goto(`${previewPath}?version=draft`);
 
@@ -35,6 +38,11 @@ test("trusted preview reuses the public post layout without leaking secrets", as
   );
   expect(await page.content()).not.toContain(
     "test-preview-token-at-least-24-chars",
+  );
+
+  await page.locator('[data-share-action="copy-url"]').click();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+    `${testOrigin}/writing/typescript-observable-rag-pipeline/`,
   );
 });
 

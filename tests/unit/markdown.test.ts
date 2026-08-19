@@ -249,3 +249,117 @@ describe("link and HTML safety", () => {
     expect(result.html).toContain("<strong>safe Markdown</strong>");
   });
 });
+
+describe("heading permalink anchors and code block ergonomics", () => {
+  it("injects heading anchor links for h2 and h3", async () => {
+    const result = await renderMarkdown("## 架构设计\n\n### 模块划分");
+    expect(result.html).toContain('data-heading-anchor href="#架构设计"');
+    expect(result.html).toContain('data-heading-anchor href="#模块划分"');
+    expect(result.html.match(/data-heading-anchor-feedback/g)).toHaveLength(2);
+  });
+
+  it("renders language badge and code metadata", async () => {
+    const result = await renderMarkdown(
+      "```typescript\nconst x: number = 42;\n```",
+    );
+    expect(result.html).toContain('data-code-language="typescript"');
+    expect(result.html).toContain('class="code-lang-badge"');
+    expect(result.html).toContain("TYPESCRIPT");
+    expect(result.html).not.toContain('class="code-frame-title"');
+  });
+
+  it("marks code blocks exceeding 35 lines as collapsible", async () => {
+    const longCode = Array.from(
+      { length: 40 },
+      (_, i) => `const line${i} = ${i};`,
+    ).join("\n");
+    const result = await renderMarkdown("```typescript\n" + longCode + "\n```");
+    expect(result.html).toContain("code-frame--collapsible");
+    expect(result.html).toContain('data-collapsible="true"');
+    expect(result.html).toContain("展开全部 (40 行)");
+    expect(result.html).toContain('aria-controls="code-block-1"');
+    expect(result.html).toContain('aria-expanded="true"');
+    expect(result.html).not.toContain("is-collapsed");
+  });
+});
+
+describe("mermaid static diagram rendering", () => {
+  it("compiles flowchart into static SVG element without client runtime", async () => {
+    const mermaidCode = `\`\`\`mermaid
+flowchart BT
+    subgraph Pipeline[处理链路]
+        direction RL
+        A[输入请求] -->|校验通过| B[参数校验] --> C[模型推理]
+    end
+\`\`\``;
+    const result = await renderMarkdown(mermaidCode);
+    expect(result.html).toContain('class="mermaid-diagram surface--inset"');
+    expect(result.html).toContain("<svg");
+    expect(result.html).toContain("输入请求");
+    expect(result.html).toContain("参数校验");
+    expect(result.html).toContain("模型推理");
+    expect(result.html).toContain("校验通过");
+    expect(result.html).toContain("处理链路");
+    expect(result.html).toContain('role="img"');
+    expect(result.html).not.toContain("<script");
+    expect(result.html).not.toContain("@import");
+    expect(result.html).not.toContain("fonts.googleapis.com");
+  });
+
+  it("compiles sequence diagram into static SVG element", async () => {
+    const seqCode = `\`\`\`mermaid
+sequenceDiagram
+    participant U as User
+    participant S as Server
+    loop Retry
+        U->>S: HTTP Request
+        Note right of S: Validate
+        alt success
+            S-->>U: HTTP Response
+        else failure
+            S-->>U: HTTP Error
+        end
+    end
+\`\`\``;
+    const result = await renderMarkdown(seqCode);
+    expect(result.html).toContain('class="mermaid-diagram surface--inset"');
+    expect(result.html).toContain("HTTP Request");
+    expect(result.html).toContain("HTTP Response");
+    expect(result.html).toContain("User");
+    expect(result.html).toContain("Server");
+    expect(result.html).toContain("Retry");
+    expect(result.html).toContain("Validate");
+    expect(result.html).toContain("failure");
+  });
+
+  it("rejects malformed Mermaid with source context", async () => {
+    await expect(
+      renderMarkdown("```mermaid\nflowchart LR\nA -->\n```", {
+        source: "diagram fixture",
+      }),
+    ).rejects.toThrow(
+      /diagram fixture line 1: could not render Mermaid diagram/,
+    );
+  });
+
+  it("rejects malformed sequence connectors instead of dropping them", async () => {
+    await expect(
+      renderMarkdown("```mermaid\nsequenceDiagram\nA->>\n```", {
+        source: "sequence fixture",
+      }),
+    ).rejects.toThrow(
+      /sequence fixture line 1: could not render Mermaid diagram/,
+    );
+  });
+
+  it("rejects remote paint resources from Mermaid style directives", async () => {
+    await expect(
+      renderMarkdown(
+        "```mermaid\nflowchart LR\nA[One] --> B[Two]\nstyle A fill:url(https://example.com/paint)\n```",
+        { source: "styled diagram" },
+      ),
+    ).rejects.toThrow(
+      /styled diagram line 1: could not render Mermaid diagram/,
+    );
+  });
+});

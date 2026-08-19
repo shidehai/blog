@@ -1,6 +1,8 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 const tutorialPath = "/writing/typescript-observable-rag-pipeline/";
+const testOrigin = `http://127.0.0.1:${process.env.E2E_PORT ?? "4321"}`;
 
 const publishedRoutes = [
   "/writing/production-llm-reliability-boundaries/",
@@ -57,6 +59,15 @@ test("long tutorial renders the complete reading contract", async ({
   await expect(page.locator(".prose .footnotes")).toBeVisible();
   await expect(page.locator(".prose .code-frame")).toHaveCount(5);
   await expect(page.locator(".prose .code-frame").first()).toBeVisible();
+  const diagram = page.locator(".prose .mermaid-diagram");
+  await expect(diagram).toBeVisible();
+  await expect(diagram).toContainText("校验通过");
+  const diagramBox = await diagram.locator("svg").boundingBox();
+  expect(diagramBox?.width).toBeGreaterThan(200);
+  expect(diagramBox?.height).toBeGreaterThan(50);
+  expect(
+    await diagram.evaluate((element) => getComputedStyle(element).overflowX),
+  ).toBe("auto");
   await expect(
     page.locator(".article-header .post-meta-updated"),
   ).toContainText("更新于");
@@ -131,6 +142,14 @@ test("tutorial content remains useful without JavaScript", async ({
   ).toBeVisible();
   await expect(page.locator(".prose table")).toBeVisible();
   await expect(page.locator(".prose .responsive-figure img")).toBeVisible();
+  const longFrame = page.locator(".code-frame--collapsible");
+  await expect(longFrame).not.toHaveClass(/is-collapsed/);
+  await expect(longFrame.locator("[data-code-expand-toggle]")).toBeHidden();
+  expect(
+    await longFrame
+      .locator("pre")
+      .evaluate((element) => element.scrollHeight <= element.clientHeight + 1),
+  ).toBe(true);
   await context.close();
 });
 
@@ -147,6 +166,12 @@ test("print keeps tutorial artifacts and removes interactive chrome", async ({
   await expect(page.locator(".prose table")).toBeVisible();
   await expect(page.locator(".prose .footnotes")).toBeVisible();
   await expect(page.locator(".prose .responsive-figure img")).toBeVisible();
+  const longCode = page.locator(".code-frame--collapsible pre");
+  expect(
+    await longCode.evaluate(
+      (element) => element.scrollHeight <= element.clientHeight + 1,
+    ),
+  ).toBe(true);
 });
 
 test("custom 404 sends readers back to current writing", async ({ page }) => {
@@ -157,4 +182,130 @@ test("custom 404 sends readers back to current writing", async ({ page }) => {
   await expect(
     page.getByRole("link", { name: /写作|阅读/ }).first(),
   ).toBeVisible();
+});
+
+test("renders article context navigation cards and share actions", async ({
+  context,
+  page,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto(tutorialPath);
+
+  // 1. Article Navigation (Prev / Next)
+  const nav = page.locator(".article-navigation");
+  await expect(nav).toBeVisible();
+  const navCards = nav.locator(".article-nav-card");
+  expect(await navCards.count()).toBeGreaterThanOrEqual(1);
+
+  // 2. Article Share & Citation
+  const share = page.locator("[data-article-share]");
+  await expect(share).toBeVisible();
+  const copyCitationBtn = share.locator('[data-share-action="copy-citation"]');
+  await expect(copyCitationBtn).toBeVisible();
+  await copyCitationBtn.click();
+  const toast = share.locator("[data-share-toast]");
+  await expect(toast).toHaveText("已复制 Markdown 引用");
+  const clipboardText = await page.evaluate(() =>
+    navigator.clipboard.readText(),
+  );
+  expect(clipboardText).toBe(
+    `[实作：用 TypeScript 搭建可观测的 RAG 最小链路](${testOrigin}/writing/typescript-observable-rag-pipeline/) - 关山 / 海边的小卖部`,
+  );
+  await expect(toast).toHaveText("", { timeout: 2500 });
+
+  const headingAnchor = page.locator(".prose h2 .heading-anchor").first();
+  await expect(headingAnchor).toHaveAttribute("href", /^#/);
+  await headingAnchor.click();
+  const sectionUrl = await page.evaluate(() => navigator.clipboard.readText());
+  expect(decodeURI(sectionUrl)).toBe(
+    `${testOrigin}/writing/typescript-observable-rag-pipeline/#先定义可追踪的数据形状`,
+  );
+  await expect(
+    page.locator(".prose h2 [data-heading-anchor-feedback]").first(),
+  ).toHaveText("小节链接已复制");
+
+  const codeBadge = page.locator(".code-lang-badge").first();
+  await expect(codeBadge).toBeVisible();
+});
+
+test("long code expands and collapses with an accessible disclosure", async ({
+  page,
+}) => {
+  await page.goto(tutorialPath);
+
+  const frame = page.locator(".code-frame--collapsible");
+  const toggle = frame.locator("[data-code-expand-toggle]");
+  const code = frame.locator("pre");
+  const controls = await toggle.getAttribute("aria-controls");
+
+  expect(Number(await frame.getAttribute("data-line-count"))).toBeGreaterThan(
+    35,
+  );
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(code).toHaveAttribute("id", controls ?? "missing");
+  expect(
+    await code.evaluate(
+      (element) => element.scrollHeight > element.clientHeight,
+    ),
+  ).toBe(true);
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  expect(
+    await code.evaluate(
+      (element) => element.scrollHeight <= element.clientHeight + 1,
+    ),
+  ).toBe(true);
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+});
+
+test("share error feedback is distinct and remains Axe-clean", async ({
+  page,
+}) => {
+  await page.goto(tutorialPath);
+  await page.evaluate(() => {
+    Object.defineProperty(navigator.clipboard, "writeText", {
+      configurable: true,
+      value: async () => Promise.reject(new Error("permission denied")),
+    });
+  });
+
+  await page.locator('[data-share-action="copy-url"]').click();
+  const toast = page.locator("[data-share-toast]");
+  await expect(toast).toHaveText("复制失败，请重试");
+  await expect(toast).toHaveAttribute("data-state", "error");
+
+  const { violations } = await new AxeBuilder({ page })
+    .include("[data-article-share]")
+    .analyze();
+  expect(
+    violations.filter(({ impact }) =>
+      ["serious", "critical"].includes(impact ?? ""),
+    ),
+  ).toEqual([]);
+});
+
+test("reduced motion skips the circular theme transition", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.addInitScript(() => {
+    const state = window as Window & { transitionCalls?: number };
+    state.transitionCalls = 0;
+    Object.defineProperty(document, "startViewTransition", {
+      configurable: true,
+      value: () => {
+        state.transitionCalls = (state.transitionCalls ?? 0) + 1;
+        return { ready: Promise.resolve() };
+      },
+    });
+  });
+  await page.goto(tutorialPath);
+
+  await page.locator("[data-theme-control]").click();
+  expect(
+    await page.evaluate(
+      () => (window as Window & { transitionCalls?: number }).transitionCalls,
+    ),
+  ).toBe(0);
 });

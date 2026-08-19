@@ -15,6 +15,8 @@ import { bundledLanguages, codeToHast, type BundledLanguage } from "shiki";
 import { unified } from "unified";
 import { SKIP, visit } from "unist-util-visit";
 
+import { renderMermaidToHast } from "./mermaid.ts";
+
 const UUID =
   "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}";
 const DIRECTUS_MEDIA = new RegExp(`^(?:directus://|/assets/)(${UUID})$`, "i");
@@ -98,6 +100,7 @@ function isBundledLanguage(value: string): value is BundledLanguage {
 
 function normalizeLanguage(value: string, source: string, line: number | null) {
   const language = value.toLowerCase();
+  if (language === "mermaid") return "mermaid" as const;
   if (["text", "plaintext", "txt"].includes(language)) return "text" as const;
   if (isBundledLanguage(language)) return language;
   throw markdownError(source, line, `unsupported code language "${value}"`);
@@ -423,6 +426,27 @@ function transformDocument(
         headings.push({ depth, id, text: headingText });
         if (depth === 2 || depth === 3) {
           outline.push({ id, level: depth, text: headingText });
+          node.children.push(
+            element(
+              "a",
+              {
+                ariaLabel: `复制小节链接：${headingText}`,
+                className: ["heading-anchor"],
+                dataHeadingAnchor: true,
+                href: `#${id}`,
+              },
+              [text("#")],
+            ),
+            element(
+              "span",
+              {
+                ariaLive: "polite",
+                className: ["visually-hidden"],
+                dataHeadingAnchorFeedback: true,
+              },
+              [],
+            ),
+          );
         }
       }
 
@@ -580,7 +604,7 @@ function highlightCode(source: string) {
       return undefined;
     });
 
-    for (const block of blocks) {
+    for (const [blockNumber, block] of blocks.entries()) {
       const metadata = storedCodeMetadata(block.code);
       const language = normalizeLanguage(
         metadata.language,
@@ -588,6 +612,25 @@ function highlightCode(source: string) {
         metadata.sourceLine,
       );
       const code = elementText(block.code).replace(/\n$/, "");
+
+      if (language === "mermaid") {
+        try {
+          block.parent.children[block.index] = await renderMermaidToHast(
+            code,
+            `${source}:${metadata.sourceLine ?? blockNumber + 1}`,
+          );
+        } catch (error) {
+          const detail =
+            error instanceof Error ? error.message : "invalid diagram";
+          throw markdownError(
+            source,
+            metadata.sourceLine,
+            `could not render Mermaid diagram: ${detail}`,
+          );
+        }
+        continue;
+      }
+
       const sourceLines = code.split("\n");
       let highlighted: HastRoot;
       try {
@@ -631,14 +674,38 @@ function highlightCode(source: string) {
           metadata.sourceLine,
           "code rendering failed",
         );
+      delete pre.properties.tabindex;
       pre.properties.tabIndex = 0;
+      const codeId = `code-block-${blockNumber + 1}`;
+      pre.properties.id = codeId;
+      const isCollapsible = sourceLines.length > 35;
       const label = metadata.filename ?? language;
       block.parent.children[block.index] = element(
         "figure",
-        { className: ["code-frame"], dataCodeBlock: true },
+        {
+          className: [
+            "code-frame",
+            ...(isCollapsible ? ["code-frame--collapsible"] : []),
+          ],
+          dataCodeBlock: true,
+          dataCodeLanguage: language,
+          dataLineCount: sourceLines.length,
+          ...(isCollapsible ? { dataCollapsible: "true" } : {}),
+        },
         [
           element("figcaption", { className: ["code-frame-header"] }, [
-            element("span", {}, [text(label)]),
+            element("div", { className: ["code-frame-title-group"] }, [
+              ...(metadata.filename
+                ? [
+                    element("span", { className: ["code-frame-title"] }, [
+                      text(metadata.filename),
+                    ]),
+                  ]
+                : []),
+              element("span", { className: ["code-lang-badge"] }, [
+                text(language.toUpperCase()),
+              ]),
+            ]),
             element(
               "button",
               {
@@ -651,6 +718,28 @@ function highlightCode(source: string) {
             ),
           ]),
           pre,
+          ...(isCollapsible
+            ? [
+                element("div", { className: ["code-expand-overlay"] }, [
+                  element(
+                    "button",
+                    {
+                      ariaControls: [codeId],
+                      ariaExpanded: "true",
+                      ariaLabel: `展开全部 ${sourceLines.length} 行代码`,
+                      className: ["code-expand-btn", "control--raised"],
+                      dataCodeExpandToggle: true,
+                      type: "button",
+                    },
+                    [
+                      element("span", {}, [
+                        text(`展开全部 (${sourceLines.length} 行)`),
+                      ]),
+                    ],
+                  ),
+                ]),
+              ]
+            : []),
         ],
       );
     }

@@ -737,6 +737,40 @@ export function deriveRelatedPosts(
     .map(({ candidate }) => candidate);
 }
 
+export interface ChronologicalNavigation {
+  prevPost: Post | null;
+  nextPost: Post | null;
+}
+
+export function deriveChronologicalNavigation(
+  currentPost: Post,
+  posts: readonly Post[],
+): ChronologicalNavigation {
+  const chronological = posts
+    .filter((p) => p.status === "published")
+    .slice()
+    .sort(
+      (a, b) =>
+        a.publishedAt.localeCompare(b.publishedAt) ||
+        compareStrings(a.slug, b.slug) ||
+        compareStrings(a.id, b.id),
+    );
+
+  const currentIndex = chronological.findIndex((p) => p.id === currentPost.id);
+  if (currentIndex === -1) {
+    return { nextPost: null, prevPost: null };
+  }
+
+  const prevPost =
+    currentIndex > 0 ? (chronological[currentIndex - 1] ?? null) : null;
+  const nextPost =
+    currentIndex < chronological.length - 1
+      ? (chronological[currentIndex + 1] ?? null)
+      : null;
+
+  return { nextPost, prevPost };
+}
+
 async function readAll(
   page: (pageNumber: number) => Promise<readonly unknown[]>,
 ): Promise<unknown[]> {

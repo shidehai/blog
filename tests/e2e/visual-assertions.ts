@@ -88,7 +88,7 @@ export async function expectNoHorizontalOverflow(page: Page): Promise<void> {
       .filter((element) => element.getClientRects().length > 0)
       .filter((element) => {
         const scroller = element.closest<HTMLElement>(
-          ".code-frame pre, .table-wrapper",
+          ".code-frame pre, .table-wrapper, .mermaid-diagram",
         );
         if (!scroller || scroller === element) return true;
         return !["auto", "scroll"].includes(

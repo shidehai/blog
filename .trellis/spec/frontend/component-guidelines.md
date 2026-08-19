@@ -108,3 +108,87 @@ stale results after the user clears the search.
 
 Pagefind excerpts are parsed as HTML but rebuilt from text nodes plus `mark`
 elements only. Never inject a returned excerpt with `innerHTML`.
+
+## Article Artifact Contracts
+
+### 1. Scope / Trigger
+
+The Markdown pipeline crosses the build-time content boundary and the
+browser's progressive-enhancement boundary. Changes to Mermaid diagrams,
+Shiki code frames, or their reading controls must preserve the contracts below.
+
+### 2. Signatures
+
+- `renderMarkdown(markdown, options): Promise<RenderedMarkdown>` is the single
+  entry point for article Markdown.
+- Mermaid fenced blocks are transformed by
+  `renderMermaidToHast(code, identity)` during the build; there is no client
+  Mermaid import or hydration island.
+- `CodeCopyBehavior.astro` may enhance generated `.code-frame` markup after
+  page load, but it must not be required to read the source or print it.
+
+### 3. Contracts
+
+- A valid Mermaid block emits `figure.mermaid-diagram > svg.mermaid-svg` with
+  `role="img"`, a labelled `<title>`, and no executable content or external
+  resource URL. The SVG remains inline so the article is useful before any
+  client script runs.
+- A Mermaid failure includes the Markdown source name and fenced-block line in
+  the thrown error. Unsupported code languages and invalid code metadata follow
+  the same source-context rule.
+- A code block longer than 35 source lines emits a stable `pre` `id`,
+  `data-line-count`, `aria-controls`, and an initially expanded disclosure in
+  HTML. JavaScript may add `data-code-enhanced="true"` and collapse it only as
+  progressive enhancement.
+- No-JavaScript and print styles must force complete code visibility. Interactive
+  copy/expand controls are hidden in print, while source lines remain selectable
+  and readable.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required behavior |
+| --- | --- |
+| Valid Mermaid syntax and local SVG paint references | Emit sanitized static SVG |
+| Malformed Mermaid syntax | Throw `source line N: could not render Mermaid diagram: ...` |
+| SVG `data:`, `http(s):`, `javascript:`, `@import`, or non-local `url(...)` | Reject the diagram before returning HTML |
+| Mermaid SVG missing after render | Throw a source-context rendering error |
+| Code block with 35 or fewer lines | Render complete code without a disclosure |
+| Code block over 35 lines | Render complete code and an enhancement-only disclosure |
+
+### 5. Good / Base / Bad Cases
+
+- **Good**: render a fenced `mermaid` block at build time, sanitize its SVG,
+  and assert real SVG dimensions in a browser test.
+- **Base**: render a short code block as a normal Shiki frame with its language
+  badge and copy control.
+- **Bad**: ship Mermaid to the browser, trust raw SVG, or make the server
+  output collapsed so no-JavaScript readers lose source lines.
+
+### 6. Tests Required
+
+- Unit tests in `tests/unit/markdown.test.ts` cover flowchart and sequence
+  syntax, malformed connectors, source-context errors, and remote paint
+  rejection.
+- Browser tests in `tests/e2e/reading.spec.ts` assert that the diagram is a
+  real visible SVG with non-trivial `boundingBox()` dimensions, that long code
+  expands/collapses through `aria-expanded`, and that no-JavaScript and print
+  modes expose the complete source.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```ts
+// The browser downloads and executes a large Mermaid runtime.
+<div class="mermaid">{code}</div>
+```
+
+#### Correct
+
+```ts
+// The Markdown transformer returns an inline, sanitized SVG at build time.
+const figure = await renderMermaidToHast(code, `${source}:${line}`);
+```
+
+The build-time boundary prevents runtime bundle growth and makes malformed or
+unsafe diagrams fail the build with actionable source context.

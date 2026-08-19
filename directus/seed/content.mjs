@@ -305,6 +305,11 @@ async function retrieve(query: string): Promise<readonly Candidate[]> {
 
 每个片段保留文档与修订身份，每个阶段追加追踪事件。这样答案出错时，测试可以指出候选缺失、排序错误或引用越界。
 
+~~~mermaid
+flowchart LR
+    Request[输入请求] -->|校验通过| Retrieve[候选召回] --> Rerank[候选重排] --> Answer[带引用答案]
+~~~
+
 | 记录 | 必需字段 | 用途 |
 | --- | --- | --- |
 | 文档 | ID、修订、标题、正文 | 建立权威来源 |
@@ -316,8 +321,9 @@ async function retrieve(query: string): Promise<readonly Candidate[]> {
 type Document = { id: string; revision: string; title: string; body: string };
 type Chunk = { id: string; documentId: string; text: string };
 type Candidate = Chunk & { retrievalScore: number; rerankScore: number };
+type Stage = "split" | "retrieve" | "rerank" | "answer";
 type TraceEvent = {
-  stage: "split" | "retrieve" | "rerank" | "answer";
+  stage: Stage;
   inputCount: number;
   outputCount: number;
   durationMs: number;
@@ -326,6 +332,42 @@ type Answer = {
   text: string;
   citations: readonly { documentId: string; chunkId: string }[];
 };
+type TraceContext = {
+  traceId: string;
+  startedAt: number;
+  events: TraceEvent[];
+};
+
+function startTrace(traceId: string): TraceContext {
+  return {
+    traceId,
+    startedAt: Date.now(),
+    events: [],
+  };
+}
+
+function recordStage(
+  trace: TraceContext,
+  stage: Stage,
+  inputCount: number,
+  outputCount: number,
+  startedAt: number,
+): void {
+  trace.events.push({
+    stage,
+    inputCount,
+    outputCount,
+    durationMs: Date.now() - startedAt,
+  });
+}
+
+function finishTrace(trace: TraceContext, answer: Answer) {
+  return {
+    answer,
+    events: trace.events,
+    durationMs: Date.now() - trace.startedAt,
+  };
+}
 ~~~
 
 > [!NOTE]

@@ -166,4 +166,11 @@ Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
 const related = deriveRelatedPosts(post, snapshot.posts);
 ---
 
-<PostPage {media} {output} {post} {related} settings={snapshot.settings} />
+<PostPage
+  allPosts={snapshot.posts}
+  {media}
+  {output}
+  {post}
+  {related}
+  settings={snapshot.settings}
+/>

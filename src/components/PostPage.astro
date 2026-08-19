@@ -1,8 +1,13 @@
 ---
 import type { Post, PublishedSnapshot } from "../lib/content.ts";
-import { formatContentDate } from "../lib/content.ts";
+import {
+  deriveChronologicalNavigation,
+  formatContentDate,
+} from "../lib/content.ts";
 import type { MarkdownMedia, RenderedMarkdown } from "../lib/markdown.ts";
 import AppLayout from "../layouts/AppLayout.astro";
+import ArticleNavigation from "./ArticleNavigation.astro";
+import ArticleShare from "./ArticleShare.astro";
 import CodeCopyBehavior from "./CodeCopyBehavior.astro";
 import Outline from "./Outline.astro";
 import PostList from "./PostList.astro";
@@ -12,6 +17,7 @@ import ResponsiveFigure from "./ResponsiveFigure.astro";
 import TopicLink from "./TopicLink.astro";
 
 interface Props {
+  allPosts?: readonly Post[];
   media: ReadonlyMap<string, MarkdownMedia>;
   output: RenderedMarkdown;
   post: Post;
@@ -19,12 +25,15 @@ interface Props {
   settings: PublishedSnapshot["settings"];
 }
 
-const { media, output, post, related, settings } = Astro.props;
+const { allPosts, media, output, post, related, settings } = Astro.props;
 const cover = post.cover ? media.get(post.cover.id) : undefined;
 const description = post.seoDescription ?? post.summary;
 const isNote = post.kind === "note";
 const publishedDate = post.publishedAt.slice(0, 10);
 const publishedMonth = post.publishedAt.slice(0, 7);
+const { nextPost, prevPost } = allPosts
+  ? deriveChronologicalNavigation(post, allPosts)
+  : { nextPost: null, prevPost: null };
 ---
 
 <AppLayout
@@ -133,6 +142,19 @@ const publishedMonth = post.publishedAt.slice(0, 7);
         ) : null
       }
     </div>
+
+    <ArticleShare {post} {settings} />
+
+    {
+      prevPost || nextPost ? (
+        <ArticleNavigation
+          {prevPost}
+          {nextPost}
+          timezone={settings.timezone}
+          locale={settings.locale}
+        />
+      ) : null
+    }
 
     {
       related.length ? (

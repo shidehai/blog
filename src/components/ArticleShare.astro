@@ -1,0 +1,137 @@
+---
+import type { Post, PublishedSnapshot } from "../lib/content.ts";
+
+interface Props {
+  post: Post;
+  settings: PublishedSnapshot["settings"];
+}
+
+const { post, settings } = Astro.props;
+---
+
+<aside
+  class="article-share"
+  aria-label="分享与引用文章"
+  data-article-share
+  data-article-title={post.title}
+  data-article-author={settings.authorName}
+  data-site-name={settings.siteName}
+  data-article-route={post.route}
+>
+  <div class="article-share__actions">
+    <button
+      type="button"
+      class="article-share__btn"
+      data-share-action="copy-url"
+      aria-label="复制文章网址"
+    >
+      <svg
+        class="article-share__icon"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z"
+        ></path>
+        <path
+          d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 105.656 5.656l3-3a4 4 0 00-.225-5.865z"
+        ></path>
+      </svg>
+      <span class="article-share__text">复制链接</span>
+    </button>
+
+    <button
+      type="button"
+      class="article-share__btn"
+      data-share-action="copy-citation"
+      aria-label="复制 Markdown 引用"
+    >
+      <svg
+        class="article-share__icon"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M4.5 2A1.5 1.5 0 003 3.5v13A1.5 1.5 0 004.5 18h11a1.5 1.5 0 001.5-1.5V7.621a1.5 1.5 0 00-.44-1.06l-4.12-4.122A1.5 1.5 0 0011.378 2H4.5zm2.25 8.5a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 3a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z"
+          clip-rule="evenodd"></path>
+      </svg>
+      <span class="article-share__text">Markdown 引用</span>
+    </button>
+
+    <span
+      class="article-share__toast"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      data-share-toast></span>
+  </div>
+</aside>
+
+<script>
+  function setupArticleShare() {
+    const containers = document.querySelectorAll<HTMLElement>(
+      "[data-article-share]",
+    );
+
+    containers.forEach((container) => {
+      if (container.dataset.shareInitialized === "true") return;
+      container.dataset.shareInitialized = "true";
+
+      const title = container.dataset.articleTitle || document.title;
+      const author = container.dataset.articleAuthor || "";
+      const siteName = container.dataset.siteName || "";
+      const publicRoute = container.dataset.articleRoute || "/";
+      const toast = container.querySelector<HTMLElement>("[data-share-toast]");
+
+      let toastTimer: number | undefined;
+      const showToast = (message: string, state: "error" | "success") => {
+        if (!toast) return;
+        toast.textContent = message;
+        toast.dataset.state = state;
+        toast.classList.add("is-active");
+        if (toastTimer) window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => {
+          toast.textContent = "";
+          toast.classList.remove("is-active");
+          delete toast.dataset.state;
+        }, 2000);
+      };
+
+      const canonicalUrl = () =>
+        new URL(publicRoute, window.location.origin).href;
+
+      const copyUrlBtn = container.querySelector(
+        '[data-share-action="copy-url"]',
+      );
+      copyUrlBtn?.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(canonicalUrl());
+          showToast("已复制链接", "success");
+        } catch {
+          showToast("复制失败，请重试", "error");
+        }
+      });
+
+      const copyCitationBtn = container.querySelector(
+        '[data-share-action="copy-citation"]',
+      );
+      copyCitationBtn?.addEventListener("click", async () => {
+        try {
+          const authorPart = author ? ` - ${author}` : "";
+          const sitePart = siteName ? ` / ${siteName}` : "";
+          const citation = `[${title}](${canonicalUrl()})${authorPart}${sitePart}`;
+          await navigator.clipboard.writeText(citation);
+          showToast("已复制 Markdown 引用", "success");
+        } catch {
+          showToast("复制失败，请重试", "error");
+        }
+      });
+    });
+  }
+
+  setupArticleShare();
+  document.addEventListener("astro:page-load", setupArticleShare);
+</script>

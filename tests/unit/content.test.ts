@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  deriveChronologicalNavigation,
   deriveRelatedPosts,
   formatContentDate,
   loadPreviewSnapshot,
@@ -407,5 +408,47 @@ describe("published content boundary", () => {
     const input = validInput();
     mutate(input);
     expect(() => parsePublishedSnapshot(input)).toThrow(message);
+  });
+});
+
+describe("deriveChronologicalNavigation", () => {
+  const snapshot = parsePublishedSnapshot(validInput());
+  const samplePosts = [
+    {
+      ...snapshot.posts[0]!,
+      id: "post-1",
+      publishedAt: "2026-08-01T10:00:00.000Z",
+      title: "Post 1",
+    },
+    {
+      ...snapshot.posts[0]!,
+      id: "post-2",
+      publishedAt: "2026-08-02T10:00:00.000Z",
+      title: "Post 2",
+    },
+    {
+      ...snapshot.posts[0]!,
+      id: "post-3",
+      publishedAt: "2026-08-03T10:00:00.000Z",
+      title: "Post 3",
+    },
+  ];
+
+  it("identifies earlier and later posts accurately for middle post", () => {
+    const nav = deriveChronologicalNavigation(samplePosts[1]!, samplePosts);
+    expect(nav.prevPost?.id).toBe("post-1");
+    expect(nav.nextPost?.id).toBe("post-3");
+  });
+
+  it("returns null prevPost for the earliest post", () => {
+    const nav = deriveChronologicalNavigation(samplePosts[0]!, samplePosts);
+    expect(nav.prevPost).toBeNull();
+    expect(nav.nextPost?.id).toBe("post-2");
+  });
+
+  it("returns null nextPost for the latest post", () => {
+    const nav = deriveChronologicalNavigation(samplePosts[2]!, samplePosts);
+    expect(nav.prevPost?.id).toBe("post-2");
+    expect(nav.nextPost).toBeNull();
   });
 });
