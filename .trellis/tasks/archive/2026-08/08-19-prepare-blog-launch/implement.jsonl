@@ -1,0 +1,11 @@
+{"file":".trellis/spec/backend/index.md","reason":"Routes infrastructure, Directus, database, preview, publication, and operations changes to the owning backend specifications."}
+{"file":".trellis/spec/backend/directory-structure.md","reason":"Keeps launch tooling, Directus project state, operational scripts, and service wiring in their established ownership boundaries."}
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"Defines PostgreSQL/Directus source-of-truth, exact-ID seed migration, immutable media, timestamp, and unknown-owner-record preservation contracts."}
+{"file":".trellis/spec/backend/error-handling.md","reason":"Requires fail-closed environment and operational entrypoints with secret-free diagnostics."}
+{"file":".trellis/spec/backend/logging-guidelines.md","reason":"Constrains launch, preview, and Directus diagnostics so credentials, bodies, headers, and private URLs are never emitted."}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"Defines explicit CONTENT_SOURCE wiring, Compose/runtime/preview security contracts, CSP checks, and infrastructure validation matrix."}
+{"file":".trellis/spec/frontend/index.md","reason":"Routes Astro runtime, preview, tests, and build changes to established frontend guidance."}
+{"file":".trellis/spec/frontend/directory-structure.md","reason":"Preserves the one dynamic preview route and locates shared runtime/config boundary code correctly."}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Keeps scripts/env.mjs as the strict build/runtime configuration boundary and prohibits duplicated or permissive parsing."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Defines focused boundary tests, full pnpm verify, Pagefind build, and browser-visible regression expectations."}
+{"file":".trellis/tasks/08-19-prepare-blog-launch/research/current-boundaries.md","reason":"Captures the inspected preview defect, seed overwrite risk, selected launch state machine, timestamp policy, and verification implications."}

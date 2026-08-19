@@ -1,0 +1,9 @@
+{"file":".trellis/spec/backend/index.md","reason":"Ensures cross-layer publication, Directus, preview, and deployment boundaries are reviewed together."}
+{"file":".trellis/spec/backend/database-guidelines.md","reason":"Checks exact-ID safety, owner-data preservation, immutable media, truthful timestamps, and Directus-backed parity evidence."}
+{"file":".trellis/spec/backend/error-handling.md","reason":"Checks that incomplete configuration and unsafe state fail before mutation without leaking secrets."}
+{"file":".trellis/spec/backend/logging-guidelines.md","reason":"Checks launch and preview outputs for tokens, bodies, headers, private URLs, and environment leakage."}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"Checks explicit runtime source wiring, Compose, Caddy, CSP, health, container, and preview trust-boundary evidence."}
+{"file":".trellis/spec/frontend/index.md","reason":"Provides the frontend verification routing and public/static route invariants."}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Checks strict configuration parsing and normalized Directus boundary types."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Checks formatting, lint, typecheck, unit, production/Pagefind build, and Playwright coverage expectations."}
+{"file":".trellis/tasks/08-19-prepare-blog-launch/research/current-boundaries.md","reason":"Provides the accepted technical direction and the concrete risks the independent reviewer must verify."}
