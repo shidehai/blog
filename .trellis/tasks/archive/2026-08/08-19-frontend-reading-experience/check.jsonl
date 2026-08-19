@@ -1,0 +1,2 @@
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Verification matrix for formatting, lint, typecheck, unit tests, and Playwright E2E/A11y."}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Checks for accessibility, dark mode tokens, and mobile reflow."}

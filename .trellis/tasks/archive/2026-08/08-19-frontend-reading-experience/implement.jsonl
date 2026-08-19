@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/index.md","reason":"Defines frontend architecture, Astro routing, and quality rules."}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Governs Astro component structure, styling tokens, and A11y standards."}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Strict TypeScript typing for content and markdown models."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Defines test expectations, Playwright e2e, and Axe a11y gates."}
