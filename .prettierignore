@@ -8,6 +8,7 @@
 .trellis/.runtime/
 coverage/
 dist/
+.next/
 node_modules/
 playwright-report/
 test-results/

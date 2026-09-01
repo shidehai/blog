@@ -105,9 +105,7 @@ export default async function ToolsPage() {
         <header className="toolbox-header">
           <div>
             <h1>工具箱</h1>
-            <p>
-              可以直接用的在线求解器、开发实用工具，以及开源项目入口
-            </p>
+            <p>可以直接用的在线求解器、开发实用工具，以及开源项目入口</p>
           </div>
           <span>{TOOLS_DATA.length} 个入口</span>
         </header>

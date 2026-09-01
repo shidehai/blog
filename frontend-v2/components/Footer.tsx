@@ -12,29 +12,17 @@ export function Footer({ profile }: FooterProps) {
         <p>
           © {new Date().getFullYear()} {profile.name} · {profile.location}
         </p>
-        <p>
-          Powered by Next.js 15 &amp; Go Agent Architecture
-        </p>
+        <p>Powered by Next.js 15 &amp; Go Agent Architecture</p>
         <div className="footer-links">
-          <Link
-            href={profile.socials.rss}
-            target="_blank"
-            rel="noopener"
-          >
+          <Link href={profile.socials.rss} target="_blank" rel="noopener">
             RSS 订阅
           </Link>
           <span>·</span>
-          <Link
-            href={profile.socials.github}
-            target="_blank"
-            rel="noopener"
-          >
+          <Link href={profile.socials.github} target="_blank" rel="noopener">
             GitHub
           </Link>
           <span>·</span>
-          <Link href={profile.socials.email}>
-            Email
-          </Link>
+          <Link href={profile.socials.email}>Email</Link>
         </div>
       </div>
     </footer>

@@ -4,7 +4,11 @@
  *
  * 缓存在模块作用域：Next.js 构建期每个进程只拉一次。
  */
-import { buildSnapshot, loadFromDirectus, type ContentSnapshot } from "./directus";
+import {
+  buildSnapshot,
+  loadFromDirectus,
+  type ContentSnapshot,
+} from "./directus";
 import {
   FIXTURE_CATEGORIES,
   FIXTURE_POSTS,

@@ -135,7 +135,8 @@ void main(){
     const locDark = gl.getUniformLocation(program, "uDark");
 
     // Colors matching theme
-    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    const isDark =
+      document.documentElement.getAttribute("data-theme") === "dark";
     if (isDark) {
       gl.uniform3f(locInk, 0.1, 0.42, 0.4);
       gl.uniform3f(locPaper, 0.025, 0.035, 0.037);

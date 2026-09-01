@@ -58,7 +58,8 @@ export const MOCK_SERIES: Series[] = [
     id: "s1",
     name: "AI Agent 实战",
     slug: "ai-agent-in-action",
-    description: "从模型调用、工具循环、状态管理到多 Agent 协作的一线工程实战记录。",
+    description:
+      "从模型调用、工具循环、状态管理到多 Agent 协作的一线工程实战记录。",
     count: 4,
     posts: [
       {
@@ -127,7 +128,8 @@ export const MOCK_POSTS: Post[] = [
       "面向 Go 和 AI Agent 初学者，以个人任务助理为主线，把 Go 语法、HTTP、JSON、接口、测试 与模型调用、工具循环、状态管理和安全边界串成一条六周可执行路线。",
     category: "AI / LLM",
     tags: ["Go", "AI Agent", "Tool Calling", "工程实践"],
-    cover: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
+    cover:
+      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
     featured: true,
     series: {
       name: "AI Agent 实战",
@@ -185,7 +187,8 @@ func (w *AgentWorker) Run(ctx context.Context, prompt string) (string, error) {
       "多 Agent 系统跑起来之后的第一个问题不在模型质量上：任务派出去了，界面什么都不显示。用桌面通知、并行任务状态槽和缓存命中告警三个真实案例，拆解 fail-silent 缺陷的形状与对策。",
     category: "AI / LLM",
     tags: ["AI Agent", "可观测性", "工程实践"],
-    cover: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=800&auto=format&fit=crop&q=80",
+    cover:
+      "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=800&auto=format&fit=crop&q=80",
     featured: false,
     series: {
       name: "AI Agent 实战",
@@ -228,7 +231,8 @@ export interface AgentProgressEvent {
       "以 Pi Agent 等终端编码工具为例，区分模型切换、多模型路由和多 Agent 编排，设计侦察、架构、实现、审查与确定性验证的分工协议，并解决上下文交接、并行冲突、成本和安全问题。",
     category: "AI / LLM",
     tags: ["AI Agent", "工作流", "架构与性能"],
-    cover: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=800&auto=format&fit=crop&q=80",
+    cover:
+      "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=800&auto=format&fit=crop&q=80",
     featured: false,
     series: {
       name: "AI Agent 实战",
@@ -268,7 +272,8 @@ export interface AgentProgressEvent {
       "把一次 LLM 请求拆解为输入、上下文、模型、工具与验证五层，并为每一层定义明确的所有权、可观测指标与失败降级策略。",
     category: "架构与性能",
     tags: ["后端", "AI Agent", "可观测性"],
-    cover: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=80",
+    cover:
+      "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=80",
     featured: false,
     publishedAt: "2026-07-29T16:00:00.000Z",
     readingMinutes: 5,
@@ -288,7 +293,8 @@ export interface AgentProgressEvent {
       "高质量 RAG 的核心在于多路召回、交叉编码器重排、Token 预算裁剪与端到端引用归因，而不是单纯把向量检索接到模型前面。",
     category: "项目实战",
     tags: ["RAG", "后端", "MySQL"],
-    cover: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80",
+    cover:
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80",
     featured: false,
     series: {
       name: "RAG 检索增强工程实战",

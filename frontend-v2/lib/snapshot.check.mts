@@ -35,7 +35,11 @@ assert.ok(
 
 for (const topic of snap.topics) {
   const slugs = snap.postSlugsByTopic.get(topic.slug) ?? [];
-  assert.equal(slugs.length, topic.count, `${topic.slug} 的索引长度应等于 count`);
+  assert.equal(
+    slugs.length,
+    topic.count,
+    `${topic.slug} 的索引长度应等于 count`,
+  );
 }
 
 assert.ok(

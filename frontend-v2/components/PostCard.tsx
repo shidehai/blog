@@ -15,10 +15,7 @@ export function PostCard({ post }: PostCardProps) {
   return (
     <article className="post-card post-card-has-cover">
       {post.cover && (
-        <Link
-          className="post-card-cover-link"
-          href={`/writing/${post.slug}`}
-        >
+        <Link className="post-card-cover-link" href={`/writing/${post.slug}`}>
           <img
             className="post-card-cover"
             src={post.cover}

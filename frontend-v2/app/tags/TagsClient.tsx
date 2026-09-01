@@ -32,9 +32,7 @@ export function TagsClient({
   const filteredPosts = useMemo(() => {
     if (!currentTag) return [];
     return posts.filter((p) =>
-      p.tags.some(
-        (t) => t.toLowerCase() === currentTag.toLowerCase(),
-      ),
+      p.tags.some((t) => t.toLowerCase() === currentTag.toLowerCase()),
     );
   }, [posts, currentTag]);
 
@@ -42,7 +40,11 @@ export function TagsClient({
     const next = currentTag === name ? null : name;
     setSelectedTag(next);
     if (next) {
-      window.history.pushState(null, "", `/tags?tag=${encodeURIComponent(next)}`);
+      window.history.pushState(
+        null,
+        "",
+        `/tags?tag=${encodeURIComponent(next)}`,
+      );
     } else {
       window.history.pushState(null, "", "/tags");
     }

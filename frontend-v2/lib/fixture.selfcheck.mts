@@ -20,11 +20,17 @@ assert.equal(snap.topics.length, 6, "topics 应为 6 个");
 // 发布时间倒序（buildSnapshot 统一保证，夹具书写顺序不可依赖）
 for (const list of [snap.posts, snap.notes]) {
   const times = list.map((x) => Date.parse(x.publishedAt));
-  assert.deepEqual(times, [...times].sort((a, b) => b - a), "应按时间倒序");
+  assert.deepEqual(
+    times,
+    [...times].sort((a, b) => b - a),
+    "应按时间倒序",
+  );
 }
 
 // 派生字段
-const post = snap.posts.find((p) => p.slug === "production-llm-reliability-boundaries");
+const post = snap.posts.find(
+  (p) => p.slug === "production-llm-reliability-boundaries",
+);
 assert.ok(post, "应能按 slug 找到文章");
 assert.ok(post.readingMinutes > 0, "readingMinutes 应为正数");
 assert.ok(post.summary.length > 0, "summary 应非空");
@@ -40,7 +46,11 @@ assert.equal(post.category, "工程实践", "category 应映射为分类名");
 // 专题计数与索引一致
 for (const topic of snap.topics) {
   const slugs = snap.postSlugsByTopic.get(topic.slug) ?? [];
-  assert.equal(topic.count, slugs.length, `${topic.slug} 的 count 应等于索引长度`);
+  assert.equal(
+    topic.count,
+    slugs.length,
+    `${topic.slug} 的 count 应等于索引长度`,
+  );
 }
 const llm = snap.topics.find((t) => t.slug === "llm-systems");
 assert.ok(llm && llm.count > 0, "llm-systems 应有关联文章");
@@ -48,7 +58,10 @@ assert.ok(llm && llm.count > 0, "llm-systems 应有关联文章");
 // profile：CMS 列 + mock 兜底字段
 assert.equal(snap.profile.name, "shidehai");
 assert.ok(snap.profile.handle.length > 0, "handle 应由 mock 兜底");
-assert.ok(snap.profile.socials.about.length > 0, "socials.about 应由 mock 兜底");
+assert.ok(
+  snap.profile.socials.about.length > 0,
+  "socials.about 应由 mock 兜底",
+);
 
 console.log(
   `fixture selfcheck ok: ${snap.posts.length} posts, ${snap.notes.length} notes, ${snap.topics.length} topics`,

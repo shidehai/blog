@@ -83,11 +83,17 @@ export default async function CategoriesPage() {
                 </div>
                 <h3>{cat.name}</h3>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+              >
                 <span className="cat-count">{cat.count}</span>
                 <svg
                   className="ui-icon"
-                  style={{ width: "14px", height: "14px", color: "var(--text-muted)" }}
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    color: "var(--text-muted)",
+                  }}
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"

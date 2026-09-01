@@ -96,7 +96,9 @@ export function ArticleClient({
       btn.addEventListener("click", async () => {
         const codeText = pre.querySelector("code")?.innerText || pre.innerText;
         try {
-          await navigator.clipboard.writeText(codeText.replace("复制", "").trim());
+          await navigator.clipboard.writeText(
+            codeText.replace("复制", "").trim(),
+          );
           btn.textContent = "已复制 ✓";
           btn.classList.add("copied");
           setTimeout(() => {
@@ -199,7 +201,8 @@ export function ArticleClient({
                   <circle cx="12" cy="12" r="9" />
                   <path d="M12 7v5l3 2" />
                 </svg>
-                {post.readingMinutes * 300 || 1200} 字 · 约 {post.readingMinutes} 分钟
+                {post.readingMinutes * 300 || 1200} 字 · 约{" "}
+                {post.readingMinutes} 分钟
               </span>
             </div>
 
@@ -366,7 +369,9 @@ export function ArticleClient({
                 </svg>
                 <h3>延伸阅读 · 相关推荐</h3>
               </div>
-              <span className="related-section-sub">与当前话题相关的深度探讨与工程实践</span>
+              <span className="related-section-sub">
+                与当前话题相关的深度探讨与工程实践
+              </span>
             </div>
 
             <div className="related-grid">
@@ -387,7 +392,9 @@ export function ArticleClient({
                         className="related-card-cover"
                       />
                       {rp.category && (
-                        <span className="related-card-badge">{rp.category}</span>
+                        <span className="related-card-badge">
+                          {rp.category}
+                        </span>
                       )}
                     </div>
                   )}

@@ -7,10 +7,7 @@ export const metadata = {
 };
 
 export default async function WritingPage() {
-  const [posts, topics] = await Promise.all([
-    getAllPosts(),
-    getAllTopics(),
-  ]);
+  const [posts, topics] = await Promise.all([getAllPosts(), getAllTopics()]);
 
   return (
     <div className="space-y-8">

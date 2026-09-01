@@ -50,9 +50,7 @@ export default async function AboutPage() {
         <div className="glass about-card">
           <div className="article-content about-intro">
             <h2>关于我</h2>
-            <p>
-              你好，我是 {profile.name}，一名以后端与系统开发为主的工程师。
-            </p>
+            <p>你好，我是 {profile.name}，一名以后端与系统开发为主的工程师。</p>
             <p>
               日常工作和个人项目主要围绕 Go、Web 服务、分布式架构与 Linux
               展开。我喜欢把环境配置、故障排障和架构实践整理成严谨可复现的记录，方便自己回顾，也希望能给遇到相同技术挑战的朋友提供一手参考。
@@ -90,9 +88,7 @@ export default async function AboutPage() {
             <div className="about-topic-list">
               <div>
                 <h3>开发实践</h3>
-                <p>
-                  记录 Go、接口设计、实时通信、并发控制与数据库优化过程。
-                </p>
+                <p>记录 Go、接口设计、实时通信、并发控制与数据库优化过程。</p>
               </div>
               <div>
                 <h3>Linux 与桌面环境</h3>
@@ -102,9 +98,7 @@ export default async function AboutPage() {
               </div>
               <div>
                 <h3>项目复盘</h3>
-                <p>
-                  深入探讨真实生产环境中的技术选型、架构权衡与避坑指南。
-                </p>
+                <p>深入探讨真实生产环境中的技术选型、架构权衡与避坑指南。</p>
               </div>
             </div>
           </section>

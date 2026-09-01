@@ -40,7 +40,11 @@ export function CategoriesClient({
     const next = currentCat === name ? null : name;
     setSelectedCat(next);
     if (next) {
-      window.history.pushState(null, "", `/categories?cat=${encodeURIComponent(next)}`);
+      window.history.pushState(
+        null,
+        "",
+        `/categories?cat=${encodeURIComponent(next)}`,
+      );
     } else {
       window.history.pushState(null, "", "/categories");
     }

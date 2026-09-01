@@ -191,11 +191,13 @@ function mapPost(raw: RawPost, base: string): Post {
 }
 
 /** 计数从 posts 现算，避免 CMS 侧冗余计数字段与实际不同步。 */
-function countBy(posts: Post[], pick: (post: Post) => string[]): Map<string, number> {
+function countBy(
+  posts: Post[],
+  pick: (post: Post) => string[],
+): Map<string, number> {
   const counts = new Map<string, number>();
   for (const post of posts)
-    for (const key of pick(post))
-      counts.set(key, (counts.get(key) ?? 0) + 1);
+    for (const key of pick(post)) counts.set(key, (counts.get(key) ?? 0) + 1);
   return counts;
 }
 
@@ -249,7 +251,10 @@ export function buildSnapshot(
     }
 
   const socialsByIcon = new Map(
-    rows.socialLinks.map((link) => [link.icon ?? link.label.toLowerCase(), link.url]),
+    rows.socialLinks.map((link) => [
+      link.icon ?? link.label.toLowerCase(),
+      link.url,
+    ]),
   );
 
   return {

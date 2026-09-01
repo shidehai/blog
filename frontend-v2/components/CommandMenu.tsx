@@ -58,16 +58,76 @@ export function CommandMenu({ isOpen, onClose, posts }: CommandMenuProps) {
     const q = query.trim().toLowerCase();
 
     const navItems = [
-      { id: "nav-home", title: "首页", url: "/", icon: Home, group: "页面导航" },
-      { id: "nav-writing", title: "文章归档", url: "/writing", icon: BookOpen, group: "页面导航" },
-      { id: "nav-notes", title: "随记与备忘", url: "/notes", icon: PenLine, group: "页面导航" },
-      { id: "nav-topics", title: "专题分类", url: "/topics", icon: Layers, group: "页面导航" },
-      { id: "nav-tags", title: "标签", url: "/tags", icon: TagIcon, group: "页面导航" },
-      { id: "nav-categories", title: "分类", url: "/categories", icon: Folder, group: "页面导航" },
-      { id: "nav-archives", title: "归档", url: "/archives", icon: BookOpen, group: "页面导航" },
-      { id: "nav-series", title: "系列专栏", url: "/series", icon: Layers, group: "页面导航" },
-      { id: "nav-about", title: "关于我", url: "/about", icon: User, group: "页面导航" },
-      { id: "nav-tools", title: "工具箱", url: "/tools", icon: Wrench, group: "页面导航" },
+      {
+        id: "nav-home",
+        title: "首页",
+        url: "/",
+        icon: Home,
+        group: "页面导航",
+      },
+      {
+        id: "nav-writing",
+        title: "文章归档",
+        url: "/writing",
+        icon: BookOpen,
+        group: "页面导航",
+      },
+      {
+        id: "nav-notes",
+        title: "随记与备忘",
+        url: "/notes",
+        icon: PenLine,
+        group: "页面导航",
+      },
+      {
+        id: "nav-topics",
+        title: "专题分类",
+        url: "/topics",
+        icon: Layers,
+        group: "页面导航",
+      },
+      {
+        id: "nav-tags",
+        title: "标签",
+        url: "/tags",
+        icon: TagIcon,
+        group: "页面导航",
+      },
+      {
+        id: "nav-categories",
+        title: "分类",
+        url: "/categories",
+        icon: Folder,
+        group: "页面导航",
+      },
+      {
+        id: "nav-archives",
+        title: "归档",
+        url: "/archives",
+        icon: BookOpen,
+        group: "页面导航",
+      },
+      {
+        id: "nav-series",
+        title: "系列专栏",
+        url: "/series",
+        icon: Layers,
+        group: "页面导航",
+      },
+      {
+        id: "nav-about",
+        title: "关于我",
+        url: "/about",
+        icon: User,
+        group: "页面导航",
+      },
+      {
+        id: "nav-tools",
+        title: "工具箱",
+        url: "/tools",
+        icon: Wrench,
+        group: "页面导航",
+      },
     ];
 
     if (!q) {

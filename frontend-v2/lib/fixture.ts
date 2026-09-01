@@ -220,7 +220,11 @@ export const FIXTURE_POSTS: FixturePost[] = [
     series: FIXTURE_SERIES[0]!,
     series_order: 1,
     tags: [{ tags_id: FIXTURE_TAGS[1]! }, { tags_id: FIXTURE_TAGS[2]! }],
-    topics: [{ topics_id: topic0 }, { topics_id: topic2 }, { topics_id: topic4 }],
+    topics: [
+      { topics_id: topic0 },
+      { topics_id: topic2 },
+      { topics_id: topic4 },
+    ],
     body: `一次演示只要返回一句像样的话，生产系统却要回答更难的问题：输入是否可信、检索依据是否完整、模型输出能否进入业务流程、工具副作用是否可控，以及最终答案由谁验收。把这些问题都归到“模型效果”里，会让故障定位失去抓手。
 
 ## 五层不是调用顺序，而是责任边界

@@ -4,11 +4,7 @@ import {
   type ContentSnapshot,
 } from "./directus";
 import { FIXTURE_ROWS } from "./fixture";
-import {
-  generateActivityData,
-  MOCK_PROJECTS,
-  MOCK_TOOLS,
-} from "./mock";
+import { generateActivityData, MOCK_PROJECTS, MOCK_TOOLS } from "./mock";
 import type {
   ActivityDay,
   Category,
@@ -67,7 +63,9 @@ export async function getSeriesList(): Promise<Series[]> {
   return (await snapshot()).series;
 }
 
-export async function getSeriesBySlug(slug: string): Promise<Series | undefined> {
+export async function getSeriesBySlug(
+  slug: string,
+): Promise<Series | undefined> {
   return (await snapshot()).series.find((s) => s.slug === slug);
 }
 
@@ -106,7 +104,9 @@ export async function getCategoryBySlug(
   );
 }
 
-export async function getPostsByCategory(categoryName: string): Promise<Post[]> {
+export async function getPostsByCategory(
+  categoryName: string,
+): Promise<Post[]> {
   const target = categoryName.toLowerCase();
   return (await snapshot()).posts.filter(
     (p) => p.category.toLowerCase() === target,

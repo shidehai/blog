@@ -15,7 +15,10 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
   return (
     <article className="featured-post glass">
       {post.cover && (
-        <Link className="featured-post-cover-link" href={`/writing/${post.slug}`}>
+        <Link
+          className="featured-post-cover-link"
+          href={`/writing/${post.slug}`}
+        >
           <img
             className="featured-post-cover"
             src={post.cover}

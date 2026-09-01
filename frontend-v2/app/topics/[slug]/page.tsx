@@ -33,7 +33,9 @@ export async function generateMetadata({ params }: TopicDetailPageProps) {
   };
 }
 
-export default async function TopicDetailPage({ params }: TopicDetailPageProps) {
+export default async function TopicDetailPage({
+  params,
+}: TopicDetailPageProps) {
   const { slug } = await params;
   const topic = await getTopicBySlug(slug);
 
@@ -90,7 +92,10 @@ export default async function TopicDetailPage({ params }: TopicDetailPageProps) 
               return (
                 <article key={post.id} className="py-5 first:pt-0 group">
                   <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 sm:gap-4">
-                    <Link href={`/writing/${post.slug}`} className="block flex-1">
+                    <Link
+                      href={`/writing/${post.slug}`}
+                      className="block flex-1"
+                    >
                       <h3 className="text-base sm:text-lg font-bold text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors">
                         {post.title}
                       </h3>

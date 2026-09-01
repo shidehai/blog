@@ -84,7 +84,9 @@ export default async function CategoryDetailPage({
           style={{ paddingBottom: "1rem", marginBottom: "1.25rem" }}
         >
           <div>
-            <h1 style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            <h1
+              style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}
+            >
               <div
                 className="tool-icon cyan category-icon"
                 style={{ width: "36px", height: "36px" }}
@@ -105,12 +107,17 @@ export default async function CategoryDetailPage({
               </div>
               {category.name}
             </h1>
-            <p>
-              共收录 {categoryPosts.length} 篇相关文章与工程实战
-            </p>
+            <p>共收录 {categoryPosts.length} 篇相关文章与工程实战</p>
           </div>
           <div className="feed-actions">
-            <Link href="/categories" style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+            <Link
+              href="/categories"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.3rem",
+              }}
+            >
               <svg
                 className="ui-icon"
                 viewBox="0 0 24 24"
@@ -130,18 +137,30 @@ export default async function CategoryDetailPage({
 
         {/* Category Articles Feed */}
         {categoryPosts.length > 0 ? (
-          <section className="post-feed" aria-label={`${category.name} 分类文章列表`}>
+          <section
+            className="post-feed"
+            aria-label={`${category.name} 分类文章列表`}
+          >
             {categoryPosts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
           </section>
         ) : (
-          <div className="glass side-card" style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}>
-            <p style={{ color: "var(--text-muted)", fontSize: "var(--text-md)" }}>
+          <div
+            className="glass side-card"
+            style={{ padding: "2.5rem 1.5rem", textAlign: "center" }}
+          >
+            <p
+              style={{ color: "var(--text-muted)", fontSize: "var(--text-md)" }}
+            >
               该分类下暂无已发布文章
             </p>
             <div style={{ marginTop: "1rem" }}>
-              <Link href="/categories" className="feed-action-primary" style={{ display: "inline-block" }}>
+              <Link
+                href="/categories"
+                className="feed-action-primary"
+                style={{ display: "inline-block" }}
+              >
                 返回全部分类
               </Link>
             </div>

@@ -40,7 +40,9 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
-  const [themeMode, setThemeMode] = useState<"system" | "light" | "dark">("system");
+  const [themeMode, setThemeMode] = useState<"system" | "light" | "dark">(
+    "system",
+  );
   const [isDark, setIsDark] = useState(false);
   const [searchVal, setSearchVal] = useState("");
 
@@ -96,7 +98,10 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
               strokeLinejoin="round"
               aria-hidden="true"
             >
-              <g transform="translate(-2.614,-3.84) scale(0.278)" strokeWidth="6">
+              <g
+                transform="translate(-2.614,-3.84) scale(0.278)"
+                strokeWidth="6"
+              >
                 <path d="M50 56 C40 44 26 34 14 30 C26 40 34 46 42 52 C30 54 20 60 13 70 C26 63 37 60 47 60 C52 60 56 59 60 57 Z" />
                 <path d="M55 57 C58 50 63 42 72 37 C76 35 82 33 88 33 L92 30 C88 31 84 32 80 34 C71 39 63 47 58 55 Z" />
               </g>
@@ -127,11 +132,7 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
 
           {/* Right Actions */}
           <div className="nav-actions">
-            <form
-              className="nav-search"
-              onSubmit={handleSearch}
-              role="search"
-            >
+            <form className="nav-search" onSubmit={handleSearch} role="search">
               <svg
                 className="ui-icon"
                 viewBox="0 0 24 24"
@@ -298,10 +299,7 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
                 : pathname.startsWith(link.href);
             return (
               <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className={isActive ? "active" : ""}
-                >
+                <Link href={link.href} className={isActive ? "active" : ""}>
                   {link.label}
                 </Link>
               </li>

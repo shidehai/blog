@@ -78,16 +78,11 @@ export function LayoutShell({ children, profile, posts }: LayoutShellProps) {
       />
 
       {/* Floating Scroll Actions */}
-      <nav
-        className="scroll-actions"
-        aria-label="页面滚动快捷操作"
-      >
+      <nav className="scroll-actions" aria-label="页面滚动快捷操作">
         <button
           type="button"
           onClick={scrollToTop}
-          className={`scroll-action ${
-            showScrollTop ? "" : "is-unavailable"
-          }`}
+          className={`scroll-action ${showScrollTop ? "" : "is-unavailable"}`}
           aria-label="回到顶部"
           title="回到顶部"
         >
