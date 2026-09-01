@@ -14,6 +14,8 @@ export default defineConfig(
       ".trellis/tasks/**/research/**",
       "coverage/**",
       "dist/**",
+      // frontend-v2 是独立子包，自带 next lint 与 tsconfig（根 tsconfig 同样已排除它）
+      "frontend-v2/**",
       "node_modules/**",
       "playwright-report/**",
       "test-results/**",

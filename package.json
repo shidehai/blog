@@ -11,6 +11,9 @@
   "scripts": {
     "predev": "pnpm assets:generate",
     "dev": "node scripts/dev.mjs",
+    "dev:v2": "pnpm --filter frontend-v2 dev",
+    "build:v2": "pnpm --filter frontend-v2 build",
+    "verify:v2": "pnpm --filter frontend-v2 verify",
     "prebuild": "pnpm assets:generate && node scripts/prepare-content.ts",
     "start": "node scripts/env.mjs runtime && node dist/server/entry.mjs",
     "build": "astro build && pnpm search:index",
