@@ -105,11 +105,14 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
     );
 
     // 2. Headings with IDs & permalinks
+    let headingIndex = 0;
     html = html.replace(/^(#{2,4})\s+(.+)$/gm, (_, hashes, text) => {
       const level = hashes.length;
-      const cleanText = text.trim();
-      const id = slugify(cleanText);
-      return `<h${level} id="${id}">${cleanText}</h${level}>`;
+      // 算法对齐 extractHeadings：剥链接、slugify、空值兜底
+      const rawText = text.replace(/\[(.*?)\]\(.*?\)/g, "$1").trim();
+      const id = slugify(rawText) || `heading-${headingIndex}`;
+      headingIndex++;
+      return `<h${level} id="${id}">${text.trim()}</h${level}>`;
     });
 
     // 3. GitHub Callout Alerts
