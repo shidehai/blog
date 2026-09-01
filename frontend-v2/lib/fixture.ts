@@ -5,7 +5,6 @@
  * 类型在本文件内自带：这里描述的是 CMS 原始行，与 lib/types.ts 里面向视图的
  * Post/Topic 是两套模型，不要合并。接入时在 content.ts 里做一次映射。
  *
- * ponytail: 目前尚无 lib/directus.ts，本文件未被引用；接线时一并补映射层。
  */
 
 interface FixtureTopic {
