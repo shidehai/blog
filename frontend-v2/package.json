@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit",
     "start": "next start -p 4322",
     "lint": "next lint",
-    "selfcheck": "tsx lib/fixture.selfcheck.mts",
+    "selfcheck": "tsx lib/fixture.selfcheck.mts && tsx lib/snapshot.check.mts",
     "verify": "pnpm typecheck && pnpm lint && pnpm selfcheck && pnpm build"
   },
   "dependencies": {

@@ -1,6 +1,6 @@
 /**
  * 映射层自检：夹具走 buildSnapshot 后，派生字段与索引必须成立。
- * 跑法：npx tsx lib/snapshot.check.ts
+ * 跑法：pnpm --filter frontend-v2 selfcheck（与解码层自检一同执行）
  */
 import assert from "node:assert/strict";
 import { snapshot } from "./snapshot";
