@@ -1,12 +1,9 @@
 import type {
   ActivityDay,
-  Category,
   Note,
   Post,
   Project,
-  Series,
   SiteProfile,
-  Tag,
   Topic,
   ToolItem,
 } from "./types";
@@ -27,97 +24,8 @@ export const MOCK_PROFILE: SiteProfile = {
   },
 };
 
-export const MOCK_CATEGORIES: Category[] = [
-  { name: "后端", slug: "backend", count: 12 },
-  { name: "AI / LLM", slug: "ai-llm", count: 8 },
-  { name: "Go", slug: "go", count: 7 },
-  { name: "项目实战", slug: "practical-projects", count: 6 },
-  { name: "Linux", slug: "linux", count: 4 },
-  { name: "架构与性能", slug: "architecture", count: 5 },
-  { name: "MySQL", slug: "mysql", count: 3 },
-  { name: "工具箱", slug: "tools", count: 2 },
-];
 
-export const MOCK_TAGS: Tag[] = [
-  { name: "Go", slug: "go", count: 7 },
-  { name: "AI Agent", slug: "ai-agent", count: 6 },
-  { name: "RAG", slug: "rag", count: 4 },
-  { name: "后端", slug: "backend", count: 12 },
-  { name: "Tool Calling", slug: "tool-calling", count: 4 },
-  { name: "MySQL", slug: "mysql", count: 3 },
-  { name: "Docker", slug: "docker", count: 3 },
-  { name: "Linux", slug: "linux", count: 4 },
-  { name: "TypeScript", slug: "typescript", count: 3 },
-  { name: "可观测性", slug: "observability", count: 4 },
-  { name: "状态机", slug: "state-machine", count: 2 },
-  { name: "微服务", slug: "microservices", count: 3 },
-];
 
-export const MOCK_SERIES: Series[] = [
-  {
-    id: "s1",
-    name: "AI Agent 实战",
-    slug: "ai-agent-in-action",
-    description:
-      "从模型调用、工具循环、状态管理到多 Agent 协作的一线工程实战记录。",
-    count: 4,
-    posts: [
-      {
-        title: "从零开始用 Go 开发 AI Agent：一条可执行的六周学习路线",
-        slug: "go-agent-zero-to-one-learning-roadmap",
-        publishedAt: "2026-08-12",
-      },
-      {
-        title: "AI Agent 实战：沉默不是正常，给编码 Agent 补上反馈回路",
-        slug: "ai-agent-feedback-loop-silent-failure",
-        publishedAt: "2026-08-07",
-      },
-      {
-        title: "Pi Agent 与多模型分工：构建可验收的编码工作流",
-        slug: "pi-multi-model-workflow",
-        publishedAt: "2026-08-07",
-      },
-      {
-        title: "AI Agent 工具调用：如何构建确定性的类型安全与权限沙箱",
-        slug: "safe-tool-calling-design",
-        publishedAt: "2026-07-28",
-      },
-    ],
-  },
-  {
-    id: "s2",
-    name: "RAG 检索增强工程实战",
-    slug: "rag-engineering-in-action",
-    description: "拆解知识库切分、混合检索、交叉编码重排与端到端事实归因。",
-    count: 3,
-    posts: [
-      {
-        title: "RAG 不是一次向量搜索：拆解检索、重排与答案归因",
-        slug: "rag-retrieval-reranking-attribution",
-        publishedAt: "2026-07-20",
-      },
-      {
-        title: "本地嵌入检索的极简方案：SQLite-VSS 性能探究与实战",
-        slug: "sqlite-vss-local-vector-experiment",
-        publishedAt: "2026-06-28",
-      },
-    ],
-  },
-  {
-    id: "s3",
-    name: "Go 高性能服务端实战",
-    slug: "go-high-performance-service",
-    description: "高并发连接管理、内存优化、SSE 流式推送与可靠性设计。",
-    count: 4,
-    posts: [
-      {
-        title: "关于 SSE 流式传输中 TTFT 首字延迟的优化经验",
-        slug: "streaming-ttft-optimization-note",
-        publishedAt: "2026-06-15",
-      },
-    ],
-  },
-];
 
 export const MOCK_POSTS: Post[] = [
   {
