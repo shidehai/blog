@@ -32,6 +32,62 @@ collections:
       versioning: true
     schema:
       name: posts
+  - collection: categories
+    meta:
+      accountability: all
+      archive_app_filter: true
+      archive_field: null
+      archive_value: null
+      autosave_revision_interval: null
+      collapse: open
+      collection: categories
+      color: null
+      display_template: "{{name}}"
+      group: null
+      hidden: false
+      icon: folder
+      item_duplication_fields: null
+      note: 顶层内容大类，每篇内容最多归属一个分类。
+      preview_url: null
+      singleton: false
+      sort: 6
+      sort_field: sort
+      status: active
+      translations:
+        - language: zh-CN
+          plural: 分类
+          singular: 分类
+          translation: 分类
+      unarchive_value: null
+      versioning: false
+    schema:
+      name: categories
+  - collection: posts_tags
+    meta:
+      accountability: all
+      archive_app_filter: true
+      archive_field: null
+      archive_value: null
+      autosave_revision_interval: null
+      collapse: open
+      collection: posts_tags
+      color: null
+      display_template: null
+      group: null
+      hidden: true
+      icon: merge_type
+      item_duplication_fields: null
+      note: null
+      preview_url: null
+      singleton: false
+      sort: 9
+      sort_field: null
+      status: active
+      translations: null
+      unarchive_value: null
+      versioning: false
+    schema:
+      name: posts_tags
   - collection: posts_topics
     meta:
       accountability: all
@@ -118,6 +174,66 @@ collections:
       versioning: false
     schema:
       name: social_links
+  - collection: series
+    meta:
+      accountability: all
+      archive_app_filter: true
+      archive_field: null
+      archive_value: null
+      autosave_revision_interval: null
+      collapse: open
+      collection: series
+      color: null
+      display_template: "{{name}}"
+      group: null
+      hidden: false
+      icon: auto_stories
+      item_duplication_fields: null
+      note: 连载系列，内容在系列内按 series_order 排序。
+      preview_url: null
+      singleton: false
+      sort: 7
+      sort_field: sort
+      status: active
+      translations:
+        - language: zh-CN
+          plural: 系列
+          singular: 系列
+          translation: 系列
+      unarchive_value: null
+      versioning: false
+    schema:
+      name: series
+  - collection: tags
+    meta:
+      accountability: all
+      archive_app_filter: true
+      archive_field: null
+      archive_value: null
+      autosave_revision_interval: null
+      collapse: open
+      collection: tags
+      color: null
+      display_template: "{{name}}"
+      group: null
+      hidden: false
+      icon: label
+      item_duplication_fields: null
+      note: 自由组合的横向标签，一篇内容可挂多个。
+      preview_url: null
+      singleton: false
+      sort: 8
+      sort_field: null
+      status: active
+      translations:
+        - language: zh-CN
+          plural: 标签
+          singular: 标签
+          translation: 标签
+      unarchive_value: null
+      versioning: false
+    schema:
+      name: tags
   - collection: topics
     meta:
       accountability: all
@@ -149,6 +265,248 @@ collections:
     schema:
       name: topics
 fields:
+  - collection: categories
+    field: id
+    type: uuid
+    meta:
+      collection: categories
+      conditions: null
+      display: null
+      display_options: null
+      field: id
+      group: null
+      hidden: true
+      interface: input
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 1
+      special:
+        - uuid
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: id
+      table: categories
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: true
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: categories
+    field: name
+    type: string
+    meta:
+      collection: categories
+      conditions: null
+      display: null
+      display_options: null
+      field: name
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        trim: true
+      readonly: false
+      required: true
+      searchable: true
+      sort: 2
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 名称
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: name
+      table: categories
+      data_type: character varying
+      default_value: null
+      max_length: 100
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: categories
+    field: slug
+    type: string
+    meta:
+      collection: categories
+      conditions: null
+      display: null
+      display_options: null
+      field: slug
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        slug: true
+        trim: true
+      readonly: false
+      required: true
+      searchable: true
+      sort: 3
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 固定链接
+      validation:
+        slug:
+          _regex: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+      validation_message: slug 只能包含小写字母、数字和单个连字符。
+      width: half
+    schema:
+      name: slug
+      table: categories
+      data_type: character varying
+      default_value: null
+      max_length: 100
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: categories
+    field: description
+    type: text
+    meta:
+      collection: categories
+      conditions: null
+      display: null
+      display_options: null
+      field: description
+      group: null
+      hidden: false
+      interface: input-multiline
+      note: null
+      options: null
+      readonly: false
+      required: false
+      searchable: true
+      sort: 4
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 简介
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: description
+      table: categories
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: categories
+    field: sort
+    type: integer
+    meta:
+      collection: categories
+      conditions: null
+      display: null
+      display_options: null
+      field: sort
+      group: null
+      hidden: true
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      searchable: false
+      sort: 5
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 排序
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: sort
+      table: categories
+      data_type: integer
+      default_value: null
+      max_length: null
+      numeric_precision: 32
+      numeric_scale: 0
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: categories
+    field: posts
+    type: alias
+    meta:
+      collection: categories
+      conditions: null
+      display: related-values
+      display_options:
+        template: "{{title}}"
+      field: posts
+      group: null
+      hidden: false
+      interface: list-o2m
+      note: null
+      options:
+        template: "{{title}}"
+      readonly: false
+      required: false
+      searchable: true
+      sort: 6
+      special:
+        - o2m
+      translations:
+        - language: zh-CN
+          translation: 内容
+      validation: null
+      validation_message: null
+      width: full
   - collection: posts
     field: id
     type: uuid
@@ -593,6 +951,176 @@ fields:
       validation_message: null
       width: full
   - collection: posts
+    field: tags
+    type: alias
+    meta:
+      collection: posts
+      conditions: null
+      display: related-values
+      display_options:
+        template: "{{tags_id.name}}"
+      field: tags
+      group: null
+      hidden: false
+      interface: list-m2m
+      note: null
+      options:
+        template: "{{tags_id.name}}"
+      readonly: false
+      required: false
+      searchable: true
+      sort: 10
+      special:
+        - m2m
+      translations:
+        - language: zh-CN
+          translation: 标签
+      validation: null
+      validation_message: null
+      width: full
+  - collection: posts
+    field: category
+    type: uuid
+    meta:
+      collection: posts
+      conditions: null
+      display: related-values
+      display_options:
+        template: "{{name}}"
+      field: category
+      group: null
+      hidden: false
+      interface: select-dropdown-m2o
+      note: null
+      options:
+        template: "{{name}}"
+      readonly: false
+      required: false
+      searchable: true
+      sort: 11
+      special:
+        - m2o
+      translations:
+        - language: zh-CN
+          translation: 分类
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: category
+      table: posts
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: categories
+      foreign_key_column: id
+  - collection: posts
+    field: series
+    type: uuid
+    meta:
+      collection: posts
+      conditions: null
+      display: related-values
+      display_options:
+        template: "{{name}}"
+      field: series
+      group: null
+      hidden: false
+      interface: select-dropdown-m2o
+      note: null
+      options:
+        template: "{{name}}"
+      readonly: false
+      required: false
+      searchable: true
+      sort: 12
+      special:
+        - m2o
+      translations:
+        - language: zh-CN
+          translation: 系列
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: series
+      table: posts
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: series
+      foreign_key_column: id
+  - collection: posts
+    field: series_order
+    type: integer
+    meta:
+      collection: posts
+      conditions:
+        - name: 仅在归属系列时填写
+          rule:
+            series:
+              _null: true
+          hidden: true
+          options:
+            font: sans-serif
+      display: null
+      display_options: null
+      field: series_order
+      group: null
+      hidden: false
+      interface: input
+      note: 在系列内的序号，从 1 开始。
+      options:
+        min: 1
+      readonly: false
+      required: false
+      searchable: false
+      sort: 13
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 系列序号
+      validation:
+        series_order:
+          _gte: 1
+      validation_message: 系列序号必须大于或等于 1。
+      width: half
+    schema:
+      name: series_order
+      table: posts
+      data_type: integer
+      default_value: null
+      max_length: null
+      numeric_precision: 32
+      numeric_scale: 0
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts
     field: featured
     type: boolean
     meta:
@@ -609,7 +1137,7 @@ fields:
       readonly: false
       required: false
       searchable: true
-      sort: 10
+      sort: 14
       special: null
       translations:
         - language: zh-CN
@@ -652,7 +1180,7 @@ fields:
       readonly: false
       required: false
       searchable: true
-      sort: 11
+      sort: 15
       special:
         - file
       translations:
@@ -705,7 +1233,7 @@ fields:
       readonly: false
       required: false
       searchable: true
-      sort: 12
+      sort: 16
       special: null
       translations:
         - language: zh-CN
@@ -747,7 +1275,7 @@ fields:
       readonly: false
       required: false
       searchable: true
-      sort: 13
+      sort: 17
       special: null
       translations:
         - language: zh-CN
@@ -791,7 +1319,7 @@ fields:
       readonly: false
       required: false
       searchable: true
-      sort: 14
+      sort: 18
       special: null
       translations:
         - language: zh-CN
@@ -834,7 +1362,7 @@ fields:
       readonly: false
       required: false
       searchable: true
-      sort: 15
+      sort: 19
       special: null
       translations:
         - language: zh-CN
@@ -876,7 +1404,7 @@ fields:
       readonly: true
       required: false
       searchable: true
-      sort: 16
+      sort: 20
       special:
         - user-created
       translations: null
@@ -918,7 +1446,7 @@ fields:
       readonly: true
       required: false
       searchable: true
-      sort: 17
+      sort: 21
       special:
         - date-created
       translations: null
@@ -959,7 +1487,7 @@ fields:
       readonly: true
       required: false
       searchable: true
-      sort: 18
+      sort: 22
       special:
         - user-updated
       translations: null
@@ -1001,7 +1529,7 @@ fields:
       readonly: true
       required: false
       searchable: true
-      sort: 19
+      sort: 23
       special:
         - date-updated
       translations: null
@@ -1147,6 +1675,129 @@ fields:
       generation_expression: null
       has_auto_increment: false
       foreign_key_table: topics
+      foreign_key_column: id
+  - collection: posts_tags
+    field: id
+    type: uuid
+    meta:
+      collection: posts_tags
+      conditions: null
+      display: null
+      display_options: null
+      field: id
+      group: null
+      hidden: true
+      interface: input
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 1
+      special:
+        - uuid
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: id
+      table: posts_tags
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: true
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: posts_tags
+    field: posts_id
+    type: uuid
+    meta:
+      collection: posts_tags
+      conditions: null
+      display: null
+      display_options: null
+      field: posts_id
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: false
+      required: true
+      searchable: true
+      sort: 2
+      special:
+        - m2o
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: posts_id
+      table: posts_tags
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: true
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: posts
+      foreign_key_column: id
+  - collection: posts_tags
+    field: tags_id
+    type: uuid
+    meta:
+      collection: posts_tags
+      conditions: null
+      display: null
+      display_options: null
+      field: tags_id
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: false
+      required: true
+      searchable: true
+      sort: 3
+      special:
+        - m2o
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: tags_id
+      table: posts_tags
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: true
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: tags
       foreign_key_column: id
   - collection: site_settings
     field: id
@@ -2317,6 +2968,406 @@ fields:
       has_auto_increment: false
       foreign_key_table: null
       foreign_key_column: null
+  - collection: series
+    field: id
+    type: uuid
+    meta:
+      collection: series
+      conditions: null
+      display: null
+      display_options: null
+      field: id
+      group: null
+      hidden: true
+      interface: input
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 1
+      special:
+        - uuid
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: id
+      table: series
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: true
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: series
+    field: name
+    type: string
+    meta:
+      collection: series
+      conditions: null
+      display: null
+      display_options: null
+      field: name
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        trim: true
+      readonly: false
+      required: true
+      searchable: true
+      sort: 2
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 名称
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: name
+      table: series
+      data_type: character varying
+      default_value: null
+      max_length: 100
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: series
+    field: slug
+    type: string
+    meta:
+      collection: series
+      conditions: null
+      display: null
+      display_options: null
+      field: slug
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        slug: true
+        trim: true
+      readonly: false
+      required: true
+      searchable: true
+      sort: 3
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 固定链接
+      validation:
+        slug:
+          _regex: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+      validation_message: slug 只能包含小写字母、数字和单个连字符。
+      width: half
+    schema:
+      name: slug
+      table: series
+      data_type: character varying
+      default_value: null
+      max_length: 100
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: series
+    field: description
+    type: text
+    meta:
+      collection: series
+      conditions: null
+      display: null
+      display_options: null
+      field: description
+      group: null
+      hidden: false
+      interface: input-multiline
+      note: null
+      options: null
+      readonly: false
+      required: false
+      searchable: true
+      sort: 4
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 简介
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: description
+      table: series
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: series
+    field: sort
+    type: integer
+    meta:
+      collection: series
+      conditions: null
+      display: null
+      display_options: null
+      field: sort
+      group: null
+      hidden: true
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      searchable: false
+      sort: 5
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 排序
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: sort
+      table: series
+      data_type: integer
+      default_value: null
+      max_length: null
+      numeric_precision: 32
+      numeric_scale: 0
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: series
+    field: posts
+    type: alias
+    meta:
+      collection: series
+      conditions: null
+      display: related-values
+      display_options:
+        template: "{{title}}"
+      field: posts
+      group: null
+      hidden: false
+      interface: list-o2m
+      note: null
+      options:
+        template: "{{title}}"
+      readonly: false
+      required: false
+      searchable: true
+      sort: 6
+      special:
+        - o2m
+      translations:
+        - language: zh-CN
+          translation: 内容
+      validation: null
+      validation_message: null
+      width: full
+  - collection: tags
+    field: id
+    type: uuid
+    meta:
+      collection: tags
+      conditions: null
+      display: null
+      display_options: null
+      field: id
+      group: null
+      hidden: true
+      interface: input
+      note: null
+      options: null
+      readonly: true
+      required: false
+      searchable: true
+      sort: 1
+      special:
+        - uuid
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: id
+      table: tags
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: true
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: tags
+    field: name
+    type: string
+    meta:
+      collection: tags
+      conditions: null
+      display: null
+      display_options: null
+      field: name
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        trim: true
+      readonly: false
+      required: true
+      searchable: true
+      sort: 2
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 名称
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: name
+      table: tags
+      data_type: character varying
+      default_value: null
+      max_length: 60
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: tags
+    field: slug
+    type: string
+    meta:
+      collection: tags
+      conditions: null
+      display: null
+      display_options: null
+      field: slug
+      group: null
+      hidden: false
+      interface: input
+      note: null
+      options:
+        slug: true
+        trim: true
+      readonly: false
+      required: true
+      searchable: true
+      sort: 3
+      special: null
+      translations:
+        - language: zh-CN
+          translation: 固定链接
+      validation:
+        slug:
+          _regex: ^[a-z0-9]+(?:-[a-z0-9]+)*$
+      validation_message: slug 只能包含小写字母、数字和单个连字符。
+      width: half
+    schema:
+      name: slug
+      table: tags
+      data_type: character varying
+      default_value: null
+      max_length: 60
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: tags
+    field: posts
+    type: alias
+    meta:
+      collection: tags
+      conditions: null
+      display: related-values
+      display_options:
+        template: "{{title}}"
+      field: posts
+      group: null
+      hidden: false
+      interface: list-m2m
+      note: null
+      options:
+        template: "{{title}}"
+      readonly: false
+      required: false
+      searchable: true
+      sort: 4
+      special:
+        - m2m
+      translations:
+        - language: zh-CN
+          translation: 内容
+      validation: null
+      validation_message: null
+      width: full
   - collection: topics
     field: id
     type: uuid
@@ -2838,6 +3889,90 @@ relations:
       constraint_name: posts_topics_topics_id_foreign
       on_update: NO ACTION
       on_delete: CASCADE
+  - collection: posts_tags
+    field: posts_id
+    related_collection: posts
+    meta:
+      junction_field: tags_id
+      many_collection: posts_tags
+      many_field: posts_id
+      one_allowed_collections: null
+      one_collection: posts
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: tags
+      sort_field: null
+    schema:
+      table: posts_tags
+      column: posts_id
+      foreign_key_table: posts
+      foreign_key_column: id
+      constraint_name: posts_tags_posts_id_foreign
+      on_update: NO ACTION
+      on_delete: CASCADE
+  - collection: posts_tags
+    field: tags_id
+    related_collection: tags
+    meta:
+      junction_field: posts_id
+      many_collection: posts_tags
+      many_field: tags_id
+      one_allowed_collections: null
+      one_collection: tags
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: posts
+      sort_field: null
+    schema:
+      table: posts_tags
+      column: tags_id
+      foreign_key_table: tags
+      foreign_key_column: id
+      constraint_name: posts_tags_tags_id_foreign
+      on_update: NO ACTION
+      on_delete: CASCADE
+  - collection: posts
+    field: category
+    related_collection: categories
+    meta:
+      junction_field: null
+      many_collection: posts
+      many_field: category
+      one_allowed_collections: null
+      one_collection: categories
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: posts
+      sort_field: null
+    schema:
+      table: posts
+      column: category
+      foreign_key_table: categories
+      foreign_key_column: id
+      constraint_name: posts_category_foreign
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: posts
+    field: series
+    related_collection: series
+    meta:
+      junction_field: null
+      many_collection: posts
+      many_field: series
+      one_allowed_collections: null
+      one_collection: series
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: posts
+      sort_field: series_order
+    schema:
+      table: posts
+      column: series
+      foreign_key_table: series
+      foreign_key_column: id
+      constraint_name: posts_series_foreign
+      on_update: NO ACTION
+      on_delete: SET NULL
   - collection: site_settings
     field: avatar
     related_collection: directus_files

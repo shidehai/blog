@@ -29,7 +29,7 @@ const fixture = {
  * @typedef {{ name: string, usage: { collections: number }, entitlements: { custom_permission_rules_enabled: Entitlement, production_enabled: Entitlement } }} License
  * @typedef {{ version: string, files: { mimeTypeAllowList: string[] } }} ServerInfo
  * @typedef {{ collection: string, meta: { versioning?: boolean, singleton?: boolean, preview_url?: string } }} CollectionRecord
- * @typedef {{ collection: string, field: string, meta: { interface: string | null, validation: unknown }, schema: { is_unique: boolean, is_indexed: boolean, default_value: unknown } }} FieldRecord
+ * @typedef {{ collection: string, field: string, meta: { interface: string | null, validation: unknown }, schema: { is_unique: boolean, is_indexed: boolean, is_nullable: boolean, default_value: unknown } }} FieldRecord
  * @typedef {{ collection: string, field: string, related_collection: string | null }} RelationRecord
  * @typedef {{ id?: string, status?: string, kind?: string, title?: string, body?: string, slug?: string, featured?: boolean, cover_image?: string | null }} PostRecord
  * @typedef {{ id: string, site_name: string, author_name: string, locale: string, timezone: string, default_og_image: string | null }} SiteSettings
@@ -142,13 +142,17 @@ async function schemaCheck() {
     "image/svg+xml",
   ]);
   assert.equal(license.name, "Core");
-  assert.equal(license.usage.collections, 5);
+  assert.equal(license.usage.collections, 9);
 
   const expectedCollections = [
+    "categories",
     "posts",
+    "posts_tags",
     "posts_topics",
+    "series",
     "site_settings",
     "social_links",
+    "tags",
     "topics",
   ];
   for (const name of expectedCollections)
@@ -187,6 +191,12 @@ async function schemaCheck() {
   assert.equal(field("posts", "status").schema.is_indexed, true);
   assert.equal(field("posts", "kind").schema.is_indexed, true);
   assert.equal(field("topics", "slug").schema.is_unique, true);
+  assert.equal(field("categories", "slug").schema.is_unique, true);
+  assert.equal(field("tags", "slug").schema.is_unique, true);
+  assert.equal(field("series", "slug").schema.is_unique, true);
+  assert.equal(field("posts", "category").schema.is_nullable, true);
+  assert.equal(field("posts", "series").schema.is_nullable, true);
+  assert.equal(field("posts", "series_order").schema.is_nullable, true);
   assert.equal(field("site_settings", "locale").schema.default_value, "zh-CN");
   assert.equal(
     field("site_settings", "timezone").schema.default_value,
@@ -208,6 +218,10 @@ async function schemaCheck() {
     );
   assert.ok(relation("posts_topics", "posts_id", "posts"));
   assert.ok(relation("posts_topics", "topics_id", "topics"));
+  assert.ok(relation("posts_tags", "posts_id", "posts"));
+  assert.ok(relation("posts_tags", "tags_id", "tags"));
+  assert.ok(relation("posts", "category", "categories"));
+  assert.ok(relation("posts", "series", "series"));
   assert.ok(relation("posts", "cover_image", "directus_files"));
   assert.ok(relation("social_links", "site_settings_id", "site_settings"));
 
