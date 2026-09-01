@@ -3,19 +3,20 @@
 ## Current Layout
 
 ```text
-src/
-  pages/       # Astro file routes and endpoints
-  styles/      # Project-owned CSS
+src/             # V1 Frontend: Astro 5 application (port 4321, Neumorphic Bento)
+  pages/         # Astro file routes and endpoints
+  styles/        # Project-owned CSS
+frontend-v2/     # V2 Frontend: Next.js 15 application (port 4322, Modern Kinetic Editorial)
+  app/           # App Router pages (/, /writing, /notes, /topics, /about)
+  components/    # React 19 UI components (Navbar, CommandMenu, TOC, PostCard, etc.)
+  lib/           # Directus integration and fallback fixtures
 tests/
-  unit/        # Boundary and pure-logic tests
-  e2e/         # Browser-visible behavior
-scripts/       # Build/runtime utilities shared by configuration and containers
+  unit/          # Boundary and pure-logic tests
+  e2e/           # Browser-visible behavior
+scripts/         # Build/runtime utilities shared by configuration and containers
 ```
 
-Root files such as `astro.config.ts`, `playwright.config.ts`,
-`vitest.config.ts`, and `eslint.config.js` own tool configuration. Keep the
-single application at the repository root; there is no package boundary that
-justifies a monorepo.
+Root files own configuration. `pnpm-workspace.yaml` manages workspace projects (`.` for V1 Astro and `frontend-v2` for V2 Next.js).
 
 ## Route Rules
 

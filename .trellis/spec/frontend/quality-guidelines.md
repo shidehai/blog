@@ -1,19 +1,35 @@
 # Frontend Quality Guidelines
 
+Unless a section names V2 explicitly, the rules below describe V1 (root Astro).
+
 ## Required Commands
 
-`package.json` defines one aggregate gate:
+Each package defines one aggregate gate:
 
 ```bash
-pnpm verify
+pnpm verify      # V1: root Astro app
+pnpm verify:v2   # V2: frontend-v2 (alias of pnpm --filter frontend-v2 verify)
 ```
 
-It runs Prettier check, ESLint, Astro type checking, Vitest, the production
-Astro/Pagefind build, and Playwright in that order. Keep each focused script
-independently runnable for diagnosis.
+V1 `verify` runs Prettier check, ESLint, Astro type checking, Vitest, the
+production Astro/Pagefind build, and Playwright in that order.
+
+V2 `verify` runs `tsc --noEmit`, `next lint`, the fixture selfcheck, and
+`next build`. Typecheck comes first because it is the fastest failure, and the
+selfcheck precedes the build so a broken decode fails before 26 pages render.
+
+Keep each focused script independently runnable for diagnosis. A script must
+declare the tool it invokes as a dependency of its own package; relying on
+workspace hoisting or an `npx` download makes the gate pass locally and fail on
+a clean checkout.
 
 ## Test Shape
 
+- V2 has no test runner yet. Boundary logic there is covered by an
+  `assert`-based selfcheck (`lib/fixture.selfcheck.mts`) that exercises the real
+  decode and snapshot path, not a mock. Add a framework only when a case needs
+  more than `node:assert`; until then every new V2 boundary rule gains a row in
+  that file.
 - Unit tests cover non-trivial boundary logic with the smallest useful case;
   `tests/unit/env.test.ts` proves permissive fixture mode and fail-closed secret
   modes.
