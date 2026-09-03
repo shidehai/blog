@@ -48,49 +48,6 @@ export default async function HomePage() {
 
       {/* 2. Middle Main Feed Content */}
       <main className="main-content" id="main-content">
-        <header className="feed-header">
-          <div>
-            <h1>
-              把问题讲清楚，
-              <br />
-              把经验留下来
-            </h1>
-            <p id="hitokoto">{profile.hitokoto}</p>
-          </div>
-          <div className="feed-actions">
-            <Link className="feed-action-primary" href="/about">
-              关于我{" "}
-              <svg
-                className="ui-icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </Link>
-            <Link href="/archives">
-              文章归档{" "}
-              <svg
-                className="ui-icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-        </header>
-
         {/* Featured Post Card */}
         {featured && <FeaturedPost post={featured} />}
 
