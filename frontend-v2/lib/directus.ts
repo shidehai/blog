@@ -304,7 +304,10 @@ export function buildSnapshot(
       name: rows.settings.author_name,
       title: rows.settings.tagline ?? "",
       bio: rows.settings.biography ?? rows.settings.homepage_intro ?? "",
-      avatar: assetUrl(base, rows.settings.avatar) ?? "/avatar.png",
+      avatar:
+        rows.settings.avatar?.startsWith("/")
+          ? rows.settings.avatar
+          : assetUrl(base, rows.settings.avatar) ?? "/avatar.png",
       socials: {
         about: MOCK_PROFILE.socials.about,
         github: socialsByIcon.get("github") ?? MOCK_PROFILE.socials.github,
