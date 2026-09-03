@@ -24,7 +24,7 @@ import type {
  */
 let cached: Promise<ContentSnapshot> | undefined;
 
-function snapshot(): Promise<ContentSnapshot> {
+export function snapshot(): Promise<ContentSnapshot> {
   // 夹具的 cover_image 全为 null，不需要资源前缀，base 传空串。
   cached ??= loadFromDirectus().then(
     (snap) => snap ?? buildSnapshot(FIXTURE_ROWS, ""),

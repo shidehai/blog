@@ -3,7 +3,7 @@
  * 跑法：pnpm --filter frontend-v2 selfcheck（与解码层自检一同执行）
  */
 import assert from "node:assert/strict";
-import { snapshot } from "./snapshot";
+import { snapshot } from "./content";
 
 const snap = await snapshot();
 

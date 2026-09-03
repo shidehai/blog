@@ -24,9 +24,6 @@ export const MOCK_PROFILE: SiteProfile = {
   },
 };
 
-
-
-
 export const MOCK_POSTS: Post[] = [
   {
     id: "p1",
