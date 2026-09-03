@@ -1,10 +1,8 @@
 import type {
   ActivityDay,
-  Note,
   Post,
   Project,
   SiteProfile,
-  Topic,
   ToolItem,
 } from "./types";
 
@@ -308,128 +306,6 @@ export const MOCK_TOOLS: ToolItem[] = [
 ];
 
 /** 专题描述表：只为需要展示简介的标签补一句说明，其余标签走兜底文案。 */
-/**
- * 专题元信息：slug 与简介。slug 必须显式给出 —— 中文 tag 若走编码回退，
- * 会得到 /topics/%E5%B7%A5%E7%A8%8B... 这种 URL。
- */
-const TOPIC_META: Record<string, { slug: string; description: string }> = {
-  Go: { slug: "go", description: "并发模型、运行时行为与工程化实践。" },
-  "AI Agent": {
-    slug: "ai-agent",
-    description: "工具循环、状态管理与可验收的编码工作流。",
-  },
-  RAG: { slug: "rag", description: "检索、重排与答案归因的完整链路拆解。" },
-  后端: { slug: "backend", description: "服务设计、数据访问与线上稳定性。" },
-  "Tool Calling": {
-    slug: "tool-calling",
-    description: "受控工具调用的类型安全与权限边界。",
-  },
-  MySQL: { slug: "mysql", description: "索引、事务与慢查询治理。" },
-  可观测性: {
-    slug: "observability",
-    description: "日志、指标与链路追踪的落地方式。",
-  },
-  架构与性能: {
-    slug: "architecture",
-    description: "容量、延迟与资源权衡的取舍。",
-  },
-  工程实践: {
-    slug: "engineering-practice",
-    description: "让方案落地并长期可维护的具体做法。",
-  },
-  工作流: {
-    slug: "workflow",
-    description: "把重复劳动固化成可复用的流程。",
-  },
-};
-
-/**
- * 专题由文章真实携带的 tag 推导，count 现算。
- * 不复用 MOCK_TAGS.count —— 那是手写展示值，与文章实际分布不一致，
- * 直接用会出现「标称 7 篇、列表只有 2 篇」以及零篇空专题页。
- */
-export const MOCK_TOPICS: Topic[] = (() => {
-  const counts = new Map<string, number>();
-  for (const post of MOCK_POSTS) {
-    for (const tag of post.tags) {
-      counts.set(tag, (counts.get(tag) ?? 0) + 1);
-    }
-  }
-
-  return [...counts.entries()]
-    .filter(([name]) => name in TOPIC_META)
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .map(([name, count], index) => ({
-      id: `topic-${index + 1}`,
-      name,
-      slug: TOPIC_META[name]!.slug,
-      description: TOPIC_META[name]!.description,
-      count,
-    }));
-})();
-
-export const MOCK_NOTES: Note[] = [
-  {
-    id: "n1",
-    title: "pnpm workspace 里 Next.js 拿不到根目录 .env",
-    content: `Next.js 只从自己的 project root 读 .env，workspace 根目录的不会自动继承。
-
-排查时被 \`next dev\` 的日志误导了一阵：它会打印 "Environments: .env"，但那是 frontend-v2/.env，不是仓库根的。
-
-结论：要么在子包里放一份软链，要么在启动脚本里显式 \`--env-file\`。前者对 Docker 构建不友好，选了后者。`,
-    category: "工程实践",
-    tags: ["pnpm", "Next.js", "配置"],
-    publishedAt: "2026-08-18T21:40:00.000Z",
-  },
-  {
-    id: "n2",
-    title: "Tailwind darkMode: class 和 data-theme 不是一回事",
-    content: `踩了个低级坑：全站 CSS 变量走 \`[data-theme="dark"]\`，但 Tailwind 配的是 \`darkMode: "class"\`，两者互不认识。
-
-结果就是切换主题时，变量色变了，而所有 \`dark:bg-*\` 这类硬编码变体完全没反应，页面处于半深半浅的状态。
-
-要么把 Tailwind 改成 \`darkMode: ["selector", '[data-theme="dark"]']\`，要么切换时同时打上 \`.dark\` 类。后者改动更小。`,
-    category: "前端",
-    tags: ["Tailwind", "CSS", "主题"],
-    publishedAt: "2026-08-16T14:05:00.000Z",
-  },
-  {
-    id: "n3",
-    title: "SSE 断流排查：中间层缓冲比想象中更常见",
-    content: `流式响应在本地一切正常，上了网关之后首字延迟从 300ms 变成 4s。
-
-抓包发现网关把整个 response body 缓冲完才转发。加上 \`X-Accel-Buffering: no\` 之后恢复。
-
-顺手记一条：Content-Type 必须是 \`text/event-stream\`，有些代理会按类型决定是否缓冲。`,
-    category: "后端",
-    tags: ["SSE", "可观测性", "性能"],
-    publishedAt: "2026-08-14T10:20:00.000Z",
-  },
-  {
-    id: "n4",
-    title: "Go 里 context 超时不会中断纯计算",
-    content: `一直以为 \`context.WithTimeout\` 能兜住所有慢操作，其实它只在被显式检查或传给支持 context 的 IO 调用时才生效。
-
-一个跑满 CPU 的循环里如果不主动 \`select ctx.Done()\`，超时到了照样跑完。
-
-给长循环加了每 N 次迭代检查一次的逻辑，代价可以忽略。`,
-    category: "Go",
-    tags: ["Go", "并发", "context"],
-    publishedAt: "2026-08-11T19:55:00.000Z",
-  },
-  {
-    id: "n5",
-    title: "向量检索召回不稳，先怀疑分块而不是模型",
-    content: `换了三个 embedding 模型，召回质量都在同一水平线上抖动，最后问题出在分块策略：按固定字符数切，把表格和代码块切碎了。
-
-改成按 Markdown 结构切、并给每块补上所属标题路径之后，召回明显稳定。
-
-结论：检索质量的上限往往是由分块决定的，模型只影响后半段。`,
-    category: "AI / LLM",
-    tags: ["RAG", "AI Agent", "检索"],
-    publishedAt: "2026-08-08T16:30:00.000Z",
-  },
-];
 
 export const MOCK_PROJECTS: Project[] = [
   {

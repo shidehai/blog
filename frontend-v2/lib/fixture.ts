@@ -7,14 +7,6 @@
  *
  */
 
-interface FixtureTopic {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  postCount: number;
-}
-
 interface FixtureSettings {
   site_name: string;
   author_name: string;
@@ -59,54 +51,9 @@ interface FixturePost {
   series_order: number | null;
   /** M2M 结果形状，与 Directus REST 返回一致，供 buildSnapshot 直接消费。 */
   tags: { tags_id: FixtureTaxonomy }[];
-  topics: { topics_id: FixtureTopic }[];
+  topics: { topics_id: FixtureTaxonomy }[] | null;
   body: string;
 }
-
-export const FIXTURE_TOPICS: FixtureTopic[] = [
-  {
-    id: "f1000000-0000-4000-8000-000000000001",
-    name: "LLM 系统",
-    slug: "llm-systems",
-    description: "大模型应用的边界、编排、可观测性与运行时设计。",
-    postCount: 3,
-  },
-  {
-    id: "f1000000-0000-4000-8000-000000000002",
-    name: "检索增强生成",
-    slug: "retrieval-augmented-generation",
-    description: "文档切分、召回、重排、上下文编排与答案归因。",
-    postCount: 2,
-  },
-  {
-    id: "f1000000-0000-4000-8000-000000000003",
-    name: "AI 评测",
-    slug: "ai-evaluation",
-    description: "样本集、指标、回归测试与上线判断。",
-    postCount: 2,
-  },
-  {
-    id: "f1000000-0000-4000-8000-000000000004",
-    name: "智能体与工具",
-    slug: "agents-and-tools",
-    description: "结构化输出、工具调用和受控执行。",
-    postCount: 2,
-  },
-  {
-    id: "f1000000-0000-4000-8000-000000000005",
-    name: "安全与可靠性",
-    slug: "ai-safety-reliability",
-    description: "输入信任、失败边界、降级与安全控制。",
-    postCount: 2,
-  },
-  {
-    id: "f1000000-0000-4000-8000-000000000006",
-    name: "推理性能",
-    slug: "inference-performance",
-    description: "流式传输、缓存、延迟与资源权衡。",
-    postCount: 1,
-  },
-];
 
 export const FIXTURE_CATEGORIES: FixtureTaxonomy[] = [
   {
@@ -195,13 +142,6 @@ export const FIXTURE_SOCIAL_LINKS: FixtureSocialLink[] = [
   },
 ];
 
-const topic0 = FIXTURE_TOPICS[0]!;
-const topic1 = FIXTURE_TOPICS[1]!;
-const topic2 = FIXTURE_TOPICS[2]!;
-const topic3 = FIXTURE_TOPICS[3]!;
-const topic4 = FIXTURE_TOPICS[4]!;
-const topic5 = FIXTURE_TOPICS[5]!;
-
 export const FIXTURE_POSTS: FixturePost[] = [
   {
     id: "f2000000-0000-4000-8000-000000000101",
@@ -219,12 +159,8 @@ export const FIXTURE_POSTS: FixturePost[] = [
     series: FIXTURE_SERIES[0]!,
     series_order: 1,
     tags: [{ tags_id: FIXTURE_TAGS[1]! }, { tags_id: FIXTURE_TAGS[2]! }],
-    topics: [
-      { topics_id: topic0 },
-      { topics_id: topic2 },
-      { topics_id: topic4 },
-    ],
-    body: `一次演示只要返回一句像样的话，生产系统却要回答更难的问题：输入是否可信、检索依据是否完整、模型输出能否进入业务流程、工具副作用是否可控，以及最终答案由谁验收。把这些问题都归到“模型效果”里，会让故障定位失去抓手。
+    topics: null,
+    body: `一次演示只要返回一句像样的话，生产系统却要回答更难的问题：输入是否可信、检索依据是否完整、模型输出能否进入业务流程、工具副作用是否可控，以及最终答案由谁验收。把这些问题都归到”模型效果”里，会让故障定位失去抓手。
 
 ## 五层不是调用顺序，而是责任边界
 
@@ -317,9 +253,9 @@ export async function validateOutput(output: ModelResult): Promise<ValidationRes
     category: FIXTURE_CATEGORIES[0]!,
     series: FIXTURE_SERIES[0]!,
     series_order: 2,
-    tags: [{ tags_id: FIXTURE_TAGS[1]! }],
-    topics: [{ topics_id: topic1 }, { topics_id: topic2 }],
-    body: `检索增强生成（RAG）经常被压缩成“问题转向量，再取最相近的几段”。这一步只产生候选，离可交付答案还隔着重排、上下文编排和归因。四个阶段混在一个函数里时，最终的错误只剩一句“模型答错了”。
+    tags: [],
+    topics: null,
+    body: `检索增强生成（RAG）经常被压缩成”问题转向量，再取最相近的几段”。这一步只产生候选，离可交付答案还隔着重排、上下文编排和归因。四个阶段混在一个函数里时，最终的错误只剩一句”模型答错了”。
 
 ## 四个阶段，四种责任
 
@@ -366,8 +302,8 @@ export async function executeRagPipeline(query: string): Promise<RagResponse> {
     category: FIXTURE_CATEGORIES[0]!,
     series: FIXTURE_SERIES[0]!,
     series_order: 3,
-    tags: [{ tags_id: FIXTURE_TAGS[0]! }, { tags_id: FIXTURE_TAGS[1]! }],
-    topics: [{ topics_id: topic3 }, { topics_id: topic4 }],
+    tags: [],
+    topics: null,
     body: `在构建智能体（Agent）系统时，直接让 LLM 的输出调用远程 API 是极其危险的。我们需要在模型决策与实际系统执行之间建立严格的类型契约与执行沙箱。
 
 ## 工具定义的类型安全
@@ -413,9 +349,9 @@ export const QueryDatabaseTool = {
     category: FIXTURE_CATEGORIES[1]!,
     series: null,
     series_order: null,
-    tags: [{ tags_id: FIXTURE_TAGS[3]! }],
-    topics: [{ topics_id: topic5 }],
-    body: `今天在调试 SSE (Server-Sent Events) 流式传输时，测试了不同 Prefetch 策略对 TTFT 的影响。
+    tags: [],
+    topics: null,
+    body: `今天在调试 SSE (Server-Sent Events) 流式传输时,测试了不同 Prefetch 策略对 TTFT 的影响。
 
 几个关键经验：
 1. **不要在服务端积攒整个 Markdown 块才 flush**：客户端解析器完全可以处理不完整的 AST 片段。
@@ -438,7 +374,7 @@ export const QueryDatabaseTool = {
     series: null,
     series_order: null,
     tags: [],
-    topics: [{ topics_id: topic2 }],
+    topics: null,
     body: `在自动化评估指标中，LLM 裁判往往偏爱**更长、排版更精美但可能包含幻觉**的回答。
 
 **建议实践**：
@@ -462,7 +398,7 @@ export const QueryDatabaseTool = {
     series: null,
     series_order: null,
     tags: [{ tags_id: FIXTURE_TAGS[1]! }],
-    topics: [{ topics_id: topic0 }, { topics_id: topic3 }],
+    topics: null,
     body: `纯 ReAct (Reason + Act) 循环经常在复杂分支上迷失或陷入死循环。
 
 将业务流程建模为明确的 **FSM（状态机）**，让 LLM 仅负责状态转移条件判断与单状态动作决策，系统可维护性立刻提升一个数量级。`,
@@ -475,7 +411,7 @@ export const FIXTURE_ROWS = {
   categories: FIXTURE_CATEGORIES,
   tags: FIXTURE_TAGS,
   series: FIXTURE_SERIES,
-  topics: FIXTURE_TOPICS,
+  topics: [],
   settings: FIXTURE_SETTINGS,
   socialLinks: FIXTURE_SOCIAL_LINKS,
 };

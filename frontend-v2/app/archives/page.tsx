@@ -132,7 +132,7 @@ export default async function ArchivesPage() {
                           <time dateTime={post.publishedAt}>
                             {formattedDate}
                           </time>
-                          <Link href={`/writing/${post.slug}`}>
+                          <Link href={`/archives/${post.slug}`}>
                             {post.title}
                           </Link>
                         </li>

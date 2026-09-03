@@ -66,27 +66,6 @@ export function CommandMenu({ isOpen, onClose, posts }: CommandMenuProps) {
         group: "页面导航",
       },
       {
-        id: "nav-writing",
-        title: "文章归档",
-        url: "/writing",
-        icon: BookOpen,
-        group: "页面导航",
-      },
-      {
-        id: "nav-notes",
-        title: "随记与备忘",
-        url: "/notes",
-        icon: PenLine,
-        group: "页面导航",
-      },
-      {
-        id: "nav-topics",
-        title: "专题分类",
-        url: "/topics",
-        icon: Layers,
-        group: "页面导航",
-      },
-      {
         id: "nav-tags",
         title: "标签",
         url: "/tags",
@@ -150,7 +129,7 @@ export function CommandMenu({ isOpen, onClose, posts }: CommandMenuProps) {
       .map((p) => ({
         id: `post-${p.id}`,
         title: p.title,
-        url: `/writing/${p.slug}`,
+        url: `/archives/${p.slug}`,
         icon: BookOpen,
         group: `文章 · ${p.category}`,
       }));

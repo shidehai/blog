@@ -25,9 +25,6 @@ function applyTheme(mode: "system" | "light" | "dark"): boolean {
 
 const NAV_LINKS = [
   { href: "/", label: "首页" },
-  { href: "/writing", label: "文章" },
-  { href: "/notes", label: "随记" },
-  { href: "/topics", label: "专题" },
   { href: "/categories", label: "分类" },
   { href: "/series", label: "系列" },
   { href: "/archives", label: "归档" },

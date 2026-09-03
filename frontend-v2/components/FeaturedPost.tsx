@@ -17,7 +17,7 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
       {post.cover && (
         <Link
           className="featured-post-cover-link"
-          href={`/writing/${post.slug}`}
+          href={`/archives/${post.slug}`}
         >
           <img
             className="featured-post-cover"
@@ -33,10 +33,10 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
       <div className="featured-post-body">
         <span className="featured-label">置顶精选 · {formattedDate}</span>
         <h2>
-          <Link href={`/writing/${post.slug}`}>{post.title}</Link>
+          <Link href={`/archives/${post.slug}`}>{post.title}</Link>
         </h2>
         <p>{post.summary}</p>
-        <Link className="featured-read" href={`/writing/${post.slug}`}>
+        <Link className="featured-read" href={`/archives/${post.slug}`}>
           阅读全文{" "}
           <svg
             className="ui-icon"

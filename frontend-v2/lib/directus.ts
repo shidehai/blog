@@ -21,12 +21,10 @@ import { deriveExcerpt, deriveReadingMinutes } from "./markdown";
 import { MOCK_PROFILE } from "./mock";
 import type {
   Category,
-  Note,
   Post,
   Series,
   SiteProfile,
   Tag,
-  Topic,
 } from "./types";
 
 const PAGE_SIZE = 100;
@@ -131,13 +129,9 @@ const TAXONOMY_FIELDS = ["id", "name", "slug", "description"] as const;
  */
 export interface ContentSnapshot {
   posts: Post[];
-  notes: Note[];
   categories: Category[];
   tags: Tag[];
   series: Series[];
-  topics: Topic[];
-  /** 专题 slug -> 该专题下文章 slug，供 getPostsByTopic 走真实 M2M 关系。 */
-  postSlugsByTopic: Map<string, string[]>;
   profile: SiteProfile;
 }
 
@@ -222,33 +216,8 @@ export function buildSnapshot(
     .sort(byNewest);
   const articles = articleRows.map((raw) => mapPost(raw, base));
 
-  const notes: Note[] = rows.posts
-    .filter((raw) => raw.kind === "note")
-    .sort(byNewest)
-    .map((raw) => ({
-      id: raw.id,
-      title: raw.title,
-      content: raw.body,
-      category: raw.category?.name ?? "随记",
-      tags: (raw.tags ?? [])
-        .map((row) => row.tags_id?.name)
-        .filter((name): name is string => Boolean(name)),
-      publishedAt: raw.published_at,
-    }));
-
   const byCategory = countBy(articles, (post) => [post.category]);
   const byTag = countBy(articles, (post) => post.tags);
-
-  // 主题是独立 M2M 关系，Post 视图类型不带它，所以从原始行建索引。
-  const postSlugsByTopic = new Map<string, string[]>();
-  for (const raw of articleRows)
-    for (const row of raw.topics ?? []) {
-      const slug = row.topics_id?.slug;
-      if (!slug) continue;
-      const list = postSlugsByTopic.get(slug);
-      if (list) list.push(raw.slug);
-      else postSlugsByTopic.set(slug, [raw.slug]);
-    }
 
   const socialsByIcon = new Map(
     rows.socialLinks.map((link) => [
@@ -259,7 +228,6 @@ export function buildSnapshot(
 
   return {
     posts: articles,
-    notes,
     categories: rows.categories.map((row) => ({
       name: row.name,
       slug: row.slug,
@@ -287,14 +255,6 @@ export function buildSnapshot(
         })),
       };
     }),
-    topics: rows.topics.map((row) => ({
-      id: row.id,
-      name: row.name,
-      slug: row.slug,
-      description: row.description ?? "",
-      count: postSlugsByTopic.get(row.slug)?.length ?? 0,
-    })),
-    postSlugsByTopic,
     profile: {
       // handle / hitokoto / location 与 socials.about 在 site_settings 里没有对应列，
       // 沿用 mock 的值，等 CMS 补字段后再接过来。

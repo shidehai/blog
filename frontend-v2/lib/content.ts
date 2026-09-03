@@ -8,13 +8,11 @@ import { generateActivityData, MOCK_PROJECTS, MOCK_TOOLS } from "./mock";
 import type {
   ActivityDay,
   Category,
-  Note,
   Post,
   Project,
   Series,
   SiteProfile,
   Tag,
-  Topic,
   ToolItem,
 } from "./types";
 
@@ -111,28 +109,6 @@ export async function getPostsByCategory(
   return (await snapshot()).posts.filter(
     (p) => p.category.toLowerCase() === target,
   );
-}
-
-export async function getAllTopics(): Promise<Topic[]> {
-  return (await snapshot()).topics;
-}
-
-export async function getTopicBySlug(slug: string): Promise<Topic | undefined> {
-  const decoded = decodeURIComponent(slug).toLowerCase();
-  return (await snapshot()).topics.find(
-    (t) => t.slug.toLowerCase() === decoded || t.name.toLowerCase() === decoded,
-  );
-}
-
-/** 专题下的文章：走 posts_topics M2M 索引，不再借标签名近似匹配。 */
-export async function getPostsByTopic(slug: string): Promise<Post[]> {
-  const snap = await snapshot();
-  const slugs = new Set(snap.postSlugsByTopic.get(slug) ?? []);
-  return snap.posts.filter((p) => slugs.has(p.slug));
-}
-
-export async function getAllNotes(): Promise<Note[]> {
-  return (await snapshot()).notes;
 }
 
 export async function getAllProjects(): Promise<Project[]> {

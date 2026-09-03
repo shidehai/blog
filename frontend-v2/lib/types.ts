@@ -60,25 +60,6 @@ export interface Series {
   }[];
 }
 
-/** 专题：按标签维度归纳的内容集合，`name` 与 Post.tags 对齐。 */
-export interface Topic {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  count: number;
-}
-
-/** 随记：短篇碎片记录，不进入文章详情页。 */
-export interface Note {
-  id: string;
-  title: string;
-  content: string;
-  category: string;
-  tags: string[];
-  publishedAt: string;
-}
-
 export interface Project {
   id: string;
   name: string;
