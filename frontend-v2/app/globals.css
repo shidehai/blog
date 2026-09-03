@@ -606,7 +606,9 @@ body.drawer-open {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.06);
   transition:
     background-color var(--motion-medium) var(--ease-out),
     border-color var(--motion-medium) var(--ease-out),
@@ -617,6 +619,11 @@ body.drawer-open {
 .glass:hover {
   background: var(--bg-card-hover);
   border-color: rgba(var(--accent-rgb), 0.15);
+  transform: translateY(-2px);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.06),
+    0 12px 24px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(var(--accent-rgb), 0.1);
 }
 
 /* Sidebars */
@@ -2238,6 +2245,15 @@ body.drawer-open {
   text-wrap: balance;
   font-weight: 700;
   font-family: var(--font-display);
+  background: linear-gradient(
+    135deg,
+    var(--text-primary) 0%,
+    var(--text-primary) 60%,
+    var(--accent) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .feed-header p {
@@ -2270,12 +2286,15 @@ body.drawer-open {
   background: var(--accent);
   border-radius: var(--radius-sm);
   font-weight: 700;
-  box-shadow: 3px 3px rgba(24, 27, 26, 0.18);
+  box-shadow: 0 2px 4px rgba(var(--accent-rgb), 0.2);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .feed-actions .feed-action-primary:hover {
   color: var(--on-accent);
   background: var(--accent-hover);
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(var(--accent-rgb), 0.3);
 }
 
 .featured-post {
@@ -2285,8 +2304,22 @@ body.drawer-open {
   overflow: hidden;
   margin-bottom: 1.25rem;
   border-radius: var(--radius-panel);
-  border: 1px solid var(--text-primary);
-  box-shadow: 6px 6px 0 var(--accent-glow);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  box-shadow:
+    0 8px 16px rgba(var(--accent-rgb), 0.12),
+    0 4px 6px rgba(0, 0, 0, 0.08);
+  transition:
+    transform var(--motion-medium) var(--ease-out),
+    box-shadow var(--motion-medium) var(--ease-out),
+    border-color var(--motion-medium) var(--ease-out);
+}
+
+.featured-post:hover {
+  transform: translateY(-3px);
+  border-color: rgba(var(--accent-rgb), 0.35);
+  box-shadow:
+    0 12px 24px rgba(var(--accent-rgb), 0.16),
+    0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
 .featured-post-cover-link {
@@ -2352,6 +2385,15 @@ body.drawer-open {
   color: var(--accent);
   font-size: var(--text-sm);
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.2s var(--ease-out);
+}
+
+.featured-read:hover {
+  gap: 0.45rem;
+  color: var(--accent-hover);
 }
 
 /* Activity Heatmap */
@@ -2474,11 +2516,12 @@ body.drawer-open {
   width: 100%;
   aspect-ratio: 1;
   border: 1px solid rgba(24, 27, 26, 0.08);
-  border-radius: 2px;
+  border-radius: 3px;
   background: rgba(24, 27, 26, 0.05);
   transition:
     border-color var(--motion-fast) var(--ease-out),
-    transform var(--motion-fast) var(--ease-out);
+    transform var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
 }
 
 .activity-cell:hover {
@@ -2486,6 +2529,7 @@ body.drawer-open {
   z-index: 1;
   border-color: var(--text-primary);
   transform: scale(1.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .activity-level-1 {
@@ -2665,16 +2709,22 @@ body.drawer-open {
   color: var(--tag-text);
   padding: 0.12rem 0.45rem;
   border-radius: var(--radius-input);
+  border: 1px solid rgba(var(--accent-rgb), 0.15);
   font-size: var(--text-2xs);
   font-weight: 500;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transition:
     background-color var(--motion-base) var(--ease-out),
-    color var(--motion-base) var(--ease-out);
+    color var(--motion-base) var(--ease-out),
+    border-color var(--motion-base) var(--ease-out),
+    transform var(--motion-base) var(--ease-out);
 }
 
 .tag:hover {
   background: var(--accent);
   color: var(--on-accent);
+  border-color: var(--accent);
+  transform: scale(1.05);
 }
 
 /* Pagination */
@@ -2702,11 +2752,14 @@ body.drawer-open {
   background: var(--bg-card);
   cursor: pointer;
   text-decoration: none;
+  transition: all 0.2s var(--ease-out);
 }
 
 .page-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(var(--accent-rgb), 0.15);
 }
 
 .page-btn.active {
@@ -2714,6 +2767,7 @@ body.drawer-open {
   color: var(--on-accent);
   border-color: var(--accent);
   font-weight: 600;
+  box-shadow: 0 2px 6px rgba(var(--accent-rgb), 0.25);
 }
 
 .page-btn.disabled {
