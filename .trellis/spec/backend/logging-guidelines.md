@@ -2,24 +2,25 @@
 
 ## Current Pattern
 
-There is no application logging dependency. Small scripts write concise
-diagnostics to stdout/stderr, container logs use Docker's `json-file` driver,
-and `deploy/compose.yaml` limits them to three 10 MiB files. Caddy writes JSON
-access logs with its own size/time retention in `deploy/Caddyfile`.
+There is no application logging dependency. Small scripts emit concise,
+secret-free diagnostics to stdout/stderr; container logs use Docker's
+`json-file` driver; Caddy writes structured JSON access logs with its own
+retention policy.
 
 ## Log
 
-- Service lifecycle, health, build stage, and operation success/failure.
-- A record ID and field name when future content validation fails.
-- Backup time, size/checksum, duration, and status once Phase 8 adds reporting.
+- Build source selection (`fixture` or `directus`) without exposing values.
+- Service lifecycle, health, image/runtime validation, and operation success or
+  failure.
+- A record ID and field name when content validation fails.
+- Backup time, size/checksum, duration, and status.
 
 ## Never Log
 
-- Directus, database, preview, dispatch, deployment, or Restic secrets.
-- Markdown bodies, private media URLs, authentication headers, or environment
-  dumps.
-- Preview URLs containing draft/version identifiers unless redacted.
+- Directus, database, deployment, dispatch, or Restic secrets.
+- Markdown bodies, authentication headers, complete environment dumps, private
+  asset URLs, or BuildKit secret contents.
+- Details from retired credentials or absent legacy service identities.
 
-Keep platform-native structured output where it already exists. Add a logging
-library only when multiple application modules need a shared structured schema;
-one `console.error` in a boundary script does not justify one.
+Keep platform-native structured output where it already exists. A one-line
+boundary diagnostic does not justify a logging library.

@@ -8,10 +8,7 @@ interface NavbarProps {
   onOpenSearch?: () => void;
 }
 
-/**
- * 同时写 data-theme 与 .dark：globals.css 的变量认 [data-theme]，
- * 而 Tailwind 配的是 darkMode: "class"，只认 .dark。少一个就会半深半浅。
- */
+/** globals.css 的变量只以 data-theme 为主题来源。 */
 function applyTheme(mode: "system" | "light" | "dark"): boolean {
   const dark =
     mode === "dark" ||
@@ -19,7 +16,6 @@ function applyTheme(mode: "system" | "light" | "dark"): boolean {
       window.matchMedia("(prefers-color-scheme: dark)").matches);
   const root = document.documentElement;
   root.setAttribute("data-theme", dark ? "dark" : "light");
-  root.classList.toggle("dark", dark);
   return dark;
 }
 

@@ -6,7 +6,6 @@ import tseslint from "typescript-eslint";
 export default defineConfig(
   {
     ignores: [
-      ".astro/**",
       ".data/**",
       ".trellis/.backup-*/**",
       ".trellis/.runtime/**",

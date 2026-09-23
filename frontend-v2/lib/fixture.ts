@@ -3,7 +3,7 @@
  * Directus 后作为离线降级来源使用。
  *
  * 类型在本文件内自带：这里描述的是 CMS 原始行，与 lib/types.ts 里面向视图的
- * Post/Topic 是两套模型，不要合并。接入时在 content.ts 里做一次映射。
+ * Post 是两套模型，不要合并。接入时在 content.ts 里做一次映射。
  *
  */
 
@@ -37,7 +37,7 @@ interface FixtureTaxonomy {
 
 interface FixturePost {
   id: string;
-  kind: "article" | "tutorial" | "note";
+  kind: "article" | "tutorial";
   status: "published";
   title: string;
   slug: string;
@@ -51,7 +51,6 @@ interface FixturePost {
   series_order: number | null;
   /** M2M 结果形状，与 Directus REST 返回一致，供 buildSnapshot 直接消费。 */
   tags: { tags_id: FixtureTaxonomy }[];
-  topics: { topics_id: FixtureTaxonomy }[] | null;
   body: string;
 }
 
@@ -61,12 +60,6 @@ export const FIXTURE_CATEGORIES: FixtureTaxonomy[] = [
     name: "工程实践",
     slug: "engineering",
     description: "系统设计、可靠性与工程方法。",
-  },
-  {
-    id: "f3000000-0000-4000-8000-000000000002",
-    name: "技术笔记",
-    slug: "notes",
-    description: "调试发现与未成体系的思考。",
   },
 ];
 
@@ -112,7 +105,7 @@ export const FIXTURE_SETTINGS: FixtureSettings = {
     "专注于大语言模型应用架构、检索增强生成（RAG）与高可靠分布式系统。推崇清晰的工程边界与务实的实践主义。",
   default_seo_description:
     "专注于 LLM 系统、RAG、AI 评测与智能体工具链的技术知识库与工程随记。",
-  avatar: "/avatar.png",
+  avatar: "/avatar.svg",
   footer_text: "© 2026 shidehai. Crafted with precision & clarity.",
   locale: "zh-CN",
   timezone: "Asia/Shanghai",
@@ -127,18 +120,11 @@ export const FIXTURE_SOCIAL_LINKS: FixtureSocialLink[] = [
     sort: 1,
   },
   {
-    id: "s2",
-    label: "RSS",
-    url: "/rss.xml",
-    icon: "rss",
-    sort: 2,
-  },
-  {
     id: "s3",
     label: "Email",
     url: "mailto:author@example.com",
     icon: "email",
-    sort: 3,
+    sort: 2,
   },
 ];
 
@@ -159,7 +145,6 @@ export const FIXTURE_POSTS: FixturePost[] = [
     series: FIXTURE_SERIES[0]!,
     series_order: 1,
     tags: [{ tags_id: FIXTURE_TAGS[1]! }, { tags_id: FIXTURE_TAGS[2]! }],
-    topics: null,
     body: `一次演示只要返回一句像样的话，生产系统却要回答更难的问题：输入是否可信、检索依据是否完整、模型输出能否进入业务流程、工具副作用是否可控，以及最终答案由谁验收。把这些问题都归到”模型效果”里，会让故障定位失去抓手。
 
 ## 五层不是调用顺序，而是责任边界
@@ -254,7 +239,6 @@ export async function validateOutput(output: ModelResult): Promise<ValidationRes
     series: FIXTURE_SERIES[0]!,
     series_order: 2,
     tags: [],
-    topics: null,
     body: `检索增强生成（RAG）经常被压缩成”问题转向量，再取最相近的几段”。这一步只产生候选，离可交付答案还隔着重排、上下文编排和归因。四个阶段混在一个函数里时，最终的错误只剩一句”模型答错了”。
 
 ## 四个阶段，四种责任
@@ -303,7 +287,6 @@ export async function executeRagPipeline(query: string): Promise<RagResponse> {
     series: FIXTURE_SERIES[0]!,
     series_order: 3,
     tags: [],
-    topics: null,
     body: `在构建智能体（Agent）系统时，直接让 LLM 的输出调用远程 API 是极其危险的。我们需要在模型决策与实际系统执行之间建立严格的类型契约与执行沙箱。
 
 ## 工具定义的类型安全
@@ -334,75 +317,6 @@ export const QueryDatabaseTool = {
 2. **上下文权限校验**：确认当前发起用户的 Token 拥有执行对应 tool 的 RBAC 权限。
 3. **副作用隔离**：写操作要求二次确认或模拟试运行（Dry-run）。`,
   },
-  {
-    id: "f2000000-0000-4000-8000-000000000104",
-    kind: "note",
-    status: "published",
-    title: "关于流式响应中的首字延迟与 TTFT 优化",
-    slug: "streaming-ttft-optimization-note",
-    published_at: "2026-06-15T08:30:00.000Z",
-    summary:
-      "在 Web 端体验中，TTFT (Time to First Token) 往往比总生成速度更影响用户的感知流畅度。",
-    featured: false,
-    cover_image: null,
-    date_updated: null,
-    category: FIXTURE_CATEGORIES[1]!,
-    series: null,
-    series_order: null,
-    tags: [],
-    topics: null,
-    body: `今天在调试 SSE (Server-Sent Events) 流式传输时,测试了不同 Prefetch 策略对 TTFT 的影响。
-
-几个关键经验：
-1. **不要在服务端积攒整个 Markdown 块才 flush**：客户端解析器完全可以处理不完整的 AST 片段。
-2. **连接预热**：在用户输入焦点离开或即将敲击回车时提前建立双工连接。
-3. **分块流式解析**：前端使用 \`TextDecoderStream\` 配合轻量状态机渲染，体验丝滑许多。`,
-  },
-  {
-    id: "f2000000-0000-4000-8000-000000000105",
-    kind: "note",
-    status: "published",
-    title: "AI 评测的陷阱：避免用 LLM 评测 LLM 带来的同质化盲区",
-    slug: "ai-eval-llm-as-a-judge-pitfalls",
-    published_at: "2026-06-22T09:15:00.000Z",
-    summary:
-      "LLM-as-a-Judge 很高效，但容易产生位置偏见、冗长度偏见和风格迎合。",
-    featured: false,
-    cover_image: null,
-    date_updated: null,
-    category: FIXTURE_CATEGORIES[1]!,
-    series: null,
-    series_order: null,
-    tags: [],
-    topics: null,
-    body: `在自动化评估指标中，LLM 裁判往往偏爱**更长、排版更精美但可能包含幻觉**的回答。
-
-**建议实践**：
-- 先用确定性规则（正则、精确词表、JSON Schema）过滤 70% 的低级错误。
-- 裁判提示词中剥离排版与修辞，只给纯事实命题列表让模型做真值判断。
-- 关键生产变更必须保留小样本人工标注回流。`,
-  },
-  {
-    id: "f2000000-0000-4000-8000-000000000106",
-    kind: "note",
-    status: "published",
-    title: "设计模式思考：在 Agent 中拥抱有限状态机 (FSM)",
-    slug: "agent-finite-state-machine",
-    published_at: "2026-07-02T14:20:00.000Z",
-    summary:
-      "不要让 Agent 在无边界的 ReAct 循环中无限发散，显式状态机能大幅提升确定性。",
-    featured: false,
-    cover_image: null,
-    date_updated: null,
-    category: FIXTURE_CATEGORIES[1]!,
-    series: null,
-    series_order: null,
-    tags: [{ tags_id: FIXTURE_TAGS[1]! }],
-    topics: null,
-    body: `纯 ReAct (Reason + Act) 循环经常在复杂分支上迷失或陷入死循环。
-
-将业务流程建模为明确的 **FSM（状态机）**，让 LLM 仅负责状态转移条件判断与单状态动作决策，系统可维护性立刻提升一个数量级。`,
-  },
 ];
 
 /** 聚合成 buildSnapshot 的入参形状，让夹具与 Directus 走同一条映射。 */
@@ -411,7 +325,6 @@ export const FIXTURE_ROWS = {
   categories: FIXTURE_CATEGORIES,
   tags: FIXTURE_TAGS,
   series: FIXTURE_SERIES,
-  topics: [],
   settings: FIXTURE_SETTINGS,
   socialLinks: FIXTURE_SOCIAL_LINKS,
 };

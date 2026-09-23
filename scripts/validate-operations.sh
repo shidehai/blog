@@ -37,7 +37,6 @@ cat >"$env_file" <<EOF
 COMPOSE_PROJECT_NAME=personal-journal-validation
 SITE_DOMAIN=blog.example.test
 CMS_DOMAIN=cms.example.test
-SITE_URL=https://blog.example.test
 ACME_EMAIL=owner@example.test
 SITE_IMAGE=ghcr.io/example/personal-journal@sha256:0000000000000000000000000000000000000000000000000000000000000000
 BLOG_DATA_ROOT=$work/data
@@ -46,12 +45,8 @@ POSTGRES_USER=blog
 POSTGRES_PASSWORD=fixture-database-password
 DIRECTUS_SECRET=fixture-directus-secret-at-least-32-characters
 DIRECTUS_LICENSE_KEY=
-DIRECTUS_PREVIEW_TOKEN=fixture-preview-token-at-least-24-characters
 GITHUB_DISPATCH_TOKEN=
 GITHUB_REPOSITORY=example/personal-journal
-PREVIEW_BASIC_USER=owner
-PREVIEW_BASIC_PASSWORD_HASH=fixture-hash-for-compose-rendering
-PREVIEW_TRUSTED_HEADER=fixture-trusted-header-at-least-24-characters
 RESTIC_REPOSITORY=rest:http://backup.example.test/
 RESTIC_PASSWORD=fixture-restic-password
 EOF
@@ -78,9 +73,6 @@ docker compose \
 docker run --rm \
   --env ACME_EMAIL=owner@example.test \
   --env CMS_DOMAIN=cms.example.test \
-  --env PREVIEW_BASIC_PASSWORD_HASH='$2a$14$abcdefghijklmnopqrstuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu' \
-  --env PREVIEW_BASIC_USER=owner \
-  --env PREVIEW_TRUSTED_HEADER=fixture-trusted-header-at-least-24-characters \
   --env SITE_DOMAIN=blog.example.test \
   --volume "$repository_root/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" \
   caddy:2.10.2-alpine \

@@ -1,117 +1,94 @@
 # Backend and Infrastructure Quality Guidelines
 
-## Scenario: Foundation Runtime Boundary
+## Scenario: Static Snapshot Image and CMS Retirement Boundary
 
 ### 1. Scope / Trigger
 
-Apply this contract when changing `Dockerfile`, `deploy/`, operational scripts,
-or environment wiring. These files span build, runtime, proxy, CMS, database,
-storage, and backup boundaries.
+Apply this contract when changing `Dockerfile`, `deploy/`, `scripts/`, CI,
+Directus schema/bootstrap, Caddy, or an environment value shared by those
+layers. It covers the complete path from a private Directus record to the
+published static Next image and deliberately excludes a runtime CMS/preview
+reader.
 
 ### 2. Signatures
 
-- Build: `docker build --target runtime -t blog-site:test .`
-- Runtime: `node scripts/env.mjs runtime && node dist/server/entry.mjs`
-- Compose: `docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.dev.yaml ...`
-- Backup: `docker compose --env-file .env -f deploy/compose.yaml --profile backup run --rm backup`
-- Health: `GET /healthz` and Directus public liveness `GET /server/ping`
-- Public header probe: `pnpm test:headers -- --url <https-origin>`
-- Inline-script CSP sync: `node scripts/verify-csp-hash.mjs [dist/client] [deploy/Caddyfile]`
-- Public assets: `pnpm assets:generate`; font-backed masters are redrawn only
-  with `REGENERATE_AUTHORED_RASTERS=1` in an authoring environment with fonts.
+```sh
+# Offline fixture image
+docker build --target runtime --tag blog-site:fixture .
+
+# Published Directus image
+docker build --target runtime \
+  --secret id=directus_build_token,env=DIRECTUS_BUILD_TOKEN \
+  --build-arg CONTENT_SOURCE=directus \
+  --build-arg DIRECTUS_URL=https://cms.example.test \
+  --tag blog-site:published .
+
+scripts/test-runtime-image.sh blog-site:fixture
+DIRECTUS_BUILD_TOKEN=<inspection-token> scripts/assert-image-secret-free.sh blog-site:fixture
+```
+
+The runtime contract is `GET /healthz` on port 4321 from the `node` user.
+`deploy/compose.yaml` supplies the immutable site image but no V2 content-source
+or Directus environment variables. `directus/bootstrap.mjs` is the only owner
+of exact-ID legacy reader retirement.
 
 ### 3. Contracts
 
-- Build defaults to `CONTENT_SOURCE=fixture`; Directus builds receive the build
-  token only through a BuildKit secret, never `ARG` or `ENV`.
-- Runtime requires explicit `CONTENT_SOURCE`, `SITE_URL`, `DIRECTUS_URL`,
-  `DIRECTUS_PREVIEW_TOKEN`, and `PREVIEW_TRUSTED_HEADER`. Production Compose
-  fixes `CONTENT_SOURCE=directus`; fixture tests must opt into `fixture`.
-- `CONTENT_SOURCE` is one cross-layer contract: the image build controls the
-  published snapshot, while the runtime value controls preview reads. Every
-  production, development, Playwright, and container entrypoint must set its
-  intended value explicitly; no runtime consumer may add a fixture fallback.
-- Compose interpolation uses the root `.env` explicitly because the first
-  Compose file lives under `deploy/`.
-- Production exposes only Caddy 80/443. PostgreSQL remains on the internal
-  `data` network.
-- Development binds PostgreSQL to `127.0.0.1` and also joins the existing
-  non-internal `web` network. Docker 29 does not activate a published port for
-  a container connected only to an `internal: true` network, even though
-  `docker compose config` still lists that port.
-- An unauthenticated `/preview/*` request through Caddy returns `401`. The
-  Astro route's generic `404` proves only its trusted-header check, not Basic
-  Auth, so a public header probe must not accept the two statuses
-  interchangeably.
-- Every executable inline script emitted into `dist/client/**/*.html` has a
-  SHA-256 source expression in both the public and preview Caddy policies.
-  External scripts, empty scripts, and `application/ld+json` are excluded.
-  The generated hash set and configured hash set must match exactly: each
-  current hash occurs twice and no stale hash remains.
-- Normal builds never rasterize authored SVG text against ambient system fonts.
-  They resize the committed 1600px editorial master into deterministic 640/960
-  variants. This keeps Alpine/fontless builds identical to reviewed media.
+- `CONTENT_SOURCE=fixture` is the default image build and requires no CMS
+  value. `CONTENT_SOURCE=directus` requires a URL build argument and a mounted
+  Build Reader secret; Docker must fail before `next build` if either is absent.
+- The token is never an `ARG`, `ENV`, label, copied file, later-stage input, or
+  runtime variable. `.env` files stay outside the Docker context.
+- The runtime stage contains only standalone output, `/_next` static assets,
+  and public assets; it runs read-only as `node` on 4321 and has a Docker
+  healthcheck for `/healthz`.
+- Caddy caches only `/_next/static/*` immutably, marks `/healthz` no-store, and
+  applies a Next-compatible source-scoped CSP. It permits same-origin scripts
+  plus Next's inline hydration bootstrap, but does not retain fixed legacy
+  hashes, preview routing, Basic Auth, or trusted preview headers.
+- Posts expose no CMS `preview_url`. Bootstrap removes permissions and the
+  former reader's access/user/role/policy only by the known fixed IDs, treating
+  absent IDs as a successful no-op. It does not delete content, author users,
+  private assets, notes, topics, or the Build Reader.
 
 ### 4. Validation & Error Matrix
 
-| Input/state | Result |
+| Condition | Required result |
 | --- | --- |
-| Missing required Compose value | `docker compose config` fails |
-| `CONTENT_SOURCE=directus` without secret | image build fails before content fetch |
-| Runtime `CONTENT_SOURCE` missing or invalid | site exits before listening |
-| Production Compose resolves runtime source to `fixture` | Compose contract validation fails |
-| Incomplete runtime environment | container exits before listening |
-| Unhealthy site | Caddy waits and Docker reports unhealthy |
-| Unhealthy PostgreSQL | Directus and backup do not start |
-| Development PostgreSQL joins only `data` | `docker port` is empty; attach `web` in the development override |
-| Incoming `X-Preview-Trusted` | Caddy strips it; authenticated preview injects the trusted value |
-| Unauthenticated preview through Caddy | exact `401` with private/no-store and noindex headers |
-| Direct site request without trusted preview header | generic `404`; never count this as proxy-auth evidence |
-| Generated inline-script hash missing from Caddy | `verify-csp-hash.mjs` fails and reports the hash plus occurrence count |
-| Caddy contains a stale inline-script hash | `verify-csp-hash.mjs` fails before deployment |
-| Fontless build runs normal asset generation | Reuse committed master; responsive hashes stay stable |
-| Explicit authored-raster redraw has no suitable fonts | Treat output as invalid; do not commit tofu/missing-glyph media |
+| Fixture image build without token | Succeeds and contains the fixture snapshot |
+| Directus image build without secret or URL | Fails before content fetch/build |
+| Directus request/decode fails | Next build fails; fixture is not substituted |
+| Runtime image has CMS/preview env or token bytes in metadata/layers | Secret inspection fails |
+| Runtime starts read-only | `/healthz` and `/` become healthy on 4321 as `node` |
+| Caddy contains `/_astro`, preview, hash, or trusted-header policy | Static operations test fails |
+| Legacy exact-ID reader objects are absent | Bootstrap proceeds idempotently |
+| A similarly named operator identity exists | Bootstrap leaves it untouched |
+| Production Compose injects source/CMS variables into site | Rendered Compose validation fails |
 
-### 5. Good/Base/Bad Cases
+### 5. Good / Base / Bad Cases
 
-- Good: pinned images, `CONTENT_SOURCE=directus` in production Compose,
-  read-only non-root site, localhost-only dev ports, a real Caddy `401` for
-  unauthenticated preview, and healthy routes.
-- Base: fixture image builds without production credentials, and every local
-  runtime test explicitly sets `CONTENT_SOURCE=fixture`.
-- Bad: implicit runtime fixture fallback, accepting an application `404` as
-  proof of proxy authentication, mutable production site tag, public database
-  port, secret build arg, anonymous data volume, broad Docker prune, or editing
-  an inline Astro script without rebuilding and synchronizing both CSPs.
-- Good asset build: committed font-backed masters plus deterministic resizing.
-  Bad asset build: rendering text during every container build and silently
-  accepting Fontconfig errors or missing glyphs.
+- Good: CI mounts a short-lived Build Reader token only into the build command,
+  then deploys a digest-pinned image whose runtime has no Directus environment.
+- Base: a local fixture image builds and passes health/non-root/secret checks
+  without any external CMS.
+- Bad: passing a token through `--build-arg`, setting it in Compose runtime,
+  catching a Directus build failure with fixture data, deleting a role by name,
+  or preserving a proxy endpoint for retired preview URLs.
 
 ### 6. Tests Required
 
-- `pnpm verify` proves application checks and browser behavior.
-- `tests/unit/env.test.ts` rejects a missing runtime `CONTENT_SOURCE` and accepts
-  only explicit `fixture` or `directus` values.
-- Rendered Compose validation and the static operations contract both assert
-  that the production site receives `CONTENT_SOURCE=directus`.
-- Compose config must parse both production and development files.
-- Build and run the runtime image; assert `/healthz`, non-root `node`, read-only
-  root, and dropped capabilities.
-- Validate `deploy/Caddyfile` with the pinned Caddy image.
-- Run `pnpm test:headers` through the real Caddyfile and assert that an
-  unauthenticated preview is exactly `401`, not an allow-list containing
-  Astro's fail-closed `404`.
-- After changing any inline Astro component/layout script, run a fresh
-  `pnpm build` followed by `pnpm test:operations`; assert CSP verification finds
-  the same generated hash set in public and preview policies with no stale
-  entries.
-- Asset-generator changes must compare committed and Alpine/fontless responsive
-  hashes and decode all variants. `tests/unit/brand-assets.test.ts` owns committed
-  dimensions/digests; `tests/unit/media.test.ts` owns exact seeded bytes and
-  transform output.
-- Start PostgreSQL/Directus and assert both health checks plus localhost-only
-  published development ports with `docker port`; Compose rendering alone is
-  insufficient.
+- `pnpm verify` and `sh tests/ops/run.sh` cover V2 and static operations
+  contracts.
+- `sh scripts/validate-operations.sh` renders production/development Compose,
+  validates the pinned Caddyfile, and checks build/runtime separation.
+- Build a fixture runtime image, then run `scripts/test-runtime-image.sh` and
+  `scripts/assert-image-secret-free.sh` with a non-production inspection token.
+- Inspect generated routes through a standalone server: archive 200, known
+  writing redirect 308, unknown writing/note 404, health 200.
+- Run schema/bootstrap/access checks only against a disposable or backed-up
+  Directus instance. The access test must prove Build Reader receives published
+  article/tutorial fields but not topics/posts_topics, while author workflows
+  and private draft assets remain protected.
 
 ### 7. Wrong vs Correct
 
@@ -119,58 +96,39 @@ storage, and backup boundaries.
 
 ```yaml
 services:
-  postgres:
-    ports: ["127.0.0.1:5432:5432"]
-    networks: [data]
-
-  # Runtime source omitted.
   site:
-    environment: {}
-```
-
-```javascript
-// This can pass even when the request bypasses Caddy Basic Auth.
-assert([401, 404].includes(preview.status));
+    environment:
+      CONTENT_SOURCE: directus
+      DIRECTUS_BUILD_TOKEN: ${DIRECTUS_BUILD_TOKEN}
 ```
 
 #### Correct
 
-Production has no `ports` entry and uses only `data`. The development override
-adds the localhost binding and a non-internal network:
-
-```yaml
-services:
-  postgres:
-    ports: ["127.0.0.1:5432:5432"]
-    networks: [web, data]
-
-  site:
-    environment:
-      CONTENT_SOURCE: directus
+```dockerfile
+RUN --mount=type=secret,id=directus_build_token,required=false \
+  set -eu; \
+  DIRECTUS_BUILD_TOKEN="$(cat /run/secrets/directus_build_token)" \
+  CONTENT_SOURCE=directus DIRECTUS_URL="$DIRECTUS_URL" \
+  pnpm --filter frontend-v2 build
 ```
 
-```javascript
-assert(preview.status === 401);
+The correct form confines the credential to the one build process that needs it
+and leaves no CMS capability in the deployed site.
+
+## Verification Order
+
+Run fast static checks first, then image checks, then guarded live CMS checks:
+
+```sh
+pnpm --filter frontend-v2 verify
+pnpm verify
+sh tests/ops/run.sh
+sh scripts/validate-operations.sh
+docker build --target runtime --tag blog-site:fixture .
+scripts/test-runtime-image.sh blog-site:fixture
+DIRECTUS_BUILD_TOKEN=<inspection-token> scripts/assert-image-secret-free.sh blog-site:fixture
 ```
 
-Do not keep a superseded hash after a bundled component script changes:
-
-```caddyfile
-# Wrong: a generated hash is missing or an obsolete hash remains.
-script-src 'self' 'sha256-old=';
-
-# Correct: every generated executable inline-script hash appears in both
-# public and preview policies, and no other inline-script hash is configured.
-script-src 'self' 'sha256-current-a=' 'sha256-current-b=';
-```
-
-Do not redraw font-backed masters in an ordinary build:
-
-```javascript
-// Wrong: depends on fonts installed in the build container.
-sharp(svgWithText).toFile("public/images/editorial.webp");
-
-// Correct: explicit authoring redraw, deterministic normal-build resize.
-const master = await readFile("public/images/editorial.webp");
-sharp(master).resize(960, 540).toFile("public/images/editorial-960.webp");
-```
+If Docker Hub or another external registry is unavailable, record that external
+failure separately. Do not weaken the Dockerfile secret or runtime contract to
+make a network outage appear green.

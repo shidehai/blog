@@ -14,10 +14,6 @@ export function Footer({ profile }: FooterProps) {
         </p>
         <p>Powered by Next.js 15 &amp; Go Agent Architecture</p>
         <div className="footer-links">
-          <Link href={profile.socials.rss} target="_blank" rel="noopener">
-            RSS 订阅
-          </Link>
-          <span>·</span>
           <Link href={profile.socials.github} target="_blank" rel="noopener">
             GitHub
           </Link>

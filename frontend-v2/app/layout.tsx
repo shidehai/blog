@@ -40,7 +40,7 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="antialiased font-sans">
+      <body>
         <LayoutShell profile={profile} posts={posts}>
           {children}
         </LayoutShell>

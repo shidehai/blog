@@ -24,43 +24,23 @@
 {$SITE_DOMAIN} {
 	import common
 
-	@preview path /preview/*
-	log_skip @preview
-	handle @preview {
-		header {
-			Cache-Control "private, no-store"
-			Pragma "no-cache"
-			X-Robots-Tag "noindex, nofollow, noarchive"
-			Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; frame-ancestors https://{$CMS_DOMAIN}; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-a1yCLVeNHgCzsnIgFmiFDZ/NES9AcT4zUKir72YjCJI=' 'sha256-WnCBhCA6FKEB/jZ8XsaiEKvNhAPEtvrxV5a8fqdntLM=' 'sha256-JqsTP36jY5iuAEHKNZdaLpvweVh3ZWk4bPatme+ooVA=' 'sha256-QpcexVTdVqlSPerrmgnOxeuUX2G6zgVKj2UA4e1X+mw=' 'sha256-YAhLUzy7pqxH97mPtF2Nwp+uSex59vMxl8jErfwhvAc=' 'sha256-KieNkhd+s7guEYelE2DheGTJP1dN9Ov9CkXDpaE3OWU='; connect-src 'self'; manifest-src 'self'"
-		}
-		basic_auth {
-			{$PREVIEW_BASIC_USER} {$PREVIEW_BASIC_PASSWORD_HASH}
-		}
-		reverse_proxy site:4321 {
-			header_up -X-Preview-Trusted
-			header_up X-Preview-Trusted {$PREVIEW_TRUSTED_HEADER}
-		}
-	}
-
 	handle {
-		@immutable path /_astro/* /_media/*
+		@immutable path /_next/static/*
 		header @immutable Cache-Control "public, max-age=31536000, immutable"
 
 		@health path /healthz
 		header @health Cache-Control "no-store"
 
-		@revalidate not path /_astro/* /_media/* /healthz
+		@revalidate not path /_next/static/* /healthz
 		header @revalidate Cache-Control "public, max-age=0, must-revalidate"
 
 		header {
-			Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self'; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-a1yCLVeNHgCzsnIgFmiFDZ/NES9AcT4zUKir72YjCJI=' 'sha256-WnCBhCA6FKEB/jZ8XsaiEKvNhAPEtvrxV5a8fqdntLM=' 'sha256-JqsTP36jY5iuAEHKNZdaLpvweVh3ZWk4bPatme+ooVA=' 'sha256-QpcexVTdVqlSPerrmgnOxeuUX2G6zgVKj2UA4e1X+mw=' 'sha256-YAhLUzy7pqxH97mPtF2Nwp+uSex59vMxl8jErfwhvAc=' 'sha256-KieNkhd+s7guEYelE2DheGTJP1dN9Ov9CkXDpaE3OWU=' 'wasm-unsafe-eval'; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'"
+			Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https://{$CMS_DOMAIN}; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'"
 			Cross-Origin-Opener-Policy "same-origin"
 			Cross-Origin-Resource-Policy "same-origin"
 			X-Frame-Options "DENY"
 		}
-		reverse_proxy site:4321 {
-			header_up -X-Preview-Trusted
-		}
+		reverse_proxy site:4321
 	}
 }
 

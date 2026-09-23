@@ -5,7 +5,7 @@ import {
   filterPath,
   isDirectusError,
 } from "./client.mjs";
-import { IDS } from "./constants.mjs";
+import { IDS, RETIRED_LEGACY_READER_IDS } from "./constants.mjs";
 
 const request = await adminClient();
 
@@ -56,6 +56,43 @@ async function upsert(endpoint, id, data, identity = ["name", data.name]) {
   return request(`/${endpoint}`, { method: "POST", body: { id, ...data } });
 }
 
+/**
+ * Older bootstrap versions created a retired service identity. This migration
+ * intentionally uses only fixed IDs so it cannot capture an operator-created
+ * role, policy, user, or access assignment with a similar display name.
+ *
+ * @param {string} endpoint
+ * @param {string} id
+ */
+async function deleteRetiredItem(endpoint, id) {
+  try {
+    await request(`/${endpoint}/${id}`, { method: "DELETE" });
+  } catch (error) {
+    if (!isDirectusError(error) || error.status !== 404) throw error;
+  }
+}
+
+async function retireLegacyReader() {
+  /** @type {StoredPermission[]} */
+  const permissions = await request(
+    filterPath(
+      "permissions",
+      "policy",
+      RETIRED_LEGACY_READER_IDS.policy,
+      "id,policy",
+    ),
+  );
+  for (const permission of permissions)
+    await deleteRetiredItem("permissions", permission.id);
+
+  await deleteRetiredItem("access", RETIRED_LEGACY_READER_IDS.access);
+  await deleteRetiredItem("users", RETIRED_LEGACY_READER_IDS.user);
+  await deleteRetiredItem("roles", RETIRED_LEGACY_READER_IDS.role);
+  await deleteRetiredItem("policies", RETIRED_LEGACY_READER_IDS.policy);
+}
+
+await retireLegacyReader();
+
 const folders = await Promise.all([
   upsert("folders", IDS.folders.publishable, {
     name: "publishable-assets",
@@ -85,14 +122,6 @@ const policyDefinitions = {
     admin_access: false,
     app_access: false,
   },
-  preview: {
-    name: "Preview Reader",
-    icon: "preview",
-    description: "Server-only draft and published preview reader.",
-    enforce_tfa: false,
-    admin_access: false,
-    app_access: false,
-  },
   administrator: {
     name: "Break-glass Administrator",
     icon: "admin_panel_settings",
@@ -108,7 +137,6 @@ const policyDefinitions = {
 const roleDefinitions = {
   author: ["Author", "edit_note", "Routine content authoring role."],
   build: ["Build Reader", "build", "Static build service role."],
-  preview: ["Preview Reader", "preview", "Protected preview service role."],
   administrator: [
     "Break-glass Administrator",
     "admin_panel_settings",
@@ -237,6 +265,39 @@ const projectFields = {
     "date_updated",
   ],
 };
+const buildFields = {
+  posts: [
+    "id",
+    "status",
+    "kind",
+    "title",
+    "slug",
+    "summary",
+    "body",
+    "published_at",
+    "date_updated",
+    "featured",
+    "cover_image",
+    "series_order",
+    "category",
+    "series",
+    "tags",
+  ],
+  categories: ["id", "name", "slug", "description"],
+  tags: ["id", "name", "slug"],
+  series: ["id", "name", "slug", "description"],
+  posts_tags: ["id", "posts_id", "tags_id"],
+  site_settings: [
+    "id",
+    "site_name",
+    "author_name",
+    "tagline",
+    "homepage_intro",
+    "biography",
+    "avatar",
+  ],
+  social_links: ["id", "label", "url", "icon", "sort"],
+};
 const publicFileFields = [
   "id",
   "storage",
@@ -340,43 +401,30 @@ authorPermissions.push(
 
 /** @type {Permission[]} */
 const buildPermissions = [
-  allow("posts", "read", projectFields.posts, { status: { _eq: "published" } }),
-  allow("topics", "read", projectFields.topics),
-  allow("posts_topics", "read", projectFields.posts_topics, {
-    posts_id: { status: { _eq: "published" } },
+  allow("posts", "read", buildFields.posts, {
+    _and: [
+      { status: { _eq: "published" } },
+      { kind: { _in: ["article", "tutorial"] } },
+    ],
   }),
-  allow("categories", "read", projectFields.categories),
-  allow("tags", "read", projectFields.tags),
-  allow("series", "read", projectFields.series),
-  allow("posts_tags", "read", projectFields.posts_tags, {
-    posts_id: { status: { _eq: "published" } },
+  allow("categories", "read", buildFields.categories),
+  allow("tags", "read", buildFields.tags),
+  allow("series", "read", buildFields.series),
+  allow("posts_tags", "read", buildFields.posts_tags, {
+    posts_id: {
+      _and: [
+        { status: { _eq: "published" } },
+        { kind: { _in: ["article", "tutorial"] } },
+      ],
+    },
   }),
-  allow("site_settings", "read", projectFields.site_settings),
-  allow("social_links", "read", projectFields.social_links),
+  allow("site_settings", "read", buildFields.site_settings),
+  allow("social_links", "read", buildFields.social_links),
   allow("directus_files", "read", publicFileFields, {
     folder: { _eq: IDS.folders.publishable },
   }),
   allow("directus_folders", "read", ["id", "name"], {
     id: { _eq: IDS.folders.publishable },
-  }),
-];
-
-/** @type {Permission[]} */
-const previewPermissions = [
-  ...Object.entries(projectFields).map(([collection, fields]) =>
-    allow(collection, "read", fields),
-  ),
-  allow("directus_files", "read", publicFileFields, {
-    folder: { _in: folders.map((folder) => folder.id) },
-  }),
-  allow("directus_folders", "read", ["id", "name"], {
-    id: { _in: folders.map((folder) => folder.id) },
-  }),
-  allow("directus_versions", "read", all, {
-    collection: { _in: ["posts", "site_settings"] },
-  }),
-  allow("directus_revisions", "read", all, {
-    collection: { _in: ["posts", "site_settings"] },
   }),
 ];
 
@@ -422,7 +470,6 @@ async function reconcilePermissions(policy, wanted) {
 
 await reconcilePermissions(policies.author, authorPermissions);
 await reconcilePermissions(policies.build, buildPermissions);
-await reconcilePermissions(policies.preview, previewPermissions);
 
 /** @type {DirectusItem[]} */
 const publicPolicies = await request(
@@ -463,14 +510,6 @@ await upsertUser(
   "build-reader@service.invalid",
   usableSecret(process.env.DIRECTUS_BUILD_TOKEN)
     ? process.env.DIRECTUS_BUILD_TOKEN
-    : null,
-);
-await upsertUser(
-  IDS.users.preview,
-  roles.preview,
-  "preview-reader@service.invalid",
-  usableSecret(process.env.DIRECTUS_PREVIEW_TOKEN)
-    ? process.env.DIRECTUS_PREVIEW_TOKEN
     : null,
 );
 const author = await upsertUser(

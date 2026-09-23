@@ -78,8 +78,8 @@ After apply:
 3. Compare the restored database with `directus/schema.yaml` using the schema
    diff command. A full database restore already contains Directus and project
    schemas: do **not** automatically apply the snapshot on top of it.
-4. Create fresh Build/Preview tokens if the recovery inventory marks them for
-   rotation, then build the complete public snapshot.
+4. Create a fresh Build Reader token if the recovery inventory marks it for
+   rotation, then build the complete public snapshot with a BuildKit secret.
 5. Compare a recorded set of stable URLs and public media checksums, and verify
    draft/private assets remain absent.
 6. Record snapshot time, restore start/end, measured RPO/RTO, and every manual
@@ -88,5 +88,5 @@ After apply:
 
 Caddy certificates and OCI layers are regenerated. Human credentials, MFA
 recovery, database/Directus secrets, Restic password, GitHub/GHCR credentials,
-SSH keys, preview authentication, and alert credentials are recovered from the
-password manager, not Restic.
+SSH keys and alert credentials are recovered from the password manager, not
+Restic.

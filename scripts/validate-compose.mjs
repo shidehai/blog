@@ -83,10 +83,20 @@ assert(
   /^ghcr\.io\/[a-z0-9./_-]+@sha256:[0-9a-f]{64}$/.test(site.image ?? ""),
   "site image must be an immutable GHCR digest",
 );
-assert(
-  site.environment?.CONTENT_SOURCE === "directus",
-  "production site runtime must use the Directus preview source",
-);
+const siteEnvironment = site.environment ?? {};
+for (const name of [
+  "CONTENT_SOURCE",
+  "DIRECTUS_URL",
+  "DIRECTUS_BUILD_TOKEN",
+  "DIRECTUS_PREVIEW_TOKEN",
+  "PREVIEW_TRUSTED_HEADER",
+  "SITE_URL",
+]) {
+  assert(
+    !Object.hasOwn(siteEnvironment, name),
+    `production site runtime must not receive build-time CMS configuration (${name})`,
+  );
+}
 assert(
   directus.image === "directus/directus:12.2.0",
   "Directus image must remain pinned to 12.2.0",

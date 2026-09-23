@@ -7,7 +7,7 @@ import {
   filterPath,
   isDirectusError,
 } from "../directus/client.mjs";
-import { IDS } from "../directus/constants.mjs";
+import { IDS, RETIRED_LEGACY_READER_IDS } from "../directus/constants.mjs";
 import {
   EDITORIAL_IDS,
   EDITORIAL_POST_IDS,
@@ -28,7 +28,7 @@ const fixture = {
  * @typedef {{ override?: boolean | null, default: boolean }} Entitlement
  * @typedef {{ name: string, usage: { collections: number }, entitlements: { custom_permission_rules_enabled: Entitlement, production_enabled: Entitlement } }} License
  * @typedef {{ version: string, files: { mimeTypeAllowList: string[] } }} ServerInfo
- * @typedef {{ collection: string, meta: { versioning?: boolean, singleton?: boolean, preview_url?: string } }} CollectionRecord
+ * @typedef {{ collection: string, meta: { versioning?: boolean, singleton?: boolean, preview_url?: string | null } }} CollectionRecord
  * @typedef {{ collection: string, field: string, meta: { interface: string | null, validation: unknown }, schema: { is_unique: boolean, is_indexed: boolean, is_nullable: boolean, default_value: unknown } }} FieldRecord
  * @typedef {{ collection: string, field: string, related_collection: string | null }} RelationRecord
  * @typedef {{ id?: string, status?: string, kind?: string, title?: string, body?: string, slug?: string, featured?: boolean, cover_image?: string | null }} PostRecord
@@ -37,8 +37,9 @@ const fixture = {
  * @typedef {{ id: string, name: string, slug: string }} TopicRecord
  * @typedef {{ id: string, posts_id: string, topics_id: string }} PostTopicRecord
  * @typedef {{ id: string }} SocialLinkRecord
- * @typedef {{ name: string, admin_access: boolean, app_access: boolean, enforce_tfa: boolean }} PolicyRecord
- * @typedef {{ email: string | null, tfa_secret: string | null }} UserRecord
+ * @typedef {{ id: string, name: string, admin_access: boolean, app_access: boolean, enforce_tfa: boolean }} PolicyRecord
+ * @typedef {{ id: string, email: string | null, tfa_secret: string | null }} UserRecord
+ * @typedef {{ id: string }} IdentityRecord
  * @typedef {{ id: string }} VersionRecord
  * @typedef {{ current: { title: string }, mainHash: string }} VersionComparison
  * @typedef {{ collection: string, data?: { title?: string } }} RevisionRecord
@@ -163,6 +164,12 @@ async function schemaCheck() {
   assert.equal(
     collections.find((entry) => entry.collection === "posts")?.meta.versioning,
     true,
+  );
+  assert.equal(
+    collections.find((entry) => entry.collection === "posts")?.meta
+      .preview_url,
+    null,
+    "Posts must not advertise a retired preview URL",
   );
   assert.equal(
     collections.find((entry) => entry.collection === "site_settings")?.meta
@@ -368,7 +375,6 @@ async function accessCheck() {
   );
 
   const build = directusClient(process.env.DIRECTUS_BUILD_TOKEN);
-  const preview = directusClient(process.env.DIRECTUS_PREVIEW_TOKEN);
   const author = directusClient(process.env.DIRECTUS_TEST_AUTHOR_TOKEN);
   const publicClient = directusClient();
 
@@ -376,11 +382,21 @@ async function accessCheck() {
   await rejects(publicClient, "/items/site_settings");
 
   /** @type {PostRecord[]} */
-  const builtPosts = await build("/items/posts?limit=-1&fields=id,status");
+  const builtPosts = await build(
+    "/items/posts?limit=-1&fields=id,status,kind",
+  );
   assert.ok(builtPosts.length >= 3);
   assert.ok(builtPosts.every((post) => post.status === "published"));
+  assert.ok(
+    builtPosts.every(
+      (post) => post.kind === "article" || post.kind === "tutorial",
+    ),
+    "Build Reader must not receive published notes",
+  );
   await rejects(build, `/items/posts/${fixture.archived}?fields=id,status`);
   await rejects(build, "/items/posts", { method: "POST", body: {} });
+  await rejects(build, "/items/topics?limit=1");
+  await rejects(build, "/items/posts_topics?limit=1");
 
   /** @type {FileRecord[]} */
   const publicFiles = await build("/files?limit=-1&fields=id,title,folder");
@@ -388,14 +404,6 @@ async function accessCheck() {
   assert.ok(
     publicFiles.every((file) => file.folder === IDS.folders.publishable),
   );
-
-  /** @type {PostRecord[]} */
-  const previewPosts = await preview("/items/posts?limit=-1&fields=id,status");
-  assert.ok(previewPosts.some((post) => post.status === "archived"));
-  /** @type {FileRecord[]} */
-  const previewFiles = await preview("/files?limit=-1&fields=id,title,folder");
-  assert.ok(previewFiles.some((file) => file.folder === IDS.folders.private));
-  await rejects(preview, "/items/posts", { method: "POST", body: {} });
 
   const testTopic = randomUUID();
   await author("/items/topics", {
@@ -407,20 +415,24 @@ async function accessCheck() {
     },
   });
   await author(`/items/topics/${testTopic}`, { method: "DELETE" });
-  const privateFile = previewFiles.find(
+  /** @type {FileRecord[]} */
+  const files = await admin("/files?limit=-1&fields=id,title,folder");
+  const privateFile = files.find(
     (file) => file.folder === IDS.folders.private,
   );
   assert.ok(privateFile, "No private fixture file found");
   await rejects(author, `/files/${privateFile.id}`, { method: "DELETE" });
 
-  /** @type {Promise<[PolicyRecord[], UserRecord[]]>} */
+  /** @type {Promise<[PolicyRecord[], UserRecord[], IdentityRecord[], IdentityRecord[]]>} */
   const responses = Promise.all([
     admin(
       "/policies?limit=-1&fields=id,name,admin_access,app_access,enforce_tfa",
     ),
     admin("/users?limit=-1&fields=id,email,role,tfa_secret"),
+    admin("/roles?limit=-1&fields=id"),
+    admin("/access?limit=-1&fields=id"),
   ]);
-  const [policies, users] = await responses;
+  const [policies, users, roles, access] = await responses;
   /** @param {string} name */
   const policy = (name) => {
     const match = policies.find((entry) => entry.name === name);
@@ -441,6 +453,22 @@ async function accessCheck() {
       policy("Break-glass Administrator").enforce_tfa,
     ],
     [true, true],
+  );
+  assert.ok(
+    !policies.some((policy) => policy.id === RETIRED_LEGACY_READER_IDS.policy),
+    "retired reader policy must be absent after bootstrap",
+  );
+  assert.ok(
+    !users.some((user) => user.id === RETIRED_LEGACY_READER_IDS.user),
+    "retired reader user must be absent after bootstrap",
+  );
+  assert.ok(
+    !roles.some((role) => role.id === RETIRED_LEGACY_READER_IDS.role),
+    "retired reader role must be absent after bootstrap",
+  );
+  assert.ok(
+    !access.some((entry) => entry.id === RETIRED_LEGACY_READER_IDS.access),
+    "retired reader access must be absent after bootstrap",
   );
   for (const email of [
     process.env.DIRECTUS_AUTHOR_EMAIL,
@@ -492,7 +520,7 @@ async function workflowCheck() {
   });
 
   const markdown =
-    "# 自动化首稿\n\n中文与 `code` 保持原样。\n\n> [!NOTE]\n> 版本预览测试。\n";
+    "# 自动化首稿\n\n中文与 `code` 保持原样。\n\n> [!NOTE]\n> 版本草稿检查。\n";
   try {
     /** @type {VersionRecord} */
     const version = await admin("/versions", {
@@ -522,12 +550,6 @@ async function workflowCheck() {
     });
     assert.equal(saved.body, markdown);
 
-    /** @type {CollectionRecord} */
-    const collection = await admin(
-      "/collections/posts?fields=collection,meta.preview_url",
-    );
-    assert.ok(collection.meta.preview_url, "Posts preview URL is missing");
-    assert.match(collection.meta.preview_url, /\{\{\$version\}\}/);
     /** @type {string} */
     const promotedPostId = await admin(`/versions/${versionId}/promote`, {
       method: "POST",

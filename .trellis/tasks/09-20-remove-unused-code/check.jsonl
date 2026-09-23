@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "检查 Directus 解码、fixture 回退与静态路由的类型/运行时边界。"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "执行 V2 自检、类型检查、lint、构建和可访问页面回归。"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "验证预览退休没有删除 CMS 内容、作者能力或未列举的身份。"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "验证 Directus build 缺凭据/读取失败和健康失败均能明确失败且不泄密。"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "验证镜像、非 root、健康检查、Compose、Caddy 和秘密不落层契约。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "审查 CI build args、BuildKit secret、静态输出、Compose runtime 和反向代理的一致性。"}

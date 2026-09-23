@@ -1,55 +1,54 @@
 # Frontend Development Guidelines
 
-The repository is a pnpm workspace with two frontend packages: the Astro 7
-application at the root (V1, port 4321) and `frontend-v2`, a Next.js 15
-application (V2, port 4322). Public pages are prerendered, use project-owned
-HTML/CSS, and add client JavaScript only for a specific progressive
-enhancement.
+`frontend-v2/` is the only public application in this repository. It is a
+Next.js 15 App Router site on port 4321. Public content is decoded once at
+build time into a static snapshot; the standalone runtime serves that output
+without Directus credentials.
 
-Each package owns its own quality gate and dependency set. A guideline below
-applies to both unless it names Astro- or Next-specific files.
+The root package owns workspace, image, and operations configuration. Directus
+and PostgreSQL remain the source of editorial content; the checked fixture is
+only an offline input for the same validated V2 snapshot path.
 
 ## Pre-Development Checklist
 
-- Read [Directory Structure](./directory-structure.md) before adding a page or
-  moving code.
-- Read [Component Guidelines](./component-guidelines.md) before adding UI.
-- Read [Type Safety](./type-safety.md) before consuming environment or CMS data.
-- Read [Quality Guidelines](./quality-guidelines.md) before changing scripts or
-  tests.
-- Search the repository before adding a helper, dependency, or client island.
-- Confirm which package you are editing. V1 and V2 have separate dependency
-  sets; a package present in one is not resolvable from the other. `tsconfig`
-  `paths` are type-check only, so they cannot make a cross-package import work
-  at build time.
-- Preserve PostgreSQL/Directus as the content source; do not add local Markdown
-  content collections.
+- Read [Directory Structure](./directory-structure.md) before adding or moving
+  a route, component, or content helper.
+- Read [Component Guidelines](./component-guidelines.md) before changing UI or
+  client-side behavior.
+- Read [Type Safety](./type-safety.md) before changing environment parsing,
+  Directus decoding, or a public snapshot type.
+- Read [Quality Guidelines](./quality-guidelines.md) before changing scripts,
+  routes, CSS ownership, or tests.
+- Search the repository before adding a helper, dependency, client component,
+  or CSS system.
+- Keep Directus/PostgreSQL as the live content authority. Do not add a second
+  Markdown store or make the fixture a production authoring source.
 
 ## Guidelines
 
 | Guide | Owns |
 | --- | --- |
-| [Directory Structure](./directory-structure.md) | Astro routes, styles, tests, and root configuration |
-| [Component Guidelines](./component-guidelines.md) | Astro-first UI and accessibility baseline |
-| [Type Safety](./type-safety.md) | Strict TypeScript and runtime boundary validation |
-| [Quality Guidelines](./quality-guidelines.md) | Formatting, linting, checks, build, and browser tests |
-
-V1 has no client framework or state library, so React hook and global-state
-templates stay out of its guidance. V2 is React via Next.js, but its pages are
-server components by default; it has no global state library either. Add
-guidance for a pattern only after real code establishes it in the package that
-needs it.
+| [Directory Structure](./directory-structure.md) | App Router placement, route contracts, and content boundaries |
+| [Component Guidelines](./component-guidelines.md) | Server/client component split, semantics, accessibility, and CSS ownership |
+| [Type Safety](./type-safety.md) | Strict TypeScript, build environment parsing, Directus decoding, and snapshots |
+| [Quality Guidelines](./quality-guidelines.md) | V2 checks, static-route verification, and styling/dependency regression checks |
 
 ## Quality Check
 
-V1: run `pnpm verify` at the root. It must cover formatting, ESLint,
-`astro check`, unit tests, the production/Pagefind build, and the Chromium
-smoke test.
+Run the narrow V2 gate for frontend-only work:
 
-V2: run `pnpm verify:v2` (or `pnpm --filter frontend-v2 verify`). It must cover
-`tsc --noEmit`, ESLint, the fixture selfcheck, and the production build.
+```sh
+pnpm --filter frontend-v2 verify
+```
 
-The two gates are deliberately separate. Folding V2 into the root `verify`
-would make every V1 change pay for V2's Playwright and operations suites while
-the packages still evolve independently. Run both gates when a change touches
-shared contracts such as `directus/schema.yaml`.
+It runs TypeScript, ESLint, the real fixture/snapshot selfchecks, and a
+production Next build. Run the root gate when a change also touches Directus,
+Docker, deployment, or operations scripts:
+
+```sh
+pnpm verify
+sh scripts/validate-operations.sh
+```
+
+The infrastructure-specific image and proxy contract is owned by the backend
+spec layer; do not infer its correctness from a frontend build alone.

@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "恢复 Next App Router 动态文章路由、健康路由与删除孤儿组件前的目录/路由边界。"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "恢复文章阅读交互、目录和语义 CSS 时保持可访问性与组件复用边界。"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "收敛 Directus/fixture 环境和解码快照的单一类型与运行时校验边界。"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "V2 类型检查、自检、lint、构建及页面回归的质量门禁。"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "Docker、Compose、Caddy、Directus 和运维脚本的所有权与服务边界。"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "在移除 V2 投影/预览权限时保留 Directus/PostgreSQL 内容和精确 ID 清理边界。"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Directus 构建凭据失败闭环、容器健康与安全错误输出约束。"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "BuildKit secret、镜像、Compose、Caddy 和运行时验证矩阵。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "追踪 CMS 到构建镜像、运行时和代理的环境/数据流。"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "复用现有文章内容映射和 Markdown 组件，避免建立第二套详情实现。"}

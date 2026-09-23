@@ -1,6 +1,6 @@
 ---
 name: Personal Knowledge Journal
-description: A precise, expressive reading system for technical writing and personal notes.
+description: A precise, expressive reading system for technical articles and tutorials.
 ---
 
 <!-- SEED: re-run $impeccable document once there is code to capture the actual tokens and components. -->
@@ -107,8 +107,8 @@ communicates document structure; it never becomes a decorative ruler or grid.
 
 **The Bento Content Rule.** The homepage reinterprets the reference's profile,
 hero, statistics, clock, and project cells as author identity, featured writing,
-recent notes, topics, Search/Archive/RSS shortcuts, and latest articles. There
-are no visitor counters, fake popularity, binary clocks, or decorative 3D cells.
+search/archive shortcuts, and latest articles. There are no visitor counters,
+fake popularity, binary clocks, or decorative 3D cells.
 
 ## Interaction and Motion
 
@@ -138,8 +138,8 @@ screens. Desktop preserves the profile-plus-featured asymmetric composition.
   tokens rather than inventing a shadow for every component.
 - **Do** let Bento cell size communicate content priority and collapse to a
   reading-first mobile order.
-- **Do** distinguish tutorials, articles, and notes through rhythm, metadata,
-  and hierarchy rather than separate visual brands.
+- **Do** distinguish tutorials and articles through rhythm, metadata, and
+  hierarchy rather than separate visual brands.
 - **Do** make every motion optional under reduced-motion preferences.
 - **Do** keep controls familiar, keyboard accessible, and stable across content
   lengths and viewport sizes.

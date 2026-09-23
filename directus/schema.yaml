@@ -18,7 +18,7 @@ collections:
       icon: article
       item_duplication_fields: null
       note: 文章、教程与随记共用的发布记录。
-      preview_url: http://localhost:4321/preview/{{id}}?version={{$version}}
+      preview_url: null
       singleton: false
       sort: 1
       sort_field: null

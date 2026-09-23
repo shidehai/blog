@@ -2,25 +2,29 @@
 
 ## Fail at the Boundary
 
-Configuration is rejected before a build or process starts. `scripts/env.mjs`
-owns application environment parsing, and `scripts/backup.sh` checks every
-required database/Restic variable before creating a dump.
+Configuration is validated before a build reaches content loading. V2 owns
+build-time parsing in `frontend-v2/lib/env.ts`; Docker validates the requested
+source/secret before invoking Next; operations scripts validate their own
+required infrastructure values.
 
 | Condition | Required behavior |
 | --- | --- |
-| Fixture build, no CMS secret | Continue |
-| Directus build, URL or build token absent | Fail before Astro build |
-| Runtime preview URL/token/header absent | Fail before Node server start |
+| Fixture build with no CMS secret | Continue using the checked fixture |
+| Directus build with missing/invalid URL or token | Fail before or during build; never use fixture fallback |
+| Directus request or decoder failure | Abort the Next build with field/operation context, never the token |
+| Runtime image receives CMS source/credential env | Configuration/image validation fails |
+| `/healthz` is requested | Return non-cacheable success without CMS I/O |
 | Backup variable absent | Exit before `pg_dump` |
 | Dump cannot be listed by `pg_restore` | Exit without creating a Restic snapshot |
 | Any backup exit path | Remove the mode-0600 temporary dump |
 
-Errors may name the missing field or failed operation. They must not include
-tokens, passwords, Markdown bodies, preview URLs, or complete environment
-objects. Tests assert field names, not secret values.
+Errors may name a missing field, service, or failed operation. They must not
+print tokens, passwords, request headers, Markdown bodies, private URLs, or a
+complete environment object.
 
 ## Propagation
 
-Prefer process exit status and stderr over custom error hierarchies for these
-small entrypoints. Let Astro/Vitest/Compose retain their native diagnostics;
-wrap an error only when adding record or field context that the source lacks.
+Prefer process exit status and stderr for small build/operations entrypoints.
+Let Next, Docker, Compose, Caddy, and Directus retain native diagnostics; wrap
+an error only to add safe record/field context. Do not add a fallback that
+changes a requested Directus build into a fixture build.

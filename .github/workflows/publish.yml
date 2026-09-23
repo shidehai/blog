@@ -43,22 +43,13 @@ jobs:
       - name: Audit production dependencies
         run: pnpm audit --prod --audit-level high
 
-      - name: Install Chromium
-        run: pnpm exec playwright install --with-deps chromium
-
       - name: Run application quality gate
         run: pnpm verify
-
-      - name: Verify operations state machines
-        run: sh tests/ops/run.sh
 
       - name: Validate Compose, Caddy, and operations image
         env:
           OPS_BUILD_IMAGES: "1"
         run: sh scripts/validate-operations.sh
-
-      - name: Verify exact inline-script CSP hash
-        run: node scripts/verify-csp-hash.mjs
 
       - name: Build fixture runtime image
         run: docker build --target runtime --tag blog-site:fixture .
@@ -86,18 +77,15 @@ jobs:
         env:
           DIRECTUS_BUILD_TOKEN: ${{ secrets.DIRECTUS_BUILD_TOKEN }}
           DIRECTUS_URL: ${{ vars.DIRECTUS_URL }}
-          SITE_URL: ${{ vars.SITE_URL }}
         run: |
           test -n "$DIRECTUS_BUILD_TOKEN"
           test -n "$DIRECTUS_URL"
-          test -n "$SITE_URL"
 
       - name: Build published snapshot image
         id: build
         env:
           DIRECTUS_BUILD_TOKEN: ${{ secrets.DIRECTUS_BUILD_TOKEN }}
           DIRECTUS_URL: ${{ vars.DIRECTUS_URL }}
-          SITE_URL: ${{ vars.SITE_URL }}
         run: |
           image_repository=$(printf 'ghcr.io/%s' "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
           image_tag="$image_repository:sha-$GITHUB_SHA"
@@ -106,7 +94,6 @@ jobs:
             --secret id=directus_build_token,env=DIRECTUS_BUILD_TOKEN \
             --build-arg CONTENT_SOURCE=directus \
             --build-arg DIRECTUS_URL="$DIRECTUS_URL" \
-            --build-arg SITE_URL="$SITE_URL" \
             --label org.opencontainers.image.revision="$GITHUB_SHA" \
             --tag "$image_tag" \
             .

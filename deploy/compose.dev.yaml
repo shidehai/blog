@@ -8,14 +8,21 @@ services:
       context: ..
       dockerfile: Dockerfile
       target: development
-    command: ["pnpm", "dev", "--host", "0.0.0.0"]
+    command:
+      [
+        "pnpm",
+        "--filter",
+        "frontend-v2",
+        "dev",
+        "--hostname",
+        "0.0.0.0",
+        "--port",
+        "4321",
+      ]
     environment:
       CONTENT_SOURCE: ${CONTENT_SOURCE:-fixture}
-      DIRECTUS_PREVIEW_TOKEN: ${DIRECTUS_PREVIEW_TOKEN:-development-fixture-preview-token-24ch}
       DIRECTUS_URL: ${DIRECTUS_URL:-http://directus:8055}
-      NODE_ENV: development
-      PREVIEW_TRUSTED_HEADER: ${PREVIEW_TRUSTED_HEADER:-development-fixture-preview-header-24ch}
-      SITE_URL: ${SITE_URL:-http://localhost:4321}
+      DIRECTUS_BUILD_TOKEN: ${DIRECTUS_BUILD_TOKEN:-}
     ports:
       - "127.0.0.1:4321:4321"
     volumes:

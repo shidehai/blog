@@ -1,89 +1,66 @@
 # Frontend Quality Guidelines
 
-Unless a section names V2 explicitly, the rules below describe V1 (root Astro).
-
 ## Required Commands
 
-Each package defines one aggregate gate:
+Run focused commands while changing the V2 app:
 
-```bash
-pnpm verify      # V1: root Astro app
-pnpm verify:v2   # V2: frontend-v2 (alias of pnpm --filter frontend-v2 verify)
+```sh
+pnpm --filter frontend-v2 typecheck
+pnpm --filter frontend-v2 lint
+pnpm --filter frontend-v2 selfcheck
+pnpm --filter frontend-v2 build
+pnpm --filter frontend-v2 verify
+pnpm --filter frontend-v2 exec tsc --noUnusedLocals --noUnusedParameters
 ```
 
-V1 `verify` runs Prettier check, ESLint, Astro type checking, Vitest, the
-production Astro/Pagefind build, and Playwright in that order.
+Run the root gate for shared contracts:
 
-V2 `verify` runs `tsc --noEmit`, `next lint`, the fixture selfcheck, and
-`next build`. Typecheck comes first because it is the fastest failure, and the
-selfcheck precedes the build so a broken decode fails before 26 pages render.
+```sh
+pnpm verify
+sh tests/ops/run.sh
+sh scripts/validate-operations.sh
+```
 
-Keep each focused script independently runnable for diagnosis. A script must
-declare the tool it invokes as a dependency of its own package; relying on
-workspace hoisting or an `npx` download makes the gate pass locally and fail on
-a clean checkout.
+The V2 selfchecks use Node `assert` and call the real decoder/snapshot path;
+do not replace them with mocks that merely repeat implementation details.
 
-## Test Shape
+## Route and Snapshot Regression Checks
 
-- V2 has no test runner yet. Boundary logic there is covered by an
-  `assert`-based selfcheck (`lib/fixture.selfcheck.mts`) that exercises the real
-  decode and snapshot path, not a mock. Add a framework only when a case needs
-  more than `node:assert`; until then every new V2 boundary rule gains a row in
-  that file.
-- Unit tests cover non-trivial boundary logic with the smallest useful case;
-  `tests/unit/env.test.ts` proves permissive fixture mode and fail-closed secret
-  modes.
-- Browser tests prove observable output; `tests/e2e/smoke.spec.ts` checks both
-  the page heading and `/healthz` response.
-- A passing build includes Pagefind indexing from `dist/client`, not merely
-  Astro compilation.
-- Material-system changes extend `tests/e2e/visual-contract.spec.ts` with
-  computed geometry/style, responsive-boundary, overflow, and interaction
-  assertions. Retained screenshots support human comparison but never replace
-  semantic browser assertions.
-- Search race regressions hold the Pagefind module request, clear the query,
-  then release the request and assert that stale results cannot replace the
-  restored default state.
-- Responsive overflow tests assert both document `scrollWidth <= clientWidth`
-  and that no visible element bounding box crosses the viewport beyond the
-  test tolerance. Page-level `overflow-x: clip` can hide the latter from the
-  width check. Exempt only descendants of named intentional scrollers, such as
-  `.code-frame pre` and `.table-wrapper`, and only when the ancestor's computed
-  `overflow-x` is `auto` or `scroll`.
+- A production build must contain canonical `/archives/[slug]` pages for the
+  current public snapshot.
+- Verify a known `/writing/[slug]` returns a permanent redirect to its exact
+  canonical archive URL. `/writing`, an unknown legacy slug, and `/notes/*`
+  must remain 404.
+- Test fixture default mode and directus-mode failures separately. A successful
+  fixture build does not validate a failed-closed Directus build.
+- When adding/removing snapshot members, update both selfchecks and search all
+  pages/components before deleting a field or helper.
 
-## Formatting Scope
+## Styling and Dependency Regression Checks
 
-`.prettierignore` excludes Trellis/platform files and product/planning
-documents. `pnpm format` must format application-owned code only; never create
-large documentation-only diffs as a side effect of a code change.
+- Every newly introduced semantic class must have a stylesheet rule that can
+  affect production output.
+- Removing a styling dependency requires a repository search for configuration,
+  package entries, and utility-only class strings, followed by a visual/manual
+  check of the affected retained pages.
+- Do not broadly format `app/globals.css` when it contains user changes. Add
+  isolated selectors and retain unrelated visual adjustments.
+- Do not add a library when React, browser APIs, existing CSS, or the standard
+  library already covers the behavior.
 
 ## Forbidden Patterns
 
-- No theme, UI kit, page builder, local Markdown store, or global client runtime.
-- No test that only restates its implementation.
-- No public route that silently becomes runtime-rendered.
-- No dependency when an Astro, browser, CSS, or standard-library feature covers
-  the behavior.
+- No runtime CMS fallback, local public Markdown store, or page-local
+  environment parsing.
+- No dynamic catch-all redirect for legacy writing or notes URLs.
+- No duplicate code-copy enhancement alongside `MarkdownContent`.
+- No inactive Tailwind configuration, generated-utility dependency, or CSS
+  class that has no active styling source.
+- No unused imports, types, mock catalogs, or content projections retained only
+  for a deleted route.
 
-## Reading Experience Regression Contract
+## Formatting Scope
 
-Reading-surface changes are cross-layer when Markdown becomes generated HTML
-and then receives native browser enhancement. Keep the following executable
-checks with any change to `src/lib/markdown.ts`, `src/lib/mermaid.ts`, or
-`CodeCopyBehavior.astro`:
-
-- Assert generated Mermaid output is an inline SVG and contains no `<script>`
-  or remote paint/font resource. Browser coverage must measure the rendered SVG
-  bounding box; checking only that an SVG tag exists can miss a blank diagram.
-- Assert malformed Mermaid rejects with the source label and line number. Do
-  not replace official Mermaid parsing with a partial regex parser that accepts
-  invalid connectors.
-- Assert long code is complete in the initial HTML, in a no-JavaScript browser,
-  and in print. JS-only tests must additionally check `aria-controls`,
-  `aria-expanded`, and the transition back to the collapsed state.
-- Assert heading-link and share/citation URLs use the article's public
-  `post.route`, including preview routes, rather than reconstructing a route
-  from the current browser pathname.
-- Run `pnpm audit --prod` when changing the Mermaid renderer or its JSDOM
-  dependencies; do not introduce a transitive package with known production
-  vulnerabilities merely to obtain server-side SVG measurement.
+Format application-owned code deliberately. Planning artifacts, user tooling,
+and pre-existing unrelated worktree changes are not cleanup targets. Finish by
+checking `git diff --check` and reviewing the exact changed-file list.

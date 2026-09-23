@@ -82,7 +82,7 @@ Run the following checks to verify launch success:
 # 1. Verify Directus schema and published record counts:
 pnpm directus:schema:check
 
-# 2. Run Directus-backed build and Pagefind indexing:
+# 2. Run the Directus-backed Next static build:
 CONTENT_SOURCE=directus DIRECTUS_URL=<url> DIRECTUS_BUILD_TOKEN=<token> pnpm build
 
 # 3. Verify public test suite passes:

@@ -3,8 +3,9 @@ import {
   loadFromDirectus,
   type ContentSnapshot,
 } from "./directus";
+import { readBuildEnvironment } from "./env";
 import { FIXTURE_ROWS } from "./fixture";
-import { generateActivityData, MOCK_PROJECTS, MOCK_TOOLS } from "./mock";
+import { generateActivityData, MOCK_PROJECTS } from "./mock";
 import type {
   ActivityDay,
   Category,
@@ -13,20 +14,23 @@ import type {
   Series,
   SiteProfile,
   Tag,
-  ToolItem,
 } from "./types";
 
 /**
- * 每个进程构建一次内容快照：Directus 优先，失败或缺凭据时降级到夹具。
- * 两条路径共用 buildSnapshot，派生字段（阅读时长、计数、索引）只有一份实现。
+ * 每个进程构建一次内容快照。fixture 是显式离线默认值；Directus 构建必须
+ * 成功读取已发布数据。两条路径共用 buildSnapshot，派生字段只有一份实现。
  */
 let cached: Promise<ContentSnapshot> | undefined;
 
 export function snapshot(): Promise<ContentSnapshot> {
-  // 夹具的 cover_image 全为 null，不需要资源前缀，base 传空串。
-  cached ??= loadFromDirectus().then(
-    (snap) => snap ?? buildSnapshot(FIXTURE_ROWS, ""),
-  );
+  if (!cached) {
+    const environment = readBuildEnvironment();
+    // 夹具的 cover_image 全为 null，不需要资源前缀，base 传空串。
+    cached =
+      environment.source === "fixture"
+        ? Promise.resolve(buildSnapshot(FIXTURE_ROWS, ""))
+        : loadFromDirectus(environment.directus);
+  }
   return cached;
 }
 
@@ -65,10 +69,6 @@ export async function getSeriesBySlug(
   slug: string,
 ): Promise<Series | undefined> {
   return (await snapshot()).series.find((s) => s.slug === slug);
-}
-
-export async function getTools(): Promise<ToolItem[]> {
-  return MOCK_TOOLS;
 }
 
 export async function getActivityInfo(): Promise<{

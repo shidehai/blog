@@ -10,7 +10,6 @@ export interface SiteProfile {
     github: string;
     about: string;
     email: string;
-    rss: string;
   };
 }
 
@@ -74,15 +73,6 @@ export interface ActivityDay {
   date: string;
   count: number;
   level: 0 | 1 | 2 | 3 | 4;
-}
-
-export interface ToolItem {
-  id: string;
-  name: string;
-  description: string;
-  url: string;
-  category: string;
-  icon?: string;
 }
 
 export interface HeadingItem {

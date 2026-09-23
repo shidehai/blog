@@ -7,13 +7,13 @@ import {
   Folder,
   Home,
   Layers,
-  PenLine,
   Search,
   Tag as TagIcon,
   User,
   Wrench,
   X,
 } from "lucide-react";
+
 import type { Post } from "../lib/types";
 
 interface CommandMenuProps {
@@ -28,19 +28,13 @@ export function CommandMenu({ isOpen, onClose, posts }: CommandMenuProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        if (isOpen) {
-          onClose();
-        } else {
-          const event = new CustomEvent("open-command-menu");
-          window.dispatchEvent(event);
-        }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "k") {
+        event.preventDefault();
+        if (isOpen) onClose();
+        else window.dispatchEvent(new CustomEvent("open-command-menu"));
       }
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
+      if (event.key === "Escape" && isOpen) onClose();
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -55,8 +49,7 @@ export function CommandMenu({ isOpen, onClose, posts }: CommandMenuProps) {
   }, [isOpen]);
 
   const searchResults = useMemo(() => {
-    const q = query.trim().toLowerCase();
-
+    const normalizedQuery = query.trim().toLowerCase();
     const navItems = [
       {
         id: "nav-home",
@@ -109,128 +102,124 @@ export function CommandMenu({ isOpen, onClose, posts }: CommandMenuProps) {
       },
     ];
 
-    if (!q) {
-      return navItems;
-    }
+    if (!normalizedQuery) return navItems;
 
     const matchedNav = navItems.filter((item) =>
-      item.title.toLowerCase().includes(q),
+      item.title.toLowerCase().includes(normalizedQuery),
     );
-
     const matchedPosts = posts
       .filter(
-        (p) =>
-          p.title.toLowerCase().includes(q) ||
-          p.summary?.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q) ||
-          p.tags.some((t) => t.toLowerCase().includes(q)),
+        (post) =>
+          post.title.toLowerCase().includes(normalizedQuery) ||
+          post.summary.toLowerCase().includes(normalizedQuery) ||
+          post.category.toLowerCase().includes(normalizedQuery) ||
+          post.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery)),
       )
       .slice(0, 5)
-      .map((p) => ({
-        id: `post-${p.id}`,
-        title: p.title,
-        url: `/archives/${p.slug}`,
+      .map((post) => ({
+        id: `post-${post.id}`,
+        title: post.title,
+        url: `/archives/${post.slug}`,
         icon: BookOpen,
-        group: `文章 · ${p.category}`,
+        group: `文章 · ${post.category}`,
       }));
 
     return [...matchedPosts, ...matchedNav];
-  }, [query, posts]);
+  }, [posts, query]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSelectedIndex((prev) =>
-        prev < searchResults.length - 1 ? prev + 1 : 0,
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setSelectedIndex((current) =>
+        current < searchResults.length - 1 ? current + 1 : 0,
       );
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedIndex((prev) =>
-        prev > 0 ? prev - 1 : searchResults.length - 1,
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setSelectedIndex((current) =>
+        current > 0 ? current - 1 : searchResults.length - 1,
       );
-    } else if (e.key === "Enter") {
-      e.preventDefault();
+    } else if (event.key === "Enter") {
+      event.preventDefault();
       const selected = searchResults[selectedIndex];
-      if (selected) {
-        router.push(selected.url);
-        onClose();
-      }
+      if (!selected) return;
+      router.push(selected.url);
+      onClose();
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 sm:pt-28 px-4 bg-black/50 backdrop-blur-xs">
+    <div className="command-menu-overlay" role="presentation">
       <div
-        className="w-full max-w-lg bg-[var(--bg-card-solid)] border border-[var(--border)] rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[70vh]"
-        onClick={(e) => e.stopPropagation()}
+        className="command-menu-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-label="站点搜索"
+        onClick={(event) => event.stopPropagation()}
       >
-        {/* Search Bar */}
-        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--border)] bg-[var(--bg-card)]">
-          <Search className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
+        <div className="command-menu-search">
+          <Search className="command-menu-search-icon" aria-hidden="true" />
           <input
-            type="text"
+            type="search"
             placeholder="搜索文章、标签、分类、系列..."
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
+            onChange={(event) => {
+              setQuery(event.target.value);
               setSelectedIndex(0);
             }}
             onKeyDown={handleKeyDown}
             autoFocus
-            className="w-full bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
+            className="command-menu-input"
+            aria-label="搜索文章、标签、分类、系列"
           />
           {query ? (
             <button
+              type="button"
               onClick={() => setQuery("")}
-              className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+              className="command-menu-reset"
+              aria-label="清空搜索"
             >
-              <X className="w-4 h-4" />
+              <X aria-hidden="true" />
             </button>
           ) : (
-            <kbd className="text-[10px] font-mono px-1.5 py-0.5 border border-[var(--border)] rounded text-[var(--text-muted)]">
-              ESC
-            </kbd>
+            <kbd className="command-menu-shortcut">ESC</kbd>
           )}
         </div>
 
-        {/* Results */}
-        <div className="overflow-y-auto p-2 divide-y divide-[var(--border-card)]">
+        <div className="command-menu-results">
           {searchResults.length === 0 ? (
-            <div className="py-12 text-center text-xs text-[var(--text-muted)]">
+            <p className="command-menu-empty">
               未找到与 &quot;{query}&quot; 相关的文章或页面
-            </div>
+            </p>
           ) : (
-            <ul className="space-y-1 py-1">
+            <ul className="command-menu-list">
               {searchResults.map((item, index) => {
                 const isSelected = index === selectedIndex;
                 const Icon = item.icon;
                 return (
                   <li key={item.id}>
                     <button
+                      type="button"
                       onClick={() => {
                         router.push(item.url);
                         onClose();
                       }}
                       onMouseEnter={() => setSelectedIndex(index)}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-left text-xs sm:text-sm transition-colors ${
-                        isSelected
-                          ? "bg-[var(--accent)] text-[var(--on-accent)] font-medium"
-                          : "text-[var(--text-secondary)] hover:bg-[var(--bg-card-hover)]"
+                      className={`command-menu-result${
+                        isSelected ? " is-selected" : ""
                       }`}
                     >
-                      <div className="flex items-center gap-2.5 truncate">
-                        <Icon className="w-4 h-4 shrink-0" />
-                        <span className="truncate">{item.title}</span>
-                      </div>
-                      <span
-                        className={`text-[10px] font-mono px-1.5 py-0.5 rounded shrink-0 ${
-                          isSelected
-                            ? "bg-black/20 text-white"
-                            : "bg-[var(--tag-bg)] text-[var(--tag-text)]"
-                        }`}
-                      >
+                      <span className="command-menu-result-main">
+                        <Icon
+                          className="command-menu-result-icon"
+                          aria-hidden="true"
+                        />
+                        <span className="command-menu-result-title">
+                          {item.title}
+                        </span>
+                      </span>
+                      <span className="command-menu-result-group">
                         {item.group}
                       </span>
                     </button>
@@ -241,14 +230,10 @@ export function CommandMenu({ isOpen, onClose, posts }: CommandMenuProps) {
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-4 py-2 border-t border-[var(--border)] bg-[var(--bg-card)] flex items-center justify-between text-[11px] font-mono text-[var(--text-muted)]">
-          <div className="flex items-center gap-3">
-            <span>↑↓ 导航</span>
-            <span>↵ 确认</span>
-          </div>
+        <footer className="command-menu-footer">
+          <span>↑↓ 导航 · ↵ 确认</span>
           <span>⌘K 全局搜索</span>
-        </div>
+        </footer>
       </div>
     </div>
   );

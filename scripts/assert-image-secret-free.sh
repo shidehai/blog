@@ -35,8 +35,8 @@ if grep -Fq -- "$DIRECTUS_BUILD_TOKEN" "$work/history.txt" ||
   exit 1
 fi
 if docker image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$image" |
-  grep -q '^DIRECTUS_BUILD_TOKEN='; then
-  echo "DIRECTUS_BUILD_TOKEN is present in the runtime environment" >&2
+  grep -Eq '^(CONTENT_SOURCE|DIRECTUS_(URL|BUILD_TOKEN|PREVIEW_TOKEN)|PREVIEW_TRUSTED_HEADER|SITE_URL)='; then
+  echo "CMS build or preview configuration is present in the runtime environment" >&2
   exit 1
 fi
 

@@ -1,34 +1,40 @@
 # Backend and Infrastructure Guidelines
 
-There is no custom application backend. Directus 12 supplies the private CMS
-and API, PostgreSQL 17 stores state, and the Astro Node process serves static
-public output plus the future protected preview route.
+There is no custom application API. Directus 12 supplies the private CMS and
+API, PostgreSQL 17 stores state, and the Next.js standalone image serves the
+public static snapshot. Directus is read only during the image build; the
+runtime site has no CMS credential or content-source setting.
 
 ## Pre-Development Checklist
 
-- Read [Directory Structure](./directory-structure.md) before adding services or
-  operational scripts.
+- Read [Directory Structure](./directory-structure.md) before changing a
+  service, Dockerfile, Compose topology, Caddy policy, or operations script.
 - Read [Database Guidelines](./database-guidelines.md) before changing Directus
-  schema or storage.
-- Read [Error Handling](./error-handling.md) before adding a trust boundary.
-- Read [Logging Guidelines](./logging-guidelines.md) before emitting operational
-  data.
-- Read [Quality Guidelines](./quality-guidelines.md) for the infrastructure
-  contract and validation matrix.
-- Trace publication state across Directus, generated routes, Pagefind, feeds,
-  metadata, preview, and deployment before changing it.
+  schema, bootstrap permissions, seed data, or storage behavior.
+- Read [Error Handling](./error-handling.md) before changing a secret,
+  build-time boundary, or operational failure path.
+- Read [Logging Guidelines](./logging-guidelines.md) before emitting a
+  diagnostic from a script or service boundary.
+- Read [Quality Guidelines](./quality-guidelines.md) for the image, proxy,
+  Compose, Directus, and secret-leak validation matrix.
+- Trace a change across Directus publication state, V2 snapshot construction,
+  static routes, image build, standalone runtime, Caddy, and deployment before
+  changing a shared field or environment value.
 
 ## Guidelines
 
 | Guide | Owns |
 | --- | --- |
-| [Directory Structure](./directory-structure.md) | Service and file ownership |
-| [Database Guidelines](./database-guidelines.md) | PostgreSQL/Directus source-of-truth rules |
-| [Error Handling](./error-handling.md) | Fail-closed environment and script behavior |
-| [Logging Guidelines](./logging-guidelines.md) | Structured, bounded, secret-free logs |
-| [Quality Guidelines](./quality-guidelines.md) | Compose/container contracts and checks |
+| [Directory Structure](./directory-structure.md) | Service/file ownership and topology |
+| [Database Guidelines](./database-guidelines.md) | CMS/source-of-truth and exact-ID data safety rules |
+| [Error Handling](./error-handling.md) | Fail-closed build and operational boundaries |
+| [Logging Guidelines](./logging-guidelines.md) | Bounded, secret-free diagnostics |
+| [Quality Guidelines](./quality-guidelines.md) | Image, proxy, Compose, Directus and secret checks |
 
 ## Quality Check
 
-Run `pnpm verify`, Compose configuration validation with the explicit root env
-file, the runtime image build, Caddy validation, and service health checks.
+Run `pnpm verify`, rendered Compose validation, Caddy validation, and the
+runtime image/secret checks whenever a change crosses the public image boundary.
+Run Directus schema/bootstrap/access checks only against a disposable or
+normally backed-up instance because those checks require credentials and can
+create temporary CMS test records.

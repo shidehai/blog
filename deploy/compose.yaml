@@ -14,9 +14,6 @@ services:
     environment:
       ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL}
       CMS_DOMAIN: ${CMS_DOMAIN:?Set CMS_DOMAIN}
-      PREVIEW_BASIC_PASSWORD_HASH: ${PREVIEW_BASIC_PASSWORD_HASH:?Set PREVIEW_BASIC_PASSWORD_HASH}
-      PREVIEW_BASIC_USER: ${PREVIEW_BASIC_USER:?Set PREVIEW_BASIC_USER}
-      PREVIEW_TRUSTED_HEADER: ${PREVIEW_TRUSTED_HEADER:?Set PREVIEW_TRUSTED_HEADER}
       SITE_DOMAIN: ${SITE_DOMAIN:?Set SITE_DOMAIN}
     ports:
       - "80:80"
@@ -55,15 +52,6 @@ services:
     image: ${SITE_IMAGE:?Set SITE_IMAGE to an immutable digest}
     restart: unless-stopped
     init: true
-    environment:
-      CONTENT_SOURCE: directus
-      DIRECTUS_PREVIEW_TOKEN: ${DIRECTUS_PREVIEW_TOKEN:?Set DIRECTUS_PREVIEW_TOKEN}
-      DIRECTUS_URL: http://directus:8055
-      HOST: 0.0.0.0
-      NODE_ENV: production
-      PORT: 4321
-      PREVIEW_TRUSTED_HEADER: ${PREVIEW_TRUSTED_HEADER:?Set PREVIEW_TRUSTED_HEADER}
-      SITE_URL: ${SITE_URL:?Set SITE_URL}
     networks: [web]
     read_only: true
     tmpfs: [/tmp]

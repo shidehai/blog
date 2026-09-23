@@ -26,11 +26,6 @@ docker run \
   --tmpfs /tmp \
   --cap-drop ALL \
   --security-opt no-new-privileges \
-  --env CONTENT_SOURCE=fixture \
-  --env DIRECTUS_PREVIEW_TOKEN=fixture-preview-token-at-least-24-characters \
-  --env DIRECTUS_URL=http://127.0.0.1:8055 \
-  --env PREVIEW_TRUSTED_HEADER=fixture-trusted-header-at-least-24-characters \
-  --env SITE_URL=https://blog.example.test \
   "$image" >/dev/null
 
 deadline=$(($(date +%s) + 60))
@@ -65,5 +60,11 @@ user=$(docker image inspect --format '{{.Config.User}}' "$image")
   echo "Runtime image must use the node user" >&2
   exit 1
 }
+
+if docker image inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$image" |
+  grep -Eq '^(CONTENT_SOURCE|DIRECTUS_(URL|BUILD_TOKEN|PREVIEW_TOKEN)|PREVIEW_TRUSTED_HEADER|SITE_URL)='; then
+  echo "Runtime image must not contain CMS build or preview configuration" >&2
+  exit 1
+fi
 
 echo "runtime image test status=success image=$image"

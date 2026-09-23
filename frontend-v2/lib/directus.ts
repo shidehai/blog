@@ -4,7 +4,7 @@
  * CMS 行是蛇形字段（见 lib/fixture.ts），视图模型是驼峰且反范式的。映射只在
  * 本文件发生一次，页面组件永远只看到视图模型。
  *
- * 无凭据或请求失败时返回 null，由 lib/content.ts 降级到夹具。
+ * fixture/directus 的来源选择由 lib/content.ts 与 lib/env.ts 在构建期决定。
  */
 import {
   createDirectus,
@@ -15,17 +15,11 @@ import {
 } from "@directus/sdk";
 import { z } from "zod";
 
-import { readDirectusCredentials } from "./env";
+import type { DirectusCredentials } from "./env";
 
 import { deriveExcerpt, deriveReadingMinutes } from "./markdown";
 import { MOCK_PROFILE } from "./mock";
-import type {
-  Category,
-  Post,
-  Series,
-  SiteProfile,
-  Tag,
-} from "./types";
+import type { Category, Post, Series, SiteProfile, Tag } from "./types";
 
 const PAGE_SIZE = 100;
 
@@ -45,12 +39,12 @@ const rawTaxonomySchema = z.object({
 
 export const rawPostSchema = z.object({
   id: z.string(),
-  kind: z.enum(["article", "tutorial", "note"]),
+  kind: z.enum(["article", "tutorial"]),
   status: z.enum(["published", "draft", "archived"]),
   title: z.string(),
   slug: z.string(),
   summary: z.string().nullable(),
-  body: z.string(),
+  body: z.string().min(1),
   published_at: z.string().datetime({ offset: true }),
   date_updated: z.string().nullable(),
   featured: z.boolean().nullable(),
@@ -59,9 +53,6 @@ export const rawPostSchema = z.object({
   category: rawTaxonomySchema.nullable(),
   series: rawTaxonomySchema.nullable(),
   tags: z.array(z.object({ tags_id: rawTaxonomySchema.nullable() })).nullable(),
-  topics: z
-    .array(z.object({ topics_id: rawTaxonomySchema.nullable() }))
-    .nullable(),
 });
 
 const rawSettingsSchema = z.object({
@@ -77,7 +68,9 @@ const rawSocialLinkSchema = z.object({
   label: z.string(),
   url: z.string(),
   icon: z.string().nullable(),
-  sort: z.number().nullable(),
+  // The field is needed for Directus ordering but is not selected into the
+  // public profile payload, so an omitted value is valid at the decoder edge.
+  sort: z.number().nullish(),
 });
 
 /**
@@ -94,7 +87,6 @@ interface Schema {
   categories: RawTaxonomy[];
   tags: RawTaxonomy[];
   series: RawTaxonomy[];
-  topics: RawTaxonomy[];
   site_settings: RawSettings;
   social_links: RawSocialLink[];
 }
@@ -103,6 +95,7 @@ const TAXONOMY_LEAF = ["id", "name", "slug"] as const;
 
 const POST_FIELDS = [
   "id",
+  "status",
   "kind",
   "title",
   "slug",
@@ -116,10 +109,17 @@ const POST_FIELDS = [
   { category: TAXONOMY_LEAF },
   { series: TAXONOMY_LEAF },
   { tags: [{ tags_id: TAXONOMY_LEAF }] },
-  { topics: [{ topics_id: TAXONOMY_LEAF }] },
 ] as const;
 
 const TAXONOMY_FIELDS = ["id", "name", "slug", "description"] as const;
+const SETTINGS_FIELDS = [
+  "site_name",
+  "author_name",
+  "tagline",
+  "biography",
+  "homepage_intro",
+  "avatar",
+] as const;
 
 /**
  * 站点内容全量快照，供 content.ts 派生各视图。
@@ -201,7 +201,6 @@ export function buildSnapshot(
     categories: RawTaxonomy[];
     tags: RawTaxonomy[];
     series: RawTaxonomy[];
-    topics: RawTaxonomy[];
     settings: RawSettings;
     socialLinks: RawSocialLink[];
   },
@@ -211,10 +210,7 @@ export function buildSnapshot(
   const byNewest = <T extends { published_at: string }>(a: T, b: T) =>
     Date.parse(b.published_at) - Date.parse(a.published_at);
 
-  const articleRows = rows.posts
-    .filter((raw) => raw.kind !== "note")
-    .sort(byNewest);
-  const articles = articleRows.map((raw) => mapPost(raw, base));
+  const articles = rows.posts.sort(byNewest).map((raw) => mapPost(raw, base));
 
   const byCategory = countBy(articles, (post) => [post.category]);
   const byTag = countBy(articles, (post) => post.tags);
@@ -264,38 +260,38 @@ export function buildSnapshot(
       name: rows.settings.author_name,
       title: rows.settings.tagline ?? "",
       bio: rows.settings.biography ?? rows.settings.homepage_intro ?? "",
-      avatar:
-        rows.settings.avatar?.startsWith("/")
-          ? rows.settings.avatar
-          : assetUrl(base, rows.settings.avatar) ?? "/avatar.png",
+      avatar: rows.settings.avatar?.startsWith("/")
+        ? rows.settings.avatar
+        : (assetUrl(base, rows.settings.avatar) ?? MOCK_PROFILE.avatar),
       socials: {
         about: MOCK_PROFILE.socials.about,
         github: socialsByIcon.get("github") ?? MOCK_PROFILE.socials.github,
         email: socialsByIcon.get("email") ?? MOCK_PROFILE.socials.email,
-        rss: socialsByIcon.get("rss") ?? MOCK_PROFILE.socials.rss,
       },
     },
   };
 }
 
 /**
- * 从 Directus 读取全量已发布内容。缺凭据或任意请求失败时返回 null，
- * 由调用方降级到夹具。
+ * 从 Directus 读取全量已发布文章。调用方已确认这是 Directus 构建；
+ * 任意网络或解码失败都必须让构建中止，不能改用夹具。
  */
-export async function loadFromDirectus(): Promise<ContentSnapshot | null> {
-  const credentials = readDirectusCredentials();
-  if (!credentials) return null;
+export async function loadFromDirectus(
+  credentials: DirectusCredentials,
+): Promise<ContentSnapshot> {
   const { url, token } = credentials;
 
   const client = createDirectus<Schema>(url)
     .with(staticToken(token))
     .with(rest());
 
-  const taxonomy = (collection: "categories" | "tags" | "series" | "topics") =>
+  const taxonomy = (collection: "categories" | "tags" | "series") =>
     readAll((page) =>
       client.request(
         readItems(collection, {
-          fields: [...TAXONOMY_FIELDS],
+          fields: [
+            ...(collection === "tags" ? TAXONOMY_LEAF : TAXONOMY_FIELDS),
+          ],
           limit: PAGE_SIZE,
           page,
           sort: ["slug"],
@@ -304,15 +300,20 @@ export async function loadFromDirectus(): Promise<ContentSnapshot | null> {
     ).then((rows) => z.array(rawTaxonomySchema).parse(rows));
 
   try {
-    const [posts, categories, tags, series, topics, settings, socialLinks] =
+    const [posts, categories, tags, series, settings, socialLinks] =
       await Promise.all([
         readAll((page) =>
           client.request(
             readItems("posts", {
-              // SDK 无法为中间表（posts_tags / posts_topics）推导 M2M 展开，
+              // SDK 无法为中间表 posts_tags 推导 M2M 展开，
               // 因为它们的元素类型不是 Schema 注册的集合。返回值仍由 RawPost 约束。
               fields: [...POST_FIELDS] as unknown as ["*"],
-              filter: { status: { _eq: "published" } },
+              filter: {
+                _and: [
+                  { status: { _eq: "published" } },
+                  { kind: { _in: ["article", "tutorial"] } },
+                ],
+              },
               limit: PAGE_SIZE,
               page,
               sort: ["-published_at", "slug"],
@@ -322,8 +323,9 @@ export async function loadFromDirectus(): Promise<ContentSnapshot | null> {
         taxonomy("categories"),
         taxonomy("tags"),
         taxonomy("series"),
-        taxonomy("topics"),
-        client.request(readSingleton("site_settings", { fields: ["*"] })),
+        client.request(
+          readSingleton("site_settings", { fields: SETTINGS_FIELDS }),
+        ),
         readAll((page) =>
           client.request(
             readItems("social_links", {
@@ -342,17 +344,14 @@ export async function loadFromDirectus(): Promise<ContentSnapshot | null> {
         categories,
         tags,
         series,
-        topics,
         settings: rawSettingsSchema.parse(settings),
         socialLinks,
       },
       url,
     );
   } catch (error) {
-    console.warn(
-      "[directus] 读取失败，降级到夹具：",
-      error instanceof Error ? error.message : error,
+    throw new Error(
+      "[directus] Failed to load the published build snapshot from Directus",
     );
-    return null;
   }
 }

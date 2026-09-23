@@ -23,11 +23,11 @@
     "launch:plan": "node --env-file=.env directus/launch.mjs plan",
     "launch:apply": "node --env-file=.env directus/launch.mjs apply",
     "directus:schema:check": "node --env-file=.env tests/directus.mjs schema",
+    "test:directus-access": "node --env-file=.env tests/directus.mjs access",
     "test:operations": "sh tests/ops/run.sh",
     "verify": "pnpm --filter frontend-v2 verify && sh tests/ops/run.sh"
   },
   "dependencies": {
-    "@directus/sdk": "24.0.0",
     "zod": "4.4.3"
   },
   "devDependencies": {

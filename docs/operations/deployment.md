@@ -69,18 +69,20 @@ credential.
 
 GitHub production configuration:
 
-| Name                       | Kind                  | Purpose                                       |
-| -------------------------- | --------------------- | --------------------------------------------- |
-| `DIRECTUS_URL`, `SITE_URL` | environment variables | Public build endpoints/origin                 |
-| `DIRECTUS_BUILD_TOKEN`     | secret                | Published snapshot and publishable media only |
-| `VPS_DEPLOY_KEY`           | secret                | Private half of the forced-command key        |
-| `VPS_DEPLOY_TARGET`        | secret                | `deploy-user@host`                            |
-| `VPS_KNOWN_HOSTS`          | secret                | Pre-collected, reviewed host key line         |
+| Name                   | Kind                 | Purpose                                       |
+| ---------------------- | -------------------- | --------------------------------------------- |
+| `DIRECTUS_URL`         | environment variable | Directus endpoint for the build-time snapshot |
+| `DIRECTUS_BUILD_TOKEN` | secret               | Published snapshot and publishable media only |
+| `VPS_DEPLOY_KEY`       | secret               | Private half of the forced-command key        |
+| `VPS_DEPLOY_TARGET`    | secret               | `deploy-user@host`                            |
+| `VPS_KNOWN_HOSTS`      | secret               | Pre-collected, reviewed host key line         |
 
 The workflow handles push to `main`, `repository_dispatch` type
 `directus-publish`, and manual dispatch from `main`. Every event rebuilds
 the complete published snapshot; an event payload is never treated as content.
-One production concurrency group cancels stale builds.
+One production concurrency group cancels stale builds. The token is mounted as
+a BuildKit secret during that build; the resulting Next runtime image receives
+neither the Directus URL/token nor a content-source setting.
 
 The Directus Flow declares `items.create`, `items.update`, and
 `items.delete` for `posts`, `topics`, `posts_topics`, `site_settings`,
@@ -145,7 +147,8 @@ These commands do not contact a production account or deploy externally:
 sh tests/ops/run.sh
 sh scripts/validate-operations.sh
 pnpm build
-node scripts/verify-csp-hash.mjs
+docker build --target runtime --tag blog-site:fixture .
+scripts/test-runtime-image.sh blog-site:fixture
 ```
 
 Set `OPS_BUILD_IMAGES=1` for `validate-operations.sh` to build the PostgreSQL /

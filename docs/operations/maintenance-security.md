@@ -20,7 +20,7 @@ Before maintenance:
    current/previous site digests, and the backup snapshot ID.
 
 Apply one service/config change at a time. Verify PostgreSQL, Directus, site,
-preview, and public HTTPS health after each. Roll back host files to the prior
+and public HTTPS health after each. Roll back host files to the prior
 commit and pinned image when schema-compatible; otherwise stop and restore the
 recorded backup into a clean environment. Never blindly apply a schema snapshot
 after a full database restore.
@@ -29,25 +29,19 @@ after a full database restore.
 
 Caddy is the only public container. Current route policies are:
 
-| Surface | Cache | Framing/indexing |
-| --- | --- | --- |
-| `/_astro/*`, `/_media/*` | one year, `immutable` | public CSP, frame denied |
-| Public documents | revalidate | public CSP, frame denied |
-| `/healthz` | `no-store` | public CSP |
-| `/preview/*` | `private, no-store` | basic auth, `noindex`, CMS-only `frame-ancestors`, `img-src 'self' data:` |
-| CMS/API | `private, no-store` | same-origin frame policy; preview origin in `frame-src` |
+| Surface           | Cache                 | Framing/indexing         |
+| ----------------- | --------------------- | ------------------------ |
+| `/_next/static/*` | one year, `immutable` | public CSP, frame denied |
+| Public documents  | revalidate            | public CSP, frame denied |
+| `/healthz`        | `no-store`            | public CSP               |
+| CMS/API           | `private, no-store`   | same-origin frame policy |
 
-The trusted preview request header is always stripped. It is injected only in
-the authenticated preview proxy and the site port is not published. Preview
-requests are omitted from access logs because their paths contain draft/version
-identifiers.
-
-The public CSP allows the exact pre-paint theme script hash and Pagefind's
-WebAssembly requirement; it does not allow arbitrary inline scripts. A change
-to that inline script must update Caddy in an expand/deploy/contract maintenance
-sequence. `scripts/verify-csp-hash.mjs` fails CI when generated HTML and Caddy
-drift. Preview permits `data:` images because normalized private media is
-rendered inline; public `img-src` remains self-only.
+The public Next App Router output includes per-page inline hydration/Flight
+bootstrap scripts, so Caddy deliberately uses `script-src 'self' 'unsafe-inline'`
+rather than obsolete fixed inline-script hashes. External scripts remain same-origin;
+the policy also permits `https://${CMS_DOMAIN}` only for media emitted into the
+static snapshot. Keep the other CSP source restrictions in place and review
+this compatibility policy when changing framework/runtime behavior.
 
 ## Host hardening
 
@@ -60,7 +54,7 @@ rendered inline; public `img-src` remains self-only.
   Directus, and PostgreSQL have no host ports after every Compose change.
 - Enable the capacity and external-health timers. Docker and Caddy logs are
   size-limited; alerts must contain operation/unit identifiers, not bodies,
-  tokens, preview URLs, or environment dumps.
+  tokens, private URLs, or environment dumps.
 - Run `pnpm audit --prod` and the workflow's high/critical OCI scan before a
   production image is deployed. Review exceptions explicitly; do not silently
   disable the gate.
@@ -69,17 +63,16 @@ rendered inline; public `img-src` remains self-only.
 
 Store values only in the password manager or protected host/CI environments.
 
-| Credential | Recovery action |
-| --- | --- |
-| PostgreSQL and Directus `SECRET` | Restore for database recovery; rotate in a planned maintenance window |
-| Directus human password/MFA recovery | Restore break-glass access, then rotate after suspected exposure |
-| Build/Preview Reader tokens | Recreate/rotate and redeploy the affected build/runtime |
-| GitHub dispatch token | Recreate; Directus Flow may publish nothing until replaced |
-| GHCR/GitHub Actions token | Recreate through GitHub; never store in Restic |
-| Preview basic-auth password/hash and trusted header | Rotate together and recreate Caddy/site |
-| Forced SSH key and VPS host key record | Recreate deploy key; independently verify any changed host key |
-| Restic password/backend credential | Restore in place unless exposed; losing the password loses backups |
-| Alert webhook | Recreate; verify a synthetic generic alert |
+| Credential                             | Recovery action                                                       |
+| -------------------------------------- | --------------------------------------------------------------------- |
+| PostgreSQL and Directus `SECRET`       | Restore for database recovery; rotate in a planned maintenance window |
+| Directus human password/MFA recovery   | Restore break-glass access, then rotate after suspected exposure      |
+| Build Reader token                     | Recreate/rotate, then build and deploy a new static snapshot          |
+| GitHub dispatch token                  | Recreate; Directus Flow may publish nothing until replaced            |
+| GHCR/GitHub Actions token              | Recreate through GitHub; never store in Restic                        |
+| Forced SSH key and VPS host key record | Recreate deploy key; independently verify any changed host key        |
+| Restic password/backend credential     | Restore in place unless exposed; losing the password loses backups    |
+| Alert webhook                          | Recreate; verify a synthetic generic alert                            |
 
 Production env files use mode `0600`. They are excluded from application
 backups. Never print or source them in CI logs.
@@ -88,8 +81,8 @@ backups. Never print or source them in CI logs.
 
 Directus 12.2.0 uses the Monospace Sustainable Core License. In the tested
 architecture, Core does not provide the custom permission rules required to
-limit Build Reader/Preview Reader by publication state, fields, and media
-folder. There is no broad-read fallback: production remains blocked until the
+limit Build Reader access by publication state, fields, and media folder. There
+is no broad-read fallback: production remains blocked until the
 owner has an applicable OIG/commercial entitlement and the Directus access
 tests pass. OIG eligibility and activation/renewal limits must be rechecked
 before launch and whenever legal entity size or use changes. No automated local

@@ -15,17 +15,18 @@ search, shared links, or the author's profile. They need to understand a topic
 quickly, follow a tutorial without losing their place, or browse the author's
 thinking over time.
 
-The secondary user is the owner-author. They write and preview Markdown in a
-browser CMS, revisit old notes, and manage publication and site identity without
-editing application code.
+The secondary user is the owner-author. They write and manage Markdown in a
+browser CMS, revisit editorial history, and manage publication and site
+identity without editing application code.
 
 ## Product Purpose
 
 This site is the author's durable public knowledge trail: in-depth technical
-articles and tutorials live beside concise notes and informal observations.
-Success means visitors can read comfortably, find related material, and
-recognize a consistent point of view, while the author has one dependable
-database-backed publishing workflow with revisions, preview, and recovery.
+articles and tutorials form the public reading archive. Success means visitors
+can read comfortably, find related material, and recognize a consistent point
+of view, while the author has one dependable database-backed publishing
+workflow with revisions and recovery. Notes and topics remain CMS editorial
+data until a future public route deliberately supports them.
 
 ## Positioning
 
@@ -35,7 +36,7 @@ explained clearly and smaller thoughts are still worth preserving.
 ## Conversion & proof
 
 - The primary action is to read the latest or featured piece of writing.
-- The secondary action is to browse notes, topics, or subscribe through RSS.
+- The secondary action is to browse the archive, categories, tags, and series.
 - The line to remember is: "Complex ideas, made clear; small ideas, kept alive."
 - The belief ladder is: the author understands the subject; explains with
   evidence and working examples; maintains the material over time; writes with
@@ -71,8 +72,9 @@ but never performs expertise through jargon or visual noise.
 
 1. Reading is the main interaction. Typography, hierarchy, navigation, and
    performance protect attention before anything decorative is added.
-2. Depth and fragments share one identity. Tutorials may be structured and
-   expansive; notes may be brief, but neither feels like a separate product.
+2. Tutorials and long-form articles share one identity. Editorial notes may be
+   preserved in the CMS, but a future public presentation must earn its own
+   route and reading purpose.
 3. Show artifacts, not atmosphere. Use real code, diagrams, screenshots, and
    article media instead of generic decorative imagery.
 4. Make craft felt through details. Motion, color, and micro-interactions clarify

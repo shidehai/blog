@@ -4,8 +4,8 @@
 
 PostgreSQL is the only live authority for content, settings, taxonomy, media
 metadata, users, and revisions. Directus owns access and schema configuration.
-The Astro application consumes validated API snapshots; it does not connect to
-PostgreSQL or introduce an ORM.
+The Next build consumes validated published API snapshots; it does not connect
+to PostgreSQL or introduce an ORM.
 
 ## Current Contract
 
@@ -100,7 +100,7 @@ the exact uploaded bytes must pass the same transform path as production media.
 - Decode every emitted WebP and assert deterministic paths and 640/960
   dimensions.
 - Seed a real local Directus twice, query uniqueness and references, then run a
-  Directus-backed Astro/Pagefind build.
+  Directus-backed Next static build.
 - Make the schema check accept a clean install with no legacy original. When a
   legacy fixture is present, assert that it remains unchanged and unreferenced.
 - After explicit master regeneration, run `pnpm assets:generate` twice and
@@ -271,8 +271,8 @@ one reviewed boundary.
   legacy mappings, no archived joins, and absence of only known fake socials.
 - Insert or preserve a sentinel record outside the deterministic fixture IDs and
   assert the seed does not mutate or delete it.
-- Run fixture and Directus-backed Astro/Pagefind builds and compare the public
-  catalog, routes, media, search, feed, sitemap, metadata, and export projections.
+- Run fixture and Directus-backed Next builds and compare the public catalog,
+  canonical archive routes, media, metadata, and surviving public projections.
 
 ### 7. Wrong vs Correct
 
