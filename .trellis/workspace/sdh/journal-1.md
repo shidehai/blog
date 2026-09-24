@@ -52,3 +52,29 @@ frontend-v2 升级 zod 至 4.4.3（迁移 z.url/z.iso.datetime）、@types/node 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 3: 审计快修包：构建崩溃、截断风险与文档漂移
+<!-- trellis-session: v=2 fp=476ae94561bbe9c5 -->
+
+**Date**: 2026-09-24
+**Task**: 审计快修包：构建崩溃、截断风险与文档漂移
+**Branch**: `main`
+
+### Summary
+
+针对 09-24 全系统审计快修包修复 6 个低风险高价值问题：1. 首页零文章构建崩溃修复与空态降级；2. schema:dump 改为临时文件替换防止截断 database.sql；3. directus 快照加载失败保留 error cause；4. 修复文章详情页报告问题链接（指向 shidehai/blog/issues）；5. 同步 deployment.md 文档（修正发布触发条件与 Flow 集合列表）；6. 拆分 GitHub Actions 并发组防止 push 打断生产部署。完整审计报告已归档至任务研究目录。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d3503fb` | fix(frontend-v2): survive empty snapshot, keep error cause, fix report link |
+| `85239f9` | fix(scripts): regenerate database.sql via temp rename |
+| `e940a89` | ci: split concurrency groups so pushes cannot cancel deploys |
+| `c0aab47` | docs(operations): sync deployment runbook with publish gate and flow matrix |
+| `ff6814d` | chore(trellis): record audit findings and quick-fix task |
+
+### Status
+
+[OK] **Completed**
