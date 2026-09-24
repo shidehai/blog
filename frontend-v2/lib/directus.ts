@@ -349,7 +349,7 @@ export async function loadFromDirectus(
       },
       url,
     );
-  } catch (error) {
+  } catch {
     throw new Error(
       "[directus] Failed to load the published build snapshot from Directus",
     );

@@ -7,7 +7,7 @@
     "build": "next build",
     "typecheck": "tsc --noEmit",
     "start": "next start -p 4321",
-    "lint": "next lint",
+    "lint": "eslint .",
     "selfcheck": "tsx lib/fixture.selfcheck.mts && tsx lib/snapshot.check.mts",
     "verify": "pnpm typecheck && pnpm lint && pnpm selfcheck && pnpm build"
   },
@@ -21,10 +21,13 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "15.5.23",
     "@types/node": "^24.13.3",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "tsx": "4.23.13",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "typescript-eslint": "8.65.0"
   }
 }

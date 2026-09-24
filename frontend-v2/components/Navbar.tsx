@@ -39,15 +39,22 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
   const [isDark, setIsDark] = useState(false);
   const [searchVal, setSearchVal] = useState("");
 
-  useEffect(() => {
+  // 路由变化时收起抽屉与主题菜单：渲染期间按 props 调整状态，
+  // 避免 effect 里同步 setState 的级联渲染（react-hooks/set-state-in-effect）。
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setDrawerOpen(false);
     setThemeMenuOpen(false);
-  }, [pathname]);
+  }
 
   // 恢复已保存的偏好；无保存值时跟随系统，并随系统变化更新。
+  // localStorage 只能在客户端挂载后读取（否则水合不匹配），这里从外部系统
+  // 同步初始主题是有意为之，故豁免 set-state-in-effect。
   useEffect(() => {
     const saved = localStorage.getItem("theme");
     const mode = saved === "light" || saved === "dark" ? saved : "system";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setThemeMode(mode);
     setIsDark(applyTheme(mode));
 
