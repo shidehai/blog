@@ -7,7 +7,7 @@
 import { z } from "zod";
 
 const directusCredentialsSchema = z.object({
-  DIRECTUS_URL: z.string().url(),
+  DIRECTUS_URL: z.url(),
   DIRECTUS_BUILD_TOKEN: z.string().min(24),
 });
 

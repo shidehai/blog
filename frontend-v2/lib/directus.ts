@@ -45,7 +45,7 @@ export const rawPostSchema = z.object({
   slug: z.string(),
   summary: z.string().nullable(),
   body: z.string().min(1),
-  published_at: z.string().datetime({ offset: true }),
+  published_at: z.iso.datetime({ offset: true }),
   date_updated: z.string().nullable(),
   featured: z.boolean().nullable(),
   cover_image: z.string().nullable(),
