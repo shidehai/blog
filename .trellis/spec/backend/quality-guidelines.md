@@ -115,6 +115,15 @@ RUN --mount=type=secret,id=directus_build_token,required=false \
 The correct form confines the credential to the one build process that needs it
 and leaves no CMS capability in the deployed site.
 
+## Convention: Regenerate Consumed Files via Temp + Rename
+
+Any command that regenerates a file consumed by a later step (e.g.
+`directus/database.sql` is the input of `directus:schema:apply`) must write to
+a temporary sibling and rename on success (`> file.tmp && mv -f file.tmp
+file`). A bare `> file` truncates the target before the producer runs, so a
+mid-stream failure leaves a half-written file that the consuming command then
+applies. This cost us a real finding (2026-09 audit, `directus:schema:dump`).
+
 ## Verification Order
 
 Run fast static checks first, then image checks, then guarded live CMS checks:
