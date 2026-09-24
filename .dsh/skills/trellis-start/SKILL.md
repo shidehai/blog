@@ -1,3 +1,8 @@
+---
+name: trellis-start
+description: "Initializes an AI development session by reading workflow guides, developer identity, git status, active tasks, and project guidelines from .trellis/. Classifies incoming tasks and routes to brainstorm, direct edit, or task workflow. Use when beginning a new coding session, resuming work, starting a new task, or re-establishing project context."
+---
+
 # Start Session
 
 Initialize a Trellis-managed development session. This platform has no session-start hook, so manually load the equivalent compact context by following these steps.
@@ -40,7 +45,7 @@ From Step 1 you know the current task and status. Check the task directory:
 - **Active task status `planning` + `prd.md` exists** → stay in Phase 1. Lightweight tasks can be PRD-only; complex tasks need `design.md` + `implement.md`. Load the relevant Phase 1 step detail before `task.py start`.
 - **Active task status `in_progress`** → Phase 2 step 2.1. Load the step detail:
   ```bash
-  python ./.trellis/scripts/get_context.py --mode phase --step 2.1 --platform antigravity
+  python ./.trellis/scripts/get_context.py --mode phase --step 2.1 --platform dsh
   ```
 - **No active task** → classify first. For simple conversation / small task, ask only whether this turn should create a Trellis task. For complex work, ask whether you may create a Trellis task and enter planning. If the user says no, skip Trellis for this session.
 
