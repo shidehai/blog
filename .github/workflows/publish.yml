@@ -12,11 +12,19 @@ permissions:
   contents: read
 
 concurrency:
+  # push/PR 的 quality 运行可被后续 push 取消；发布运行独占 production-publish
+  # 组且不可取消，普通 push 不会中断进行中的部署。
   group: >-
     ${{ github.workflow }}-${{
-      github.event_name == 'pull_request' && github.event.pull_request.number || 'production'
+      github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number)
+      || github.event_name == 'push' && 'main-quality'
+      || 'production-publish'
     }}
-  cancel-in-progress: true
+  cancel-in-progress: >-
+    ${{
+      github.event_name != 'workflow_dispatch' &&
+      github.event_name != 'repository_dispatch'
+    }}
 
 jobs:
   quality:
