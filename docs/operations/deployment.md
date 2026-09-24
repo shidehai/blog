@@ -77,17 +77,20 @@ GitHub production configuration:
 | `VPS_DEPLOY_TARGET`    | secret               | `deploy-user@host`                            |
 | `VPS_KNOWN_HOSTS`      | secret               | Pre-collected, reviewed host key line         |
 
-The workflow handles push to `main`, `repository_dispatch` type
-`directus-publish`, and manual dispatch from `main`. Every event rebuilds
-the complete published snapshot; an event payload is never treated as content.
-One production concurrency group cancels stale builds. The token is mounted as
+The workflow runs its quality gate on every push to `main` and every pull
+request, but publishing is gated to manual dispatch from `main` and
+`repository_dispatch` type `directus-publish`; a plain push never deploys.
+Every publish event rebuilds the complete published snapshot; an event payload
+is never treated as content. Push/PR runs share a cancellable concurrency
+group, while publish events use a separate non-cancelling production group so
+a push cannot interrupt an in-flight deployment. The token is mounted as
 a BuildKit secret during that build; the resulting Next runtime image receives
 neither the Directus URL/token nor a content-source setting.
 
 The Directus Flow declares `items.create`, `items.update`, and
-`items.delete` for `posts`, `topics`, `posts_topics`, `site_settings`,
-`social_links`, and `directus_files`. Draft-version saves are outside this
-matrix. File events proceed only when their event payload identifies the
+`items.delete` for `posts`, `topics`, `posts_topics`, `categories`, `tags`,
+`series`, `posts_tags`, `site_settings`, `social_links`, and
+`directus_files`. Draft-version saves are outside this matrix. File events proceed only when their event payload identifies the
 `publishable-assets` folder. Before enabling the Flow, exercise promotion,
 metadata update, and deletion against the pinned Directus version and confirm
 the payload filter dispatches every public-file transition; the static
