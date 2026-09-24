@@ -60,9 +60,11 @@ jobs:
   publish:
     name: Build immutable image and deploy
     needs: quality
+    # 普通 push 到 main 只跑 quality 门禁；发布仅限手动触发
+    # （Actions 页面 Run workflow）或 Directus 内容发布事件。
     if: >-
-      github.event_name != 'pull_request' &&
-      github.ref == 'refs/heads/main'
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'repository_dispatch'
     permissions:
       contents: read
       packages: write
