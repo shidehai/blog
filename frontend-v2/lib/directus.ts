@@ -349,9 +349,11 @@ export async function loadFromDirectus(
       },
       url,
     );
-  } catch {
+  } catch (cause) {
+    // 消息保持通用（不回显凭据/响应细节），底层错误经 cause 保留给排查。
     throw new Error(
       "[directus] Failed to load the published build snapshot from Directus",
+      { cause },
     );
   }
 }

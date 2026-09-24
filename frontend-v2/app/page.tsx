@@ -32,8 +32,12 @@ export default async function HomePage() {
     getActivityInfo(),
   ]);
 
-  const featured = featuredPosts[0] || allPosts[0]!;
-  const recentPosts = allPosts.filter((p) => p.id !== featured.id);
+  // 快照可能没有任何已发布文章（Directus 模式下的合法初始状态），
+  // 此时 featured 为 undefined，featured 区与列表都必须安全降级。
+  const featured = featuredPosts[0] || allPosts[0];
+  const recentPosts = featured
+    ? allPosts.filter((p) => p.id !== featured.id)
+    : allPosts;
 
   return (
     <div className="layout home-layout">
@@ -68,6 +72,9 @@ export default async function HomePage() {
           {recentPosts.map((post) => (
             <PostCard key={post.id} post={post} />
           ))}
+          {allPosts.length === 0 && (
+            <p className="feed-empty">暂无已发布文章。</p>
+          )}
         </section>
 
         {/* Pagination */}
