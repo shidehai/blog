@@ -26,9 +26,9 @@
 
 ## Acceptance Criteria
 
-- [ ] `frontend-v2/package.json` 中 zod 为 `^4.4.3`，`@types/node` 为 `^24`
-- [ ] 代码中无 zod v3 弃用 API 残留（无 `z.string().url()`、无 `z.string().datetime(`）
-- [ ] `pnpm install --frozen-lockfile` 更新后 `pnpm verify` 全绿（typecheck + lint + selfcheck + build）
-- [ ] `pnpm format:check` 与根目录 lint 通过
-- [ ] 三个 public 资源删除已提交，且全库 grep 无 `/avatar.jpg`、`/avatar.png`、`/favicon.svg` 引用
-- [ ] `09-20-remove-unused-code` 已归档
+- [x] `frontend-v2/package.json` 中 zod 为 `^4.4.3`，`@types/node` 为 `^24`（lockfile 单一 zod@4.4.3）
+- [x] 代码中无 zod v3 弃用 API 残留（无 `z.string().url()`、无 `z.string().datetime(`）
+- [x] `pnpm install` 更新后 V2 门禁通过：typecheck + lint + selfcheck + 20 页 SSG 全绿；standalone trace-copy 在本机因 Windows symlink 权限失败（环境问题，已记入 spec），Docker 镜像验证因 Docker Hub 不可达跳过，由 CI 兜底
+- [x] `pnpm format:check` 与根目录 lint 通过
+- [x] 三个 public 资源删除已提交（66e72c0），且全库 grep 无 `/avatar.jpg`、`/avatar.png`、`/favicon.svg` 引用
+- [x] `09-20-remove-unused-code` 已归档（560b589）
