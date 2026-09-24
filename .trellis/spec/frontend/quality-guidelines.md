@@ -48,6 +48,22 @@ do not replace them with mocks that merely repeat implementation details.
 - Do not add a library when React, browser APIs, existing CSS, or the standard
   library already covers the behavior.
 
+## Local Build Environment Gotchas (Windows)
+
+> **Warning**: On Windows without Developer Mode or an elevated shell,
+> `pnpm --filter frontend-v2 build` fails at "Collecting build traces" with
+> `EPERM: operation not permitted, symlink` while copying the standalone
+> output. Compilation and static page generation still succeed, so a failure
+> at that exact step is environmental, not a code regression. Confirm via
+> `HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock` →
+> `AllowDevelopmentWithoutDevLicense`; the authoritative standalone-image
+> check is the Linux CI job (`docker build --target runtime`).
+
+> **Warning**: The repo enforces `engines.node >=24.15.0 <25` with
+> `engine-strict=true`. Tooling-bundled Node (e.g. harness runners) may be
+> older; run pnpm with an nvm-installed 24.15.0+ on PATH
+> (`$env:LOCALAPPDATA\nvm\v24.15.0`) instead of bypassing the engine check.
+
 ## Forbidden Patterns
 
 - No runtime CMS fallback, local public Markdown store, or page-local
