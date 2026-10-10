@@ -7,9 +7,37 @@
 import { z } from "zod";
 
 const directusCredentialsSchema = z.object({
-  DIRECTUS_URL: z.string().url(),
+  DIRECTUS_URL: z.string().transform((value, context) => {
+    try {
+      return normalizeDirectusUrl(value);
+    } catch {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Invalid CMS base",
+      });
+      return z.NEVER;
+    }
+  }),
   DIRECTUS_BUILD_TOKEN: z.string().min(24),
 });
+
+/** A single credential-free HTTP(S) base owns both content and media requests. */
+export function normalizeDirectusUrl(value: string): string {
+  try {
+    const url = new URL(value);
+    if (
+      (url.protocol === "http:" || url.protocol === "https:") &&
+      !url.username &&
+      !url.password &&
+      !value.includes("?") &&
+      !value.includes("#")
+    )
+      return url.href.replace(/\/+$/, "");
+  } catch {
+    // Native URL errors can include their input.
+  }
+  throw new Error("[env] Invalid Directus build configuration: DIRECTUS_URL");
+}
 
 export interface DirectusCredentials {
   url: string;

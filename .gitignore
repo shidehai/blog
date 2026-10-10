@@ -10,6 +10,9 @@ test-results/
 coverage/
 exports/
 public/_media/
+frontend-v2/public/_cms/
+frontend-v2/.cms-staging/
+frontend-v2/.cms-build.lock/
 
 .env
 .env.*

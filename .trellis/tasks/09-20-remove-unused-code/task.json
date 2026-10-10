@@ -21,6 +21,6 @@
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "",
+  "notes": "2026-10-10 继续完成 R13/R14/R15：发布目标 origin 与凭据 URL 在请求前拒绝，旧夹具精确基线保护与迁移/重放通过；公开封面/头像/正文图片构建时按真实 token 校验 publishable 文件夹并导出到同站点 digest 路径，CMS 匿名权限保持现状。完整 fixture verify、lint/typecheck/unused、6个 .mts 常规门禁、并发/清理/私有拒绝回归、Compose/Caddy 通过。最终 Directus 与 fixture 镜像秘密/只读/健康验收通过，network-none 运行时9篇文章与2篇正文图片正确，匿名公开图200且原字节一致，私有图缺失404；真实私有元数据拒绝为0次字节请求。保留 CMS 内容/时间戳摘要及受保护用户文件不变。15项AC完成14项，AC8按用户要求暂缓授权/完整ACL验收；额外全断网编译发现原有 Google Fonts 下载依赖，R7完全离线承诺仍待处理，未扩大字体/UI修改。用户已一次确认commit-plan.md，按计划创建本地检查点；CMS修复提交为2dd5126，图片提交hash记录在保留未提交的开发日志中。不推送、不部署、不归档，任务保持in_progress；最终完成提交仍为空，详见validation.md。",
   "meta": {}
 }

@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 4321",
-    "build": "next build",
+    "dev": "node --import tsx lib/build.mts dev",
+    "build": "node --import tsx lib/build.mts build",
     "typecheck": "tsc --noEmit",
     "start": "next start -p 4321",
-    "lint": "next lint",
-    "selfcheck": "tsx lib/fixture.selfcheck.mts && tsx lib/snapshot.check.mts",
+    "lint": "eslint --no-ignore app components lib next.config.ts",
+    "selfcheck": "tsx lib/fixture.selfcheck.mts && tsx lib/snapshot.check.mts && tsx lib/markdown-images.check.mts && tsx lib/media.check.mts && tsx lib/media-lifecycle.check.mts",
     "verify": "pnpm typecheck && pnpm lint && pnpm selfcheck && pnpm build"
   },
   "dependencies": {

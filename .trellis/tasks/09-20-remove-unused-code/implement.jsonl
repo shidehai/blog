@@ -8,3 +8,4 @@
 {"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "BuildKit secret、镜像、Compose、Caddy 和运行时验证矩阵。"}
 {"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "追踪 CMS 到构建镜像、运行时和代理的环境/数据流。"}
 {"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "复用现有文章内容映射和 Markdown 组件，避免建立第二套详情实现。"}
+{"file": ".trellis/tasks/09-20-remove-unused-code/research/public-media-build-delivery.md", "reason": "R15: public media snapshot delivery, folder refusal, shared Markdown parsing and worker-safe lifecycle."}

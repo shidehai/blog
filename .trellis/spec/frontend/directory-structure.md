@@ -10,7 +10,8 @@ frontend-v2/
     healthz/                    # Non-cacheable container health route
   components/                  # Reusable React presentation/client behavior
   lib/                          # Env, Directus decoder, snapshot, fixture, types
-  public/                       # Public assets copied into the standalone output
+  public/                       # Authored assets copied into standalone output
+    _cms/                       # Ignored build-generated public raster originals
 deploy/                         # Compose and Caddy topology
 directus/                       # Schema, bootstrap, seed and CMS contracts
 scripts/                        # Build, image and operational validation helpers
@@ -49,6 +50,13 @@ than silently substituting fixture data. The public projection currently
 contains published article/tutorial records, categories, tags, series, and the
 site profile. It intentionally does not expose CMS notes, topics, junctions, or
 RSS links.
+
+`lib/media.ts` owns Node-only authenticated media materialization; keep its
+filesystem/crypto dependencies out of client imports. The pure Markdown image
+scanner is shared with `MarkdownContent`. The build/dev wrapper alone resets
+the fixed generated namespace before Next workers; loaders only publish atomic
+verified files. Generated output, staging and locks are excluded from Git and
+Docker input. Authored public files are never cleanup targets.
 
 ## Naming and Placement
 

@@ -64,3 +64,18 @@ do not replace them with mocks that merely repeat implementation details.
 Format application-owned code deliberately. Planning artifacts, user tooling,
 and pre-existing unrelated worktree changes are not cleanup targets. Finish by
 checking `git diff --check` and reviewing the exact changed-file list.
+
+
+## Public Media Regression Checks
+
+`tsconfig.json` includes `**/*.mts`; normal typecheck and directory lint must
+select the executable build wrapper and all five selfcheck scripts.
+
+The frontend selfcheck includes Markdown image rendering and materializer/
+lifecycle regressions. Verify the real loader rather than only helper outputs: a
+private body image must refuse even with a synthetic reader able to read it.
+Run fixture verify after planting an old generated file and assert that only
+the owned generated namespace is emptied; compare authored asset bytes. A full
+Directus Docker check must prove anonymous image bytes in an offline readonly
+runtime, not just a rewritten URL in the model. Follow backend Quality
+Guidelines for actual-token image inspection and licensed ACL separation.

@@ -1,7 +1,7 @@
 # Frontend V2
 
 `frontend-v2` 是博客当前公开使用的 Next.js 15 App Router 前端。页面在构建期
-从统一内容快照生成；默认 fixture 让离线开发和 CI 可复现，生产构建则显式读取
+从统一内容快照生成；默认 fixture 让无需 CMS 的开发和 CI 可复现，生产构建则显式读取
 Directus 的已发布 article/tutorial 数据。
 
 ## 开发
@@ -13,6 +13,7 @@ pnpm --filter frontend-v2 dev
 ```
 
 访问 <http://localhost:4321>。默认 `CONTENT_SOURCE=fixture`，无需启动数据库。
+当前 Next 字体编译仍需联网获取 Google Fonts；fixture 内容本身不请求 CMS。
 
 要在本机使用 Directus 内容，必须同时提供 URL 和 Build Reader token；错误凭据、
 读取失败或不完整配置都会让构建/页面渲染失败，而不会回退到 fixture：
@@ -25,7 +26,31 @@ pnpm --filter frontend-v2 build
 ```
 
 运行时 standalone 镜像不需要也不接收这些变量；它只提供已生成的页面和
-`/healthz`。
+`/healthz`。公开 CMS 图片也在构建期保存为站点静态文件。
+
+## 图片发布
+
+Directus 模式仅下载已发布 article/tutorial 的封面、公开头像和正文行内 Markdown
+图片引用。构建使用同一个 Build Reader token 读取文件元数据，要求文件位于
+`publishable-assets`，再下载原图并保存为 `/_cms/<sha256>.<扩展名>`。访客直接
+读取网站图片，无需 CMS 登录；CMS 原始 `/assets/<id>` 继续匿名返回 403 也不影响显示。
+
+正文支持 `![说明](directus://<uuid> "标题")`，也支持当前 CMS 的绝对
+`/assets/<uuid>` 地址与相对 `/assets/<uuid>`。普通本地图片和外部 HTTP(S) 图片
+保持原样；代码块、行内代码中的示例不会下载。CMS 的变换查询、HTML 图片和
+引用式图片语法不在此支持范围，需改为行内语法。
+
+只有 JPEG、PNG、WebP、GIF、AVIF 原图进入生成目录，每张最多 20 MiB，引用的
+唯一文件合计最多 100 MiB，每次请求最多 15 秒。缺失文件、私有文件、类型或
+大小不符会让构建失败。正文编辑器新上传的文件默认私有，作者须在 Studio
+明确移至 `publishable-assets` 后再发布。现有本地 `/avatar.svg` 不受此限制。
+
+请使用包的 `build`/`dev` 命令：入口会先清理专属生成目录，避免旧图片残留，
+并阻止同一 checkout 中并行构建。Directus 开发快照或图片修改后重启 dev。
+若进程被强制终止而留下 `.cms-build.lock`，先确认该 checkout 已无 build/dev
+进程，再移除这个锁目录后重试。
+生成目录不提交到 Git，也不作为 Docker 输入；镜像在构建阶段重新生成并复制
+它。撤回公开图片须重新构建并部署，已有镜像仍持有其原静态快照。
 
 ## 路由
 

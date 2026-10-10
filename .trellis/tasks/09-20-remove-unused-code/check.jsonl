@@ -4,3 +4,4 @@
 {"file": ".trellis/spec/backend/error-handling.md", "reason": "验证 Directus build 缺凭据/读取失败和健康失败均能明确失败且不泄密。"}
 {"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "验证镜像、非 root、健康检查、Compose、Caddy 和秘密不落层契约。"}
 {"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "审查 CI build args、BuildKit secret、静态输出、Compose runtime 和反向代理的一致性。"}
+{"file": ".trellis/tasks/09-20-remove-unused-code/research/public-media-build-delivery.md", "reason": "R15: public media snapshot delivery, folder refusal, shared Markdown parsing and worker-safe lifecycle."}

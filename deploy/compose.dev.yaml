@@ -30,6 +30,7 @@ services:
         source: ..
         target: /app
       - site_node_modules:/app/node_modules
+      - site_frontend_node_modules:/app/frontend-v2/node_modules
     read_only: false
 
   directus:
@@ -50,3 +51,4 @@ services:
 
 volumes:
   site_node_modules:
+  site_frontend_node_modules:

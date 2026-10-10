@@ -3,8 +3,9 @@
  * 构建期环境边界。类型通过不等于映射正确。
  */
 import assert from "node:assert/strict";
+import { inspect } from "node:util";
 
-import { buildSnapshot, rawPostSchema } from "./directus.js";
+import { buildSnapshot, loadFromDirectus, rawPostSchema } from "./directus.js";
 import { readBuildEnvironment } from "./env.js";
 import { FIXTURE_ROWS } from "./fixture.js";
 
@@ -78,15 +79,18 @@ assert.equal(
 );
 
 // --- 回归：fixture 可离线；Directus 模式必须在读取前失败闭环 ---
-assert.deepEqual(readBuildEnvironment({}), { source: "fixture" });
+assert.deepEqual(readBuildEnvironment({ NODE_ENV: "test" }), {
+  source: "fixture",
+});
 assert.throws(
-  () => readBuildEnvironment({ CONTENT_SOURCE: "directus" }),
+  () => readBuildEnvironment({ NODE_ENV: "test", CONTENT_SOURCE: "directus" }),
   /DIRECTUS_URL.*DIRECTUS_BUILD_TOKEN/,
   "Directus 模式缺凭据必须失败",
 );
 assert.throws(
   () =>
     readBuildEnvironment({
+      NODE_ENV: "test",
       CONTENT_SOURCE: "directus",
       DIRECTUS_URL: "not-a-url",
       DIRECTUS_BUILD_TOKEN: "x".repeat(24),
@@ -95,12 +99,13 @@ assert.throws(
   "Directus URL 必须合法",
 );
 assert.throws(
-  () => readBuildEnvironment({ CONTENT_SOURCE: "unknown" }),
+  () => readBuildEnvironment({ NODE_ENV: "test", CONTENT_SOURCE: "unknown" }),
   /CONTENT_SOURCE/,
   "未知内容源必须失败",
 );
 assert.deepEqual(
   readBuildEnvironment({
+    NODE_ENV: "test",
     CONTENT_SOURCE: "directus",
     DIRECTUS_URL: "http://directus.test/",
     DIRECTUS_BUILD_TOKEN: "x".repeat(24),
@@ -113,5 +118,27 @@ assert.deepEqual(
     },
   },
 );
+
+const buildToken = "fixture-build-reader-token-do-not-log";
+const originalFetch = globalThis.fetch;
+globalThis.fetch = async () => {
+  throw new Error(`Private transport diagnostic: ${buildToken}`);
+};
+try {
+  await assert.rejects(
+    loadFromDirectus({ url: "http://directus.test", token: buildToken }),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.equal(
+        error.message,
+        "[directus] Failed to load the published build snapshot from Directus",
+      );
+      assert.equal(inspect(error).includes(buildToken), false);
+      return true;
+    },
+  );
+} finally {
+  globalThis.fetch = originalFetch;
+}
 
 console.log(`fixture selfcheck ok: ${snap.posts.length} published posts`);

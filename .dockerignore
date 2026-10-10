@@ -21,5 +21,8 @@ test-results
 data
 backups
 directus/uploads
+frontend-v2/public/_cms
+frontend-v2/.cms-staging
+frontend-v2/.cms-build.lock
 
 *.log

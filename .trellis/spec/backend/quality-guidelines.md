@@ -53,17 +53,19 @@ of exact-ID legacy reader retirement.
 
 ### 4. Validation & Error Matrix
 
-| Condition | Required result |
-| --- | --- |
-| Fixture image build without token | Succeeds and contains the fixture snapshot |
-| Directus image build without secret or URL | Fails before content fetch/build |
-| Directus request/decode fails | Next build fails; fixture is not substituted |
-| Runtime image has CMS/preview env or token bytes in metadata/layers | Secret inspection fails |
-| Runtime starts read-only | `/healthz` and `/` become healthy on 4321 as `node` |
-| Caddy contains `/_astro`, preview, hash, or trusted-header policy | Static operations test fails |
-| Legacy exact-ID reader objects are absent | Bootstrap proceeds idempotently |
-| A similarly named operator identity exists | Bootstrap leaves it untouched |
-| Production Compose injects source/CMS variables into site | Rendered Compose validation fails |
+| Condition                                                           | Required result                                                                                |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Fixture image build without token                                   | Succeeds and contains the fixture snapshot                                                     |
+| Directus image build without secret or URL                          | Fails before content fetch/build                                                               |
+| Directus request/decode fails                                       | Next build fails; fixture is not substituted                                                   |
+| Runtime image has CMS/preview env or token bytes in metadata/layers | Secret inspection fails                                                                        |
+| Runtime starts read-only                                            | `/healthz` and `/` become healthy on 4321 as `node`                                            |
+| Caddy contains preview, hash, or trusted-header policy              | Static operations test fails                                                                   |
+| Legacy exact-ID reader objects are absent                           | Retirement is a successful no-op; normal bootstrap gates still apply                           |
+| A similarly named operator identity exists                          | Bootstrap leaves it untouched                                                                  |
+| Core license lacks custom permission rules                          | Bootstrap stops with the licensing error; full access verification remains blocked             |
+| Isolated Core uses a separate basic read-only test identity         | May validate real transport and image secret confinement, not production row/field/folder ACLs |
+| Production Compose injects source/CMS variables into site           | Rendered Compose validation fails                                                              |
 
 ### 5. Good / Base / Bad Cases
 
@@ -89,6 +91,27 @@ of exact-ID legacy reader retirement.
   Directus instance. The access test must prove Build Reader receives published
   article/tutorial fields but not topics/posts_topics, while author workflows
   and private draft assets remain protected.
+- Record partial retirement checks separately from complete bootstrap/access
+  checks. A Core licensing failure is not a passing access test and must not
+  be worked around by weakening or bypassing the permission boundary.
+- V2 materializes referenced publishable raster originals into same-site
+  `/_cms/<sha256>.<ext>` files. Verify anonymous site image 200 with original
+  byte/MIME equality in a network-disabled read-only runtime; private and
+  unreferenced files must be absent/404. CMS anonymous originals may remain
+  denied; a successful administrator download alone does not prove delivery.
+  Licensed production Build Reader status/field/folder checks remain separate.
+- A licensed instance is not a prerequisite for starting an isolated test CMS.
+  Core basic read-only permissions may exercise the positive image path using
+  synthetic records and a separate test identity. Prove anonymous access,
+  writes, and user reads remain denied; never change the production Build Reader
+  or bootstrap to an all-field fallback.
+- Inspect the exact token consumed by the successful Directus image build,
+  against that same image's history, configuration, layers, and runtime.
+  Confirm CMS-only routes beyond the offline fixture exist in an offline
+  runtime. An unused random marker scan does not establish this positive path.
+- Development bind mounts must preserve both `/app/node_modules` and
+  `/app/frontend-v2/node_modules`; validate Next resolution with the repository
+  bind-mounted, not just in an unmounted image.
 
 ### 7. Wrong vs Correct
 

@@ -9,7 +9,7 @@ test contracts together.
 
 The live boundaries after this work are:
 
-~~~text
+```text
 Directus published records
   -> build-only V2 Directus decoder
   -> ContentSnapshot / static App Router routes
@@ -19,7 +19,7 @@ Directus published records
 Fixture rows
   -> same decoder and ContentSnapshot
   -> local/CI fixture build only
-~~~
+```
 
 Directus remains the authority for articles, notes, topics, taxonomy, media,
 revisions and authoring. V2 consumes only the public article projection it
@@ -33,10 +33,10 @@ data, database constraint or author permission.
 frontend-v2/lib/env.ts remains the sole V2 owner of environment parsing. It
 will distinguish two build-time modes:
 
-| Mode | Required values | Result |
-| --- | --- | --- |
-| fixture (default) | none | Build from the checked offline fixture |
-| directus | DIRECTUS_URL and a 24+ character DIRECTUS_BUILD_TOKEN | Fetch and validate published CMS content; any invalid credential or request failure aborts the build |
+| Mode              | Required values                                       | Result                                                                                               |
+| ----------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| fixture (default) | none                                                  | Build from the checked offline fixture                                                               |
+| directus          | DIRECTUS_URL and a 24+ character DIRECTUS_BUILD_TOKEN | Fetch and validate published CMS content; any invalid credential or request failure aborts the build |
 
 CONTENT_SOURCE is available to the build stage only. The runtime standalone
 server receives neither source-selection nor Directus credentials because all
@@ -61,7 +61,7 @@ social-link data is not deleted.
 
 The restored canonical page lives at:
 
-~~~text
+```text
 app/archives/[slug]/page.tsx
   generateStaticParams() -> current published posts
   generateMetadata() -> post title/summary
@@ -71,7 +71,7 @@ app/archives/[slug]/page.tsx
 app/writing/[slug]/page.tsx
   generateStaticParams() -> same current published posts
   page() -> permanentRedirect(/archives/[slug])
-~~~
+```
 
 Both routes use static params and disallow unmatched params, so the redirect is
 never an open catch-all. There is intentionally no app/writing/page.tsx and no
@@ -120,14 +120,14 @@ patterns.
 
 ### 3.1 Image lifecycle
 
-~~~text
+```text
 CI Directus URL + BuildKit secret
   -> Docker build stage, DIRECTUS mode
   -> Next static output
   -> standalone runtime image (no Directus credential)
   -> node user on port 4321
   -> /healthz and public pages
-~~~
+```
 
 The Dockerfile gains a development stage, so compose.dev.yaml no longer points
 at a non-existent target. It exposes the V2 dev server on 4321. The build stage
@@ -148,8 +148,7 @@ Production Compose retains Caddy, Directus, PostgreSQL and operational jobs,
 but site no longer receives CONTENT_SOURCE, DIRECTUS_URL,
 DIRECTUS_PREVIEW_TOKEN, PREVIEW_TRUSTED_HEADER or SITE_URL at runtime.
 Development Compose passes only build-time/direct-local CMS values when
-explicitly requested and starts the restored development target on localhost
-4321.
+explicitly requested and starts the restored development target on localhost 4321.
 
 Caddy removes the /preview handler, Basic Auth variables and trusted-header
 injection. Its public cache rules change from Astro paths to /_next/static/*.
@@ -215,3 +214,80 @@ After bootstrap has removed the Preview Reader, rollback of that retired
 feature requires an explicit identity recreation rather than an automatic
 database/content restore. The canonical article route and writing redirect are
 otherwise independently reversible through the image rollback process.
+
+## 7. Launch target confirmation follow-up (2026-10-10)
+
+The user approved closing the recorded gap between the manifest's confirmed
+origin and the independently configured Directus endpoint. This change lives
+in `directus/launch.mjs` before `adminClient()`, because authentication itself
+must never reach an unconfirmed endpoint.
+
+- Preserve the version-1 manifest, digest and `CONFIRM_LAUNCH_<digest>_FOR_<origin>`
+  format. Validate the digest, target URL/origin and explicit confirmation before
+  authentication or any CMS read/write.
+- Derive the effective endpoint from the same `DIRECTUS_URL` and loopback
+  default as the existing client. Compare normalized HTTP(S) origins (scheme,
+  hostname and effective port); equivalent case/default-port/trailing-slash
+  spellings must not create false mismatches. URL paths are outside the existing
+  origin confirmation contract.
+- Invalid/non-HTTP(S) URLs and mismatched origins fail with a bounded diagnostic
+  that does not echo credentials or full configured URLs. Do not add a switch
+  that bypasses this check or rewrite the manifest to match the environment.
+- Reject embedded URL username/password values before requests; native fetch
+  rejects such URLs and would otherwise include their credentials in errors.
+- Keep the change to the launch entrypoint and its existing offline entrypoint
+  regression. Do not change the shared Directus client, seed ownership, CMS data,
+  license gates or production configuration.
+- Regression cases must count every intercepted request, including login, and
+  assert zero requests and unchanged state on refusal. Valid equivalent origins
+  retain existing generated-UUID, replay and owner-preservation behavior.
+
+The retained Core instance cannot complete AC8 without an issued entitlement.
+The user confirmed no license is currently available; this follow-up does not
+alter that acceptance criterion or its recorded status.
+
+## 8. Legacy fixture ownership follow-up (2026-10-10)
+
+Full-scope review reproduced an overwrite of an owner-edited legacy fixture
+body in both launch and confirmed partial seed repair. The user approved
+protecting those records while retaining recognizable original migration.
+
+- The four enumerated legacy IDs and current archived targets stay unchanged.
+  Record immutable original payloads from `29d5d85^:directus/seed/index.mjs` in
+  the existing content owner module. The first three original rows were
+  published, the fourth archived; preserve their original titles, slugs,
+  summaries, bodies and other owned fields. Resolve the original cover/body
+  media reference using the actual digest-addressed uploaded UUID, never by
+  guessing an unrelated owner's media.
+- Both entrypoints classify each legacy row against its exact historical
+  original and exact current archived target using `POST_OWNED_FIELDS`, before
+  file operations, canonical writes, cleanup or any other mutation. Absent
+  legacy IDs may receive their existing archived fixture target.
+- Any edited/unrecognized owned field refuses the entire operation before
+  mutation. Do not archive only by ID, loosen ownership to slug/title, preserve
+  an arbitrary edited body while changing its publication state, or overwrite
+  it as a migration shortcut.
+- Seed's mutation-needed decision includes missing legacy rows and exact
+  historical rows requiring migration; its no-write early return comes only
+  after all legacy ownership checks. Fully matching archived rows stay no-op.
+- Keep historical baseline definitions in `directus/seed/content.mjs` and
+  reuse them from seed/launch. Add entrypoint regressions to the existing seed
+  and launch tests; do not add a second migration framework or modify live CMS
+  data to prove the offline refusal cases.
+- Tests cover recognized originals, exact archived replay, missing legacy-only
+  repair and owner edits both with a complete canonical fixture and a partial
+  fixture that would otherwise start mutation. Compare complete state and all
+  original timestamps when asserting refusal or no-op.
+
+
+## 8. Public media build delivery (R15)
+
+The behavior gap lives at the Directus snapshot boundary: browser-facing cover/avatar URLs currently target denied anonymous CMS originals, and Markdown body image syntax is not rendered. Fetch only images referenced by validated published article/tutorial rows and the public profile, validate exact `IDS.folders.publishable` metadata using the actual build token, then materialize original raster bytes into `frontend-v2/public/_cms/<sha256>.<ext>`. Map cover/avatar/body references to those local paths; derive excerpt/reading metadata from the original body. Leave local authored assets and ordinary external images intact. Do not change CMS data, Public policy, production Build Reader, license gates or runtime credentials.
+
+One pure Markdown image scanner/mapper is shared by the renderer and materializer; support inline images with optional quoted titles, protect fenced/inline code and escaped image examples. Render escaped image attributes after other Markdown transformations. CMS references accept UUID IDs via `directus://`, configured-origin `/assets/` URLs and relative `/assets/`; unsupported CMS query/transform/raw HTML/reference-image forms fail safely.
+
+Preflight every unique file before downloading bytes; require returned ID, exact publishable folder, positive integral size and raster MIME. Use authenticated same-base original requests, reject redirects, validate signature, MIME and actual size; cap each original at 20 MiB, total unique bytes at 100 MiB and each request at 15 seconds. SVG uploads are outside the generated raster contract (authored `/avatar.svg` remains intact). Recheck metadata after downloads before emission to catch publication changes; a new deployment is still required to revoke already-deployed static content. Never report raw URLs, credentials or transport/parser errors.
+
+A single frontend build/dev wrapper owns reset of only the fixed `_cms` namespace before Next workers start, plus serialization of builds in one checkout. Workers only write unique staging files outside public and atomically rename verified immutable digest files. Reset output after a failed build; fixture builds clear earlier generated CMS assets. Add explicit Git/Docker context ignores. Existing Docker public copy carries generated files into the offline non-root runtime.
+
+Implementation boundary: media helper + Directus integration/env validation; shared Markdown scanner + minimal image rendering; wrapper/package/ignores; focused regressions and operational documentation. No general renderer rewrite, SVG sanitizer, image transformations, unused OG fields, runtime proxy or permission weakening.

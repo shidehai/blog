@@ -99,6 +99,38 @@ without an Author recipient. Inspect the Flow log for the bounded request
 failure, then use the main-branch manual workflow dispatch to reconcile the
 complete snapshot.
 
+## Public image delivery
+
+The Directus build materializes only public images referenced by the published
+article/tutorial snapshot and profile. The actual Build Reader token reads
+`/files/<id>` metadata and canonical `/assets/<id>` originals; the exporter
+requires the exact publishable folder, raster MIME/signature and bounded byte
+size before writing `frontend-v2/public/_cms/<sha256>.<ext>`. Docker copies those
+files with the public directory, so the read-only standalone runtime serves
+them anonymously without CMS network access or credentials. Public CMS
+originals need no anonymous permission and may continue returning 403.
+
+Do not loosen Public or production Build Reader policies to repair browser
+images. Missing/forbidden/private files and invalid originals fail the build.
+Authors must deliberately move intended body uploads from the editor's private
+folder into `publishable-assets`. Only JPEG, PNG, WebP, GIF and AVIF originals
+are exported (20 MiB each, 100 MiB unique references, 15 seconds/request); SVG
+CMS uploads, transformations, HTML and reference-style CMS images are refused.
+Authored local SVG assets remain supported.
+
+Rebuild and deploy to revoke an already-published image, just as for static
+article text. Verify public-file removal/promotion triggers against the pinned
+Flow event payload; use manual dispatch to reconcile when needed. The build
+wrapper resets only the generated namespace once before Next workers and after
+failure, including fixture builds. Use isolated checkouts for concurrent builds;
+never invoke `next build` directly to bypass that lifecycle.
+
+Before deployment, inspect the exact token consumed by the successful image,
+then start that image with `--network none --read-only` and verify anonymous
+site cover/body bytes and MIME, private/unreferenced absence, and no CMS runtime
+environment. This delivery test is separate from the licensed production
+status/field/folder permission acceptance.
+
 ## Candidate, replacement, and rollback
 
 `scripts/deploy-site.sh` performs these steps under `flock`:

@@ -16,8 +16,14 @@ import {
 import { z } from "zod";
 
 import type { DirectusCredentials } from "./env";
+import { normalizeDirectusUrl } from "./env";
 
 import { deriveExcerpt, deriveReadingMinutes } from "./markdown";
+import {
+  materializePublicMedia,
+  type MediaOptions,
+  type PublicMediaMap,
+} from "./media";
 import { MOCK_PROFILE } from "./mock";
 import type { Category, Post, Series, SiteProfile, Tag } from "./types";
 
@@ -40,7 +46,7 @@ const rawTaxonomySchema = z.object({
 export const rawPostSchema = z.object({
   id: z.string(),
   kind: z.enum(["article", "tutorial"]),
-  status: z.enum(["published", "draft", "archived"]),
+  status: z.literal("published"),
   title: z.string(),
   slug: z.string(),
   summary: z.string().nullable(),
@@ -151,24 +157,25 @@ function assetUrl(base: string, id: string | null): string | undefined {
   return id ? `${base}/assets/${id}` : undefined;
 }
 
-function mapPost(raw: RawPost, base: string): Post {
+function mapPost(raw: RawPost, base: string, media?: PublicMediaMap): Post {
   const tags = (raw.tags ?? [])
     .map((row) => row.tags_id?.name)
     .filter((name): name is string => Boolean(name));
+  const cover = raw.cover_image
+    ? (media?.resolve(raw.cover_image) ?? assetUrl(base, raw.cover_image))
+    : undefined;
 
   return {
     id: raw.id,
     slug: raw.slug,
     title: raw.title,
     summary: raw.summary || deriveExcerpt(raw.body),
-    content: raw.body,
+    content: media?.rewriteBody(raw.body) ?? raw.body,
     publishedAt: raw.published_at,
     ...(raw.date_updated ? { updatedAt: raw.date_updated } : {}),
     category: raw.category?.name ?? "未分类",
     tags,
-    ...(assetUrl(base, raw.cover_image)
-      ? { cover: assetUrl(base, raw.cover_image) }
-      : {}),
+    ...(cover ? { cover } : {}),
     ...(raw.featured ? { featured: true } : {}),
     ...(raw.series
       ? {
@@ -205,12 +212,15 @@ export function buildSnapshot(
     socialLinks: RawSocialLink[];
   },
   base: string,
+  media?: PublicMediaMap,
 ): ContentSnapshot {
   // 发布时间倒序在此统一保证：Directus 查询已排序，夹具路径靠这里兜住。
   const byNewest = <T extends { published_at: string }>(a: T, b: T) =>
     Date.parse(b.published_at) - Date.parse(a.published_at);
 
-  const articles = rows.posts.sort(byNewest).map((raw) => mapPost(raw, base));
+  const articles = rows.posts
+    .sort(byNewest)
+    .map((raw) => mapPost(raw, base, media));
 
   const byCategory = countBy(articles, (post) => [post.category]);
   const byTag = countBy(articles, (post) => post.tags);
@@ -260,9 +270,12 @@ export function buildSnapshot(
       name: rows.settings.author_name,
       title: rows.settings.tagline ?? "",
       bio: rows.settings.biography ?? rows.settings.homepage_intro ?? "",
-      avatar: rows.settings.avatar?.startsWith("/")
-        ? rows.settings.avatar
-        : (assetUrl(base, rows.settings.avatar) ?? MOCK_PROFILE.avatar),
+      avatar:
+        media && rows.settings.avatar
+          ? media.resolve(rows.settings.avatar)
+          : rows.settings.avatar?.startsWith("/")
+            ? rows.settings.avatar
+            : (assetUrl(base, rows.settings.avatar) ?? MOCK_PROFILE.avatar),
       socials: {
         about: MOCK_PROFILE.socials.about,
         github: socialsByIcon.get("github") ?? MOCK_PROFILE.socials.github,
@@ -278,28 +291,39 @@ export function buildSnapshot(
  */
 export async function loadFromDirectus(
   credentials: DirectusCredentials,
+  mediaOptions: MediaOptions = {},
 ): Promise<ContentSnapshot> {
-  const { url, token } = credentials;
-
-  const client = createDirectus<Schema>(url)
-    .with(staticToken(token))
-    .with(rest());
-
-  const taxonomy = (collection: "categories" | "tags" | "series") =>
-    readAll((page) =>
-      client.request(
-        readItems(collection, {
-          fields: [
-            ...(collection === "tags" ? TAXONOMY_LEAF : TAXONOMY_FIELDS),
-          ],
-          limit: PAGE_SIZE,
-          page,
-          sort: ["slug"],
-        }),
-      ),
-    ).then((rows) => z.array(rawTaxonomySchema).parse(rows));
-
   try {
+    const { token } = credentials;
+    const url = normalizeDirectusUrl(credentials.url);
+
+    const client = createDirectus<Schema>(url, {
+      globals: {
+        fetch: (input, init) =>
+          fetch(input, {
+            ...init,
+            redirect: "error",
+            signal: AbortSignal.timeout(15_000),
+          }),
+      },
+    })
+      .with(staticToken(token))
+      .with(rest());
+
+    const taxonomy = (collection: "categories" | "tags" | "series") =>
+      readAll((page) =>
+        client.request(
+          readItems(collection, {
+            fields: [
+              ...(collection === "tags" ? TAXONOMY_LEAF : TAXONOMY_FIELDS),
+            ],
+            limit: PAGE_SIZE,
+            page,
+            sort: ["slug"],
+          }),
+        ),
+      ).then((rows) => z.array(rawTaxonomySchema).parse(rows));
+
     const [posts, categories, tags, series, settings, socialLinks] =
       await Promise.all([
         readAll((page) =>
@@ -338,18 +362,26 @@ export async function loadFromDirectus(
         ).then((rows) => z.array(rawSocialLinkSchema).parse(rows)),
       ]);
 
+    const decodedSettings = rawSettingsSchema.parse(settings);
+    const media = await materializePublicMedia(
+      { posts, avatar: decodedSettings.avatar },
+      { url, token },
+      mediaOptions,
+    );
+
     return buildSnapshot(
       {
         posts,
         categories,
         tags,
         series,
-        settings: rawSettingsSchema.parse(settings),
+        settings: decodedSettings,
         socialLinks,
       },
       url,
+      media,
     );
-  } catch (error) {
+  } catch {
     throw new Error(
       "[directus] Failed to load the published build snapshot from Directus",
     );

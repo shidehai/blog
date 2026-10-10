@@ -1,10 +1,51 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { slugify } from "../lib/markdown";
+import { mapMarkdownCode, mapMarkdownImages } from "../lib/markdown-images";
 
 interface MarkdownContentProps {
   content: string;
+}
+
+function escapeImageAttribute(value: string): string {
+  return value.replace(
+    /[&<>"']/g,
+    (character) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[character]!,
+  );
+}
+
+function safeImageSource(source: string): boolean {
+  if (!source.trim()) return false;
+  if (
+    source.includes("\\") ||
+    [...source].some(
+      (character) =>
+        character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127,
+    )
+  )
+    return false;
+  if (source.startsWith("/")) return !source.startsWith("//");
+  try {
+    if (/^https?:\/\//i.test(source)) {
+      const url = new URL(source);
+      return Boolean(url.hostname) && !url.username && !url.password;
+    }
+    if (/^[a-z][a-z\d+.-]*:/i.test(source)) return false;
+    return (
+      new URL(source, "https://markdown-local.invalid/").origin ===
+      "https://markdown-local.invalid"
+    );
+  } catch {
+    return false;
+  }
 }
 
 // Simple deterministic syntax highlighter for common languages
@@ -90,18 +131,42 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const parseMarkdownToHtml = (raw: string): string => {
-    let html = raw;
+    let imagePrefix = "\u0000markdown-image-";
+    while (raw.includes(imagePrefix)) imagePrefix += "x";
+    const images: string[] = [];
+    const originalMarkdown: string[] = [];
+    const protect = (markup: string, original: string): string => {
+      const placeholder = `${imagePrefix}${images.length}\u0000`;
+      images.push(markup);
+      originalMarkdown.push(original);
+      return placeholder;
+    };
+    const placeholderPattern = new RegExp(`${imagePrefix}(\\d+)\u0000`, "g");
+    let html = mapMarkdownImages(raw, (image) => {
+      const escapedAlt = escapeImageAttribute(image.alt);
+      const markup = safeImageSource(image.source)
+        ? `<img src="${escapeImageAttribute(image.source)}" alt="${escapedAlt}"${image.title === undefined ? "" : ` title="${escapeImageAttribute(image.title)}"`} loading="lazy" decoding="async" style="max-width:100%;height:auto">`
+        : escapedAlt;
+      return protect(markup, image.raw);
+    });
 
-    // 1. Code blocks (```lang ... ```)
-    html = html.replace(
-      /(?:```|~~~)([a-zA-Z0-9_-]*)(?:[^\n]*)\n([\s\S]*?)(?:```|~~~)/g,
-      (_, lang, code) => {
-        const language = lang.trim() || "text";
-        const cleanCode = code.replace(/\n$/, "");
+    // 1. Protect the exact fenced/inline code ranges skipped by image collection.
+    html = mapMarkdownCode(html, (code) => {
+      if (code.kind === "fenced") {
+        const language = code.language || "text";
+        const cleanCode = code.content.replace(/\n$/, "");
         const highlighted = highlightSyntax(cleanCode, language);
 
-        return `<pre class="chroma" data-language="${language}" tabindex="0"><code>${highlighted}</code><button type="button" class="code-copy" aria-label="复制代码">复制</button></pre>`;
-      },
+        return `<pre class="chroma" data-language="${language}" tabindex="0">${protect(`<code>${highlighted}</code><button type="button" class="code-copy" aria-label="复制代码">复制</button>`, code.raw)}</pre>${code.raw.endsWith("\n") ? "\n" : ""}`;
+      }
+      return protect(
+        `<code>${escapeImageAttribute(code.content)}</code>`,
+        code.raw,
+      );
+    });
+    // Escaped raw HTML is a literal, matching the scanner's exclusion rule.
+    html = html.replace(/(\\+)</g, (match: string, slashes: string) =>
+      slashes.length % 2 ? `${slashes.slice(0, -1)}&lt;` : match,
     );
 
     // 2. Headings with IDs & permalinks
@@ -109,7 +174,11 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
     html = html.replace(/^(#{2,4})\s+(.+)$/gm, (_, hashes, text) => {
       const level = hashes.length;
       // 算法对齐 extractHeadings：剥链接、slugify、空值兜底
-      const rawText = text.replace(/\[(.*?)\]\(.*?\)/g, "$1").trim();
+      const originalText = text.replace(
+        placeholderPattern,
+        (_: string, index: string) => originalMarkdown[Number(index)]!,
+      );
+      const rawText = originalText.replace(/\[(.*?)\]\(.*?\)/g, "$1").trim();
       const id = slugify(rawText) || `heading-${headingIndex}`;
       headingIndex++;
       return `<h${level} id="${id}">${text.trim()}</h${level}>`;
@@ -139,9 +208,6 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
     // 5. Bold & Italic
     html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
     html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
-
-    // 6. Inline Code
-    html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
 
     // 7. Lists
     html = html.replace(/^\s*[-*+]\s+(.+)$/gm, "<li>$1</li>");
@@ -203,7 +269,11 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
       })
       .join("\n");
 
-    return html;
+    // Restore protected HTML last so Markdown cannot modify image attributes or code.
+    return html.replace(
+      placeholderPattern,
+      (_, index: string) => images[Number(index)]!,
+    );
   };
 
   useEffect(() => {

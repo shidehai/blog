@@ -7,6 +7,7 @@ repository_root=$(CDPATH= cd -- "$test_dir/../.." && pwd)
 
 caddy=$repository_root/deploy/Caddyfile
 compose=$repository_root/deploy/compose.yaml
+dev_compose=$repository_root/deploy/compose.dev.yaml
 workflow=$repository_root/.github/workflows/publish.yml
 bootstrap=$repository_root/directus/bootstrap.mjs
 
@@ -27,6 +28,7 @@ assert_file_contains "$compose" "profiles: [maintenance]" "Restic maintenance mu
 if grep -Eq 'DIRECTUS_(BUILD_TOKEN|PREVIEW_TOKEN)|PREVIEW_|CONTENT_SOURCE|SITE_URL' "$compose"; then
   fail_test "production Compose must not inject build-time CMS or preview settings"
 fi
+assert_file_contains "$dev_compose" "site_frontend_node_modules:/app/frontend-v2/node_modules" "development bind mounts must preserve Next workspace dependencies"
 
 assert_file_contains "$workflow" "repository_dispatch:" "Directus publication must converge on CI"
 assert_file_contains "$workflow" "types: [directus-publish]" "workflow dispatch type must match Directus"
