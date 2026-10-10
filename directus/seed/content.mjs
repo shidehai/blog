@@ -66,6 +66,114 @@ export const LEGACY_FIXTURE_POSTS = Object.freeze(
   ),
 );
 
+/**
+ * Exact original payloads from 29d5d85^:directus/seed/index.mjs.
+ * Media-bearing originals cannot be recognized without the existing fixture file.
+ *
+ * @param {{ coverId: string | null }} options
+ */
+export function buildLegacyFixtureOriginals({ coverId }) {
+  const common = {
+    status: "published",
+    featured: false,
+    cover_decorative: false,
+    cover_image: null,
+    cover_alt: null,
+    seo_title: null,
+    seo_description: null,
+  };
+  return Object.freeze(
+    [
+      ...(coverId
+        ? [
+            {
+              ...common,
+              id: id("f2", 1),
+              kind: "article",
+              title: "示例：静态发布为何仍需要清晰的数据边界",
+              slug: "static-publishing-data-boundary",
+              summary:
+                "从内容数据库到静态页面，逐层说明校验、快照和失败关闭如何协作。",
+              body: `## 静态发布的数据边界
+
+这是一篇**完全虚构的开发夹具**，用于覆盖中英文混排、链接与脚注。[Astro](https://astro.build/) 负责生成页面。[^source]
+
+## 一次构建的输入
+
+| 输入 | 责任 |
+| --- | --- |
+| PostgreSQL | 保存权威内容 |
+| Directus | 权限与版本 |
+| Astro | 校验并渲染 |
+
+> [!NOTE]
+> 公开构建只接受已经发布且媒体可公开的记录。
+
+\`\`\`ts filename="snapshot.ts" {2}
+const records = await loadPublishedPosts();
+assertPublished(records);
+\`\`\`
+
+- [x] 校验 slug
+- [x] 校验媒体
+- [ ] 部署真实内容
+
+[^source]: 示例脚注，不引用私有资料。
+`,
+              published_at: "2026-07-28T02:00:00.000Z",
+              featured: true,
+              cover_image: coverId,
+              cover_alt: "浅蓝色的示例封面图",
+            },
+            {
+              ...common,
+              id: id("f2", 2),
+              kind: "tutorial",
+              title: "示例教程：从草稿版本发布一篇文章",
+              slug: "publish-from-content-version",
+              summary: "使用假数据演示草稿版本、比较、发布和恢复的完整路径。",
+              body: `本教程只用于测试工作流。
+
+![从 Directus 经过校验、构建到发布的夹具流程图](directus://${coverId})
+
+1. 新建内容版本。
+2. 保存 Markdown。
+3. 比较主版本。
+4. 发布并触发静态构建。
+
+\`\`\`bash filename="verify.sh"
+pnpm test:directus-workflow
+\`\`\`
+`,
+              published_at: "2026-07-25T06:30:00.000Z",
+            },
+          ]
+        : []),
+      {
+        ...common,
+        id: id("f2", 3),
+        kind: "note",
+        title: "示例随记：先让失败可诊断",
+        slug: "diagnosable-failures-first",
+        summary: null,
+        body: "短记录也走同一条发布边界。错误需要指出记录与字段，但不能泄露正文或令牌。",
+        published_at: "2026-07-30T11:20:00.000Z",
+      },
+      {
+        ...common,
+        id: id("f2", 4),
+        status: "archived",
+        kind: "note",
+        title: "示例归档随记",
+        slug: "archived-fixture-note",
+        summary: null,
+        body: "这条假记录用于证明公开构建凭据看不到归档内容。",
+        published_at: "2026-07-20T01:00:00.000Z",
+      },
+    ].map((post) => Object.freeze(post)),
+  );
+}
+
 const TOPICS = Object.freeze([
   {
     key: "llm",

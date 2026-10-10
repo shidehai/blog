@@ -24,11 +24,11 @@
     "launch:apply": "node --env-file=.env directus/launch.mjs apply",
     "directus:schema:check": "node --env-file=.env tests/directus.mjs schema",
     "test:directus-access": "node --env-file=.env tests/directus.mjs access",
+    "test:seed-fixture": "node tests/seed-fixture.mjs",
+    "test:seed-install": "node tests/seed-install.mjs",
+    "test:launch-apply": "node tests/launch-apply.mjs",
     "test:operations": "sh tests/ops/run.sh",
-    "verify": "pnpm --filter frontend-v2 verify && sh tests/ops/run.sh"
-  },
-  "dependencies": {
-    "zod": "4.4.3"
+    "verify": "pnpm test:seed-fixture && pnpm test:seed-install && pnpm test:launch-apply && pnpm --filter frontend-v2 verify && sh tests/ops/run.sh"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

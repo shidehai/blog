@@ -44,7 +44,8 @@ pnpm launch:plan --base-time=2026-08-19T12:00:00.000Z
 ### Abort Conditions
 
 - `base-time` is not a valid ISO-8601 UTC string ending in `Z`.
-- Directus is unreachable or returns authentication errors during preflight.
+
+Planning is offline and does not authenticate or contact Directus.
 
 ---
 
@@ -58,19 +59,31 @@ pnpm launch:apply \
   --confirm=CONFIRM_LAUNCH_<manifestDigest>_FOR_<targetOrigin>
 ```
 
+The configured `DIRECTUS_URL` must have the same HTTP(S) origin as the manifest.
+Host, protocol or effective-port differences, and invalid URLs, are rejected
+before authentication or any CMS request. Equivalent hostname case, default
+ports and trailing slashes are accepted. If the target changes, review a newly
+generated plan for that target. URLs must not embed a username or password;
+use the administrator environment credentials instead.
+
 ### Execution Steps Executed Automatically
 
 1. **Manifest Integrity Check**: Verifies file contents against `manifestDigest`.
-2. **Preflight State Classification**: Reads existing records; aborts if any
-   known ID contains unexpected or owner-modified content.
-3. **Immutable Media**: Uploads or reuses digest-addressed cover media.
-4. **Settings & Topics**: Upserts site settings (preserving existing owner avatar)
+2. **Target and Confirmation Check**: Validates the configured endpoint's origin
+   and explicit confirmation before authentication.
+3. **Preflight State Classification**: Reads existing records; aborts if any
+   known ID contains unexpected or owner-modified content. The four legacy
+   fixture IDs must match either their exact historical originals or current
+   archived targets before any mutation.
+4. **Immutable Media**: Uploads or reuses digest-addressed cover media.
+5. **Settings & Topics**: Upserts site settings (preserving existing owner avatar)
    and the 6 canonical topics.
-5. **Posts**: Upserts the 12 canonical posts with unique descending
+6. **Posts**: Upserts the 12 canonical posts with unique descending
    `published_at` timestamps.
-6. **Relations**: Upserts the 28 post-topic join records.
-7. **Legacy Transitions**: Marks legacy development fixture posts as archived.
-8. **Verification**: Queries Directus to confirm all 12 published posts match.
+7. **Relations**: Upserts the 28 post-topic join records.
+8. **Legacy Transitions**: Marks recognized legacy development fixture posts as
+   archived, preserving their stable slugs.
+9. **Verification**: Reports the published-post count after the writes.
 
 ---
 
@@ -99,3 +112,7 @@ pnpm verify
   against a launched or edited database will be refused by preflight.
 - **Rerun idempotency**: Running `launch:apply` with the exact same manifest
   against an unedited launch snapshot is a safe no-op.
+- **Legacy ownership**: An edited legacy fixture body, slug or other owned
+  field causes preflight refusal. A fully matching historical original may be
+  archived; an already matching archive is unchanged. Seed also checks these
+  rows before its no-write early exit and can repair a missing legacy row alone.

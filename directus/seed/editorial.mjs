@@ -7,14 +7,15 @@ import {
 } from "./content.mjs";
 
 export const SETTINGS_OWNED_FIELDS = Object.freeze([
+  "author_name",
+  "biography",
   "default_og_image",
-  "footer_note",
+  "default_seo_description",
+  "footer_text",
+  "homepage_intro",
   "locale",
-  "seo_description",
-  "seo_title",
-  "site_author",
-  "site_description",
   "site_name",
+  "tagline",
   "timezone",
 ]);
 
@@ -47,6 +48,14 @@ export const POST_TOPIC_OWNED_FIELDS = Object.freeze([
   "posts_id",
   "topics_id",
 ]);
+
+/** @param {{ coverId: string, publishedAtMap?: Map<string, string> | Record<string, string> }} options */
+export function buildFixturePayloads({ coverId, publishedAtMap }) {
+  return {
+    ...buildEditorialFixture({ coverId, publishedAtMap }),
+    settings: { ...EDITORIAL_SETTINGS, default_og_image: coverId },
+  };
+}
 
 /**
  * Deterministically serializes any JSON-compatible value with sorted keys.

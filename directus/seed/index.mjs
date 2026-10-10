@@ -1,16 +1,16 @@
 import { adminClient, filterPath, isDirectusError } from "../client.mjs";
 import { IDS } from "../constants.mjs";
 import {
-  buildEditorialFixture,
   EDITORIAL_IDS,
-  EDITORIAL_SETTINGS,
   LEGACY_FIXTURE_POSTS,
+  buildLegacyFixtureOriginals,
 } from "./content.mjs";
 import {
   POST_OWNED_FIELDS,
   POST_TOPIC_OWNED_FIELDS,
   SETTINGS_OWNED_FIELDS,
   TOPIC_OWNED_FIELDS,
+  buildFixturePayloads,
   classifyRecordState,
   itemMatchesOwned,
   parseFixtureConfirmation,
@@ -66,7 +66,7 @@ async function upsertItem(collection, id, data, ownedFields) {
   const existing = await fetchItem(collection, id);
 
   if (collection === "site_settings") {
-    if (existing && itemMatchesOwned(existing, data, ownedFields)) {
+    if (existing && itemMatchesOwned(existing, { id, ...data }, ownedFields)) {
       return existing;
     }
     return request("/items/site_settings", {
@@ -76,7 +76,7 @@ async function upsertItem(collection, id, data, ownedFields) {
   }
 
   if (existing) {
-    if (itemMatchesOwned(existing, data, ownedFields)) {
+    if (itemMatchesOwned(existing, { id, ...data }, ownedFields)) {
       return existing;
     }
     return request(`/items/${collection}/${existing.id}`, {
@@ -120,6 +120,7 @@ async function ensureFile(title, folder, type, bytes, filename) {
   /** @type {DirectusItem[]} */
   const [existing] = await request(filterPath("files", "title", title, "*"));
   if (existing) {
+    if (existing.folder === folder && existing.title === title) return existing;
     return request(`/files/${existing.id}`, {
       method: "PATCH",
       body: { folder, title },
@@ -138,8 +139,11 @@ async function ensureFile(title, folder, type, bytes, filename) {
 // ---------------------------------------------------------------------------
 
 const coverFixture = await loadSeedCoverFixture();
-const fixtureEditorial = buildEditorialFixture({
-  coverId: EDITORIAL_IDS.cover,
+const [existingCover] = await request(
+  filterPath("files", "title", coverFixture.title, "id"),
+);
+const fixtureEditorial = buildFixturePayloads({
+  coverId: existingCover?.id ?? EDITORIAL_IDS.cover,
 });
 
 const existingSettings = await fetchItem(
@@ -148,7 +152,7 @@ const existingSettings = await fetchItem(
 );
 const settingsState = classifyRecordState(
   existingSettings,
-  EDITORIAL_SETTINGS,
+  existingCover ? fixtureEditorial.settings : null,
   null,
   SETTINGS_OWNED_FIELDS,
 );
@@ -159,7 +163,7 @@ if (settingsState === "owner_modified") {
   );
 }
 
-let mutationsNeeded = settingsState === "absent";
+let mutationsNeeded = !existingCover || settingsState === "absent";
 
 for (const topic of fixtureEditorial.topics) {
   const existingTopic = await fetchItem("topics", topic.id);
@@ -181,7 +185,7 @@ for (const post of fixtureEditorial.posts) {
   const existingPost = await fetchItem("posts", post.id);
   const state = classifyRecordState(
     existingPost,
-    post,
+    existingCover ? post : null,
     null,
     POST_OWNED_FIELDS,
   );
@@ -207,6 +211,28 @@ for (const relation of fixtureEditorial.postTopics) {
     );
   }
   if (state === "absent") mutationsNeeded = true;
+}
+
+const legacyOriginals = buildLegacyFixtureOriginals({
+  coverId: existingCover?.id ?? null,
+});
+for (const post of LEGACY_FIXTURE_POSTS) {
+  const existing = await fetchItem("posts", post.id);
+  const original = legacyOriginals.find(
+    (candidate) => candidate.id === post.id,
+  );
+  const state = classifyRecordState(
+    existing,
+    original,
+    post,
+    POST_OWNED_FIELDS,
+  );
+  if (state === "owner_modified") {
+    throw new Error(
+      `Directus contains owner-modified legacy post (${post.id}). Fixture install refused before mutation.`,
+    );
+  }
+  if (state !== "exact_manifest") mutationsNeeded = true;
 }
 
 if (!mutationsNeeded) {
@@ -260,7 +286,8 @@ await ensureFile(
   "fixture-draft.svg",
 );
 
-const { id: settingsId, ...settings } = EDITORIAL_SETTINGS;
+const editorial = buildFixturePayloads({ coverId: cover.id });
+const { id: settingsId, ...settings } = editorial.settings;
 const preserveAvatar = existingSettings?.avatar ?? null;
 await upsertItem(
   "site_settings",
@@ -268,7 +295,6 @@ await upsertItem(
   {
     ...settings,
     avatar: preserveAvatar,
-    default_og_image: cover.id,
   },
   SETTINGS_OWNED_FIELDS,
 );
@@ -276,8 +302,6 @@ await upsertItem(
 for (const socialLinkId of EDITORIAL_IDS.socialLinks) {
   await deleteKnownItem("social_links", socialLinkId);
 }
-
-const editorial = buildEditorialFixture({ coverId: cover.id });
 
 for (const { id: topicId, ...topic } of editorial.topics) {
   await upsertItem("topics", topicId, topic, TOPIC_OWNED_FIELDS);

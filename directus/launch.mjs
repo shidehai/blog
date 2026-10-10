@@ -4,16 +4,16 @@ import { dirname, resolve } from "node:path";
 import { adminClient, filterPath, isDirectusError } from "./client.mjs";
 import { IDS } from "./constants.mjs";
 import {
-  buildEditorialFixture,
   EDITORIAL_IDS,
-  EDITORIAL_SETTINGS,
   LEGACY_FIXTURE_POSTS,
+  buildLegacyFixtureOriginals,
 } from "./seed/content.mjs";
 import {
   POST_OWNED_FIELDS,
   POST_TOPIC_OWNED_FIELDS,
   SETTINGS_OWNED_FIELDS,
   TOPIC_OWNED_FIELDS,
+  buildFixturePayloads,
   buildLaunchManifest,
   classifyRecordState,
   createStableDigest,
@@ -33,6 +33,30 @@ function parseArg(/** @type {string} */ name) {
   const prefix = `--${name}=`;
   const match = argv.find((arg) => arg.startsWith(prefix));
   return match ? match.slice(prefix.length) : undefined;
+}
+
+/**
+ * @param {unknown} value
+ * @param {"manifest targetOrigin" | "DIRECTUS_URL"} field
+ */
+function httpOrigin(value, field) {
+  try {
+    if (typeof value === "string") {
+      const url = new URL(value);
+      if (
+        (url.protocol === "http:" || url.protocol === "https:") &&
+        !url.username &&
+        !url.password
+      ) {
+        return url.origin;
+      }
+    }
+  } catch {
+    // Native URL errors can contain credentials; emit only field context below.
+  }
+  throw new Error(
+    `Launch apply requires ${field} to be a valid absolute HTTP(S) URL without embedded credentials.`,
+  );
 }
 
 /**
@@ -68,7 +92,7 @@ async function upsertItem(request, collection, id, data, ownedFields) {
   const existing = await fetchItem(request, collection, id);
 
   if (collection === "site_settings") {
-    if (existing && itemMatchesOwned(existing, data, ownedFields)) {
+    if (existing && itemMatchesOwned(existing, { id, ...data }, ownedFields)) {
       return existing;
     }
     return request("/items/site_settings", {
@@ -78,7 +102,7 @@ async function upsertItem(request, collection, id, data, ownedFields) {
   }
 
   if (existing) {
-    if (itemMatchesOwned(existing, data, ownedFields)) {
+    if (itemMatchesOwned(existing, { id, ...data }, ownedFields)) {
       return existing;
     }
     return request(`/items/${collection}/${existing.id}`, {
@@ -106,6 +130,7 @@ async function ensureFile(request, title, folder, type, bytes, filename) {
   /** @type {DirectusItem[]} */
   const [existing] = await request(filterPath("files", "title", title, "*"));
   if (existing) {
+    if (existing.folder === folder && existing.title === title) return existing;
     return request(`/files/${existing.id}`, {
       method: "PATCH",
       body: { folder, title },
@@ -170,14 +195,28 @@ async function handleApply() {
     );
   }
 
+  const targetOrigin = httpOrigin(
+    manifest.targetOrigin,
+    "manifest targetOrigin",
+  );
+  const configuredOrigin = httpOrigin(
+    process.env.DIRECTUS_URL || "http://127.0.0.1:8055",
+    "DIRECTUS_URL",
+  );
+  if (configuredOrigin !== targetOrigin) {
+    throw new Error(
+      "Launch apply refused: DIRECTUS_URL origin does not match the manifest target origin.",
+    );
+  }
+
   const isConfirmed = parseLaunchConfirmation(
     confirmation,
     manifestDigest,
-    manifest.targetOrigin,
+    targetOrigin,
   );
 
   if (!isConfirmed) {
-    const expected = `CONFIRM_LAUNCH_${manifestDigest}_FOR_${manifest.targetOrigin}`;
+    const expected = `CONFIRM_LAUNCH_${manifestDigest}_FOR_${targetOrigin}`;
     console.error(
       `Launch apply requires explicit confirmation.\n` +
         `Run:\n` +
@@ -192,8 +231,11 @@ async function handleApply() {
   // Preflight check against current Directus state
   // -------------------------------------------------------------------------
   const coverFixture = await loadSeedCoverFixture();
-  const fixtureEditorial = buildEditorialFixture({
-    coverId: EDITORIAL_IDS.cover,
+  const [existingCover] = await request(
+    filterPath("files", "title", coverFixture.title, "id"),
+  );
+  const fixtureEditorial = buildFixturePayloads({
+    coverId: existingCover?.id ?? EDITORIAL_IDS.cover,
   });
 
   const publishedAtMap = new Map(
@@ -204,17 +246,12 @@ async function handleApply() {
       ],
     ),
   );
-  const launchEditorial = buildEditorialFixture({
-    coverId: EDITORIAL_IDS.cover,
+  const preflightEditorial = buildFixturePayloads({
+    coverId: existingCover?.id ?? EDITORIAL_IDS.cover,
     publishedAtMap,
   });
 
-  const { id: settingsId, ...settingsData } = EDITORIAL_SETTINGS;
-  const launchSettings = {
-    ...settingsData,
-    default_og_image: EDITORIAL_IDS.cover,
-    id: settingsId,
-  };
+  const { id: settingsId } = fixtureEditorial.settings;
 
   const existingSettings = await fetchItem(
     request,
@@ -223,8 +260,8 @@ async function handleApply() {
   );
   const settingsState = classifyRecordState(
     existingSettings,
-    EDITORIAL_SETTINGS,
-    launchSettings,
+    existingCover ? fixtureEditorial.settings : null,
+    existingCover ? preflightEditorial.settings : null,
     SETTINGS_OWNED_FIELDS,
   );
 
@@ -234,13 +271,13 @@ async function handleApply() {
     );
   }
 
-  for (const post of launchEditorial.posts) {
+  for (const post of preflightEditorial.posts) {
     const existing = await fetchItem(request, "posts", post.id);
     const fixturePost = fixtureEditorial.posts.find((p) => p.id === post.id);
     const state = classifyRecordState(
       existing,
-      fixturePost,
-      post,
+      existingCover ? fixturePost : null,
+      existingCover ? post : null,
       POST_OWNED_FIELDS,
     );
     if (state === "owner_modified") {
@@ -250,18 +287,56 @@ async function handleApply() {
     }
   }
 
-  for (const topic of launchEditorial.topics) {
+  for (const topic of preflightEditorial.topics) {
     const existing = await fetchItem(request, "topics", topic.id);
     const fixtureTopic = fixtureEditorial.topics.find((t) => t.id === topic.id);
     const state = classifyRecordState(
       existing,
-      fixtureTopic,
-      topic,
+      existingCover ? fixtureTopic : null,
+      existingCover ? topic : null,
       TOPIC_OWNED_FIELDS,
     );
     if (state === "owner_modified") {
       throw new Error(
         `Preflight failed: topic ${topic.id} (${topic.slug}) contains owner-modified content. Apply aborted before mutation.`,
+      );
+    }
+  }
+
+  for (const relation of preflightEditorial.postTopics) {
+    const existing = await fetchItem(request, "posts_topics", relation.id);
+    const state = classifyRecordState(
+      existing,
+      existingCover ? relation : null,
+      null,
+      POST_TOPIC_OWNED_FIELDS,
+    );
+    if (state === "owner_modified") {
+      throw new Error(
+        `Preflight failed: posts_topics relation ${relation.id} contains owner-modified content. Apply aborted before mutation.`,
+      );
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Legacy rows have their own original-to-archived migration boundary.
+  const legacyOriginals = buildLegacyFixtureOriginals({
+    coverId: existingCover?.id ?? null,
+  });
+  for (const post of LEGACY_FIXTURE_POSTS) {
+    const existing = await fetchItem(request, "posts", post.id);
+    const original = legacyOriginals.find(
+      (candidate) => candidate.id === post.id,
+    );
+    const state = classifyRecordState(
+      existing,
+      original,
+      post,
+      POST_OWNED_FIELDS,
+    );
+    if (state === "owner_modified") {
+      throw new Error(
+        `Preflight failed: legacy post ${post.id} contains owner-modified content. Apply aborted before mutation.`,
       );
     }
   }
@@ -278,15 +353,18 @@ async function handleApply() {
     coverFixture.filename,
   );
 
+  const launchEditorial = buildFixturePayloads({
+    coverId: cover.id,
+    publishedAtMap,
+  });
   const preserveAvatar = existingSettings?.avatar ?? null;
   await upsertItem(
     request,
     "site_settings",
     settingsId,
     {
-      ...launchSettings,
+      ...launchEditorial.settings,
       avatar: preserveAvatar,
-      default_og_image: cover.id,
     },
     SETTINGS_OWNED_FIELDS,
   );
@@ -338,7 +416,7 @@ async function handleApply() {
   ).length;
 
   console.log("=== Editorial Launch Applied Successfully ===");
-  console.log(`Target Origin:   ${manifest.targetOrigin}`);
+  console.log(`Target Origin:   ${targetOrigin}`);
   console.log(`Manifest Digest: ${manifest.manifestDigest}`);
   console.log(`Published Posts: ${publishedCount}`);
   console.log(`Topics Count:    ${launchEditorial.topics.length}`);

@@ -7,16 +7,17 @@ build-time parsing in `frontend-v2/lib/env.ts`; Docker validates the requested
 source/secret before invoking Next; operations scripts validate their own
 required infrastructure values.
 
-| Condition | Required behavior |
-| --- | --- |
-| Fixture build with no CMS secret | Continue using the checked fixture |
-| Directus build with missing/invalid URL or token | Fail before or during build; never use fixture fallback |
-| Directus request or decoder failure | Abort the Next build with field/operation context, never the token |
-| Runtime image receives CMS source/credential env | Configuration/image validation fails |
-| `/healthz` is requested | Return non-cacheable success without CMS I/O |
-| Backup variable absent | Exit before `pg_dump` |
-| Dump cannot be listed by `pg_restore` | Exit without creating a Restic snapshot |
-| Any backup exit path | Remove the mode-0600 temporary dump |
+| Condition                                                                                       | Required behavior                                                                                |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Fixture build with no CMS secret                                                                | Continue using the checked fixture                                                               |
+| Directus build with missing/invalid URL or token                                                | Fail before or during build; never use fixture fallback                                          |
+| Directus request or decoder failure                                                             | Abort the Next build with field/operation context, never the token                               |
+| Runtime image receives CMS source/credential env                                                | Configuration/image validation fails                                                             |
+| `/healthz` is requested                                                                         | Return non-cacheable success without CMS I/O                                                     |
+| Backup variable absent                                                                          | Exit before `pg_dump`                                                                            |
+| Dump cannot be listed by `pg_restore`                                                           | Exit without creating a Restic snapshot                                                          |
+| Any backup exit path                                                                            | Remove the mode-0600 temporary dump                                                              |
+| Launch configured/manifest HTTP(S) origins differ or either URL is invalid/contains credentials | Exit before authentication or CMS requests; never print URL parser input or embedded credentials |
 
 Errors may name a missing field, service, or failed operation. They must not
 print tokens, passwords, request headers, Markdown bodies, private URLs, or a

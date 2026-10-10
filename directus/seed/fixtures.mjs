@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
 const COVER_ASSET_URL = new URL(
-  "../../public/images/ai-reliability-boundaries-960.webp",
+  "./assets/ai-reliability-boundaries-960.webp",
   import.meta.url,
 );
 
