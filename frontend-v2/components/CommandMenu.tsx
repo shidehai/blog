@@ -41,12 +41,16 @@ export function CommandMenu({ isOpen, onClose, posts }: CommandMenuProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  useEffect(() => {
+  // 打开时重置输入与选中项：在渲染期间按 props 变化调整状态，
+  // 避免 effect 里同步 setState 造成的级联渲染（react-hooks/set-state-in-effect）。
+  const [prevOpen, setPrevOpen] = useState(isOpen);
+  if (prevOpen !== isOpen) {
+    setPrevOpen(isOpen);
     if (isOpen) {
       setQuery("");
       setSelectedIndex(0);
     }
-  }, [isOpen]);
+  }
 
   const searchResults = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();

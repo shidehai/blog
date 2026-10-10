@@ -35,7 +35,53 @@ assert_file_contains "$workflow" "types: [directus-publish]" "workflow dispatch 
 assert_file_contains "$bootstrap" '"event_type":"directus-publish"' "Directus dispatch type must match workflow"
 assert_file_contains "$bootstrap" 'type: "notification"' "dispatch failure must create an owner-visible Directus notification"
 assert_file_contains "$bootstrap" "reject: dispatchFailure.id" "GitHub request failure must follow the notification branch"
-assert_file_contains "$workflow" "cancel-in-progress: true" "stale production builds must cancel"
+node --input-type=module - "$workflow" <<'NODE'
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const workflow = readFileSync(process.argv[2], "utf8");
+const concurrency = workflow.match(/^concurrency:\n([\s\S]*?)(?=^\S)/m)?.[1];
+const publish = workflow.slice(workflow.indexOf("\n  publish:\n"));
+assert.ok(concurrency, "Workflow concurrency must be defined");
+assert.ok(publish.includes("\n  publish:\n"), "Publication job must exist");
+
+function foldedValue(section, key, indent) {
+  const pattern = new RegExp(`^${" ".repeat(indent)}${key}: >-\\n((?: {${indent + 2},}[^\\n]*(?:\\n|$))+)`, "m");
+  const match = section.match(pattern);
+  assert.ok(match, `Expected folded ${key} expression`);
+  return match[1].trim();
+}
+
+// These repository-owned GitHub expressions use the shared JS boolean/string
+// subset. Evaluate the real values so a wrong operator cannot pass the test.
+function evaluate(expression, github) {
+  const body = expression.trim().replace(/^\$\{\{\s*|\s*\}\}$/g, "");
+  return new Function("github", "format", `return (${body});`)(
+    github,
+    (template, value) => template.replace("{0}", String(value)),
+  );
+}
+
+const groupExpression = foldedValue(concurrency, "group", 2);
+const cancelExpression = foldedValue(concurrency, "cancel-in-progress", 2);
+const publishExpression = foldedValue(publish, "if", 4);
+const groups = new Map();
+for (const event of ["push", "pull_request", "workflow_dispatch", "repository_dispatch"]) {
+  const github = {
+    workflow: "site",
+    event_name: event,
+    event: { pull_request: { number: 1 } },
+  };
+  const publication = event === "workflow_dispatch" || event === "repository_dispatch";
+  const group = groupExpression.replace(/\$\{\{([\s\S]*?)\}\}/g, (_, expression) => evaluate(expression, github));
+  groups.set(event, group);
+  assert.equal(evaluate(publishExpression, github), publication, `${event} publication gate`);
+  assert.equal(evaluate(cancelExpression, github), !publication, `${event} cancellation policy`);
+}
+assert.equal(groups.get("workflow_dispatch"), groups.get("repository_dispatch"), "Publication events must serialize together");
+assert.notEqual(groups.get("push"), groups.get("workflow_dispatch"), "A push must not cancel publication");
+assert.notEqual(groups.get("pull_request"), groups.get("workflow_dispatch"), "A pull request must not cancel publication");
+NODE
 assert_file_contains "$workflow" "--secret id=directus_build_token,env=DIRECTUS_BUILD_TOKEN" "build token must use BuildKit secret mount"
 assert_file_contains "$workflow" "StrictHostKeyChecking=yes" "VPS host key checking must be strict"
 assert_file_contains "$workflow" "imagetools inspect" "deployment identity must resolve from registry digest"

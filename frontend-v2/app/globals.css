@@ -2598,6 +2598,12 @@ body.drawer-open {
   font-size: var(--text-xs);
 }
 
+.feed-empty {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  padding: 1rem 0.2rem;
+}
+
 /* Post Feed */
 .post-feed {
   display: grid;

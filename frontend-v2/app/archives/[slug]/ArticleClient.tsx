@@ -154,7 +154,7 @@ export function ArticleClient({
             </button>
             <a
               className="post-action"
-              href="https://github.com/wildalley"
+              href="https://github.com/shidehai/blog/issues"
               target="_blank"
               rel="noopener noreferrer"
             >

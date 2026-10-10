@@ -7,12 +7,12 @@
 import { z } from "zod";
 
 const directusCredentialsSchema = z.object({
-  DIRECTUS_URL: z.string().transform((value, context) => {
+  DIRECTUS_URL: z.url().transform((value, context) => {
     try {
       return normalizeDirectusUrl(value);
     } catch {
       context.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: "Invalid CMS base",
       });
       return z.NEVER;

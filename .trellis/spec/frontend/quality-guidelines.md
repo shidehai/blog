@@ -48,6 +48,46 @@ do not replace them with mocks that merely repeat implementation details.
 - Do not add a library when React, browser APIs, existing CSS, or the standard
   library already covers the behavior.
 
+## Local Build Environment Gotchas (Windows)
+
+> **Warning**: On Windows without Developer Mode or an elevated shell,
+> `pnpm --filter frontend-v2 build` fails at "Collecting build traces" with
+> `EPERM: operation not permitted, symlink` while copying the standalone
+> output. Compilation and static page generation still succeed, so a failure
+> at that exact step is environmental, not a code regression. Confirm via
+> `HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock` →
+> `AllowDevelopmentWithoutDevLicense`; the authoritative standalone-image
+> check is the Linux CI job (`docker build --target runtime`).
+
+> **Warning**: The repo enforces `engines.node >=24.15.0 <25` with
+> `engine-strict=true`. Tooling-bundled Node (e.g. harness runners) may be
+> older; run pnpm with an nvm-installed 24.15.0+ on PATH
+> (`$env:LOCALAPPDATA\nvm\v24.15.0`) instead of bypassing the engine check.
+
+## Lint Gate Ownership
+
+`frontend-v2/eslint.config.mjs` is the sole lint config for the V2 app; the
+root `eslint.config.js` intentionally ignores `frontend-v2/**` because the
+root gate only owns `scripts/` and `directus/`. `pnpm --filter frontend-v2
+lint` runs the ESLint CLI (`eslint .`), not the deprecated `next lint`;
+`next.config.ts` sets `eslint.ignoreDuringBuilds` so builds do not lint
+twice.
+
+> **Warning**: Deleting `frontend-v2/eslint.config.mjs` silently reverts the
+> gate to a false green — config discovery walks up to the root config, every
+> V2 file matches the root ignore, and `eslint .` exits 0 having checked
+> nothing. After touching lint configuration, prove the gate is real by
+> introducing a deliberate violation (e.g. a conditional hook) and confirming
+> lint fails.
+
+`eslint-config-next` is deliberately NOT used: its peer range stops at
+eslint 9 while the workspace root runs eslint 10 under
+`strict-peer-dependencies=true`. The V2 config composes
+`@next/eslint-plugin-next` (pinned to the Next version) and
+`eslint-plugin-react-hooks` directly. `@next/next/no-img-element` is off
+because the project intentionally uses native `<img>` and carries no
+next/image consumer.
+
 ## Forbidden Patterns
 
 - No runtime CMS fallback, local public Markdown store, or page-local
