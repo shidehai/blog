@@ -6,7 +6,7 @@ OnFailure=blog-ops-alert@%n.service
 
 [Service]
 Type=oneshot
-EnvironmentFile=/etc/personal-journal/deploy.env
-ExecStart=/opt/personal-journal/current/scripts/check-external-health.sh
+EnvironmentFile=/etc/blog/deploy.env
+ExecStart=/opt/blog/scripts/check-external-health.sh
 NoNewPrivileges=true
 PrivateTmp=true

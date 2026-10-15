@@ -11,11 +11,11 @@ For a first deployment on Debian 12, use the root `docker-compose.yml` and `sh s
 Use a dedicated checkout and protected configuration:
 
 ```sh
-install -d -m 0755 /etc/personal-journal
-install -d -m 0700 /var/lib/personal-journal/deploy
-install -d -m 0755 /srv/personal-journal/data
-install -m 0600 ops/env/production.env.example /etc/personal-journal/production.env
-install -m 0644 ops/env/deploy.env.example /etc/personal-journal/deploy.env
+install -d -m 0755 /etc/blog
+install -d -m 0700 /var/lib/blog/deploy
+install -d -m 0755 /srv/blog/data
+install -m 0600 ops/env/production.env.example /etc/blog/production.env
+install -m 0644 ops/env/deploy.env.example /etc/blog/deploy.env
 ```
 
 Replace all placeholders. Set SITE_IMAGE and CMS_IMAGE to reviewed registry digests. Set CMS_DATABASE_URL to a dedicated role owning author_cms, not the PostgreSQL administrator or an identity from a retired service. Set one random CMS_READ_TOKEN shared only by cms and the site server. Compose supplies the public HTTPS origins, SITE_URL from SITE_DOMAIN, and internal CMS URL. Outside Compose, set SITE_URL explicitly to the public root HTTP(S) origin. URI-encode database passwords. Environment files never enter Git, image builds or logs.
@@ -23,8 +23,8 @@ Replace all placeholders. Set SITE_IMAGE and CMS_IMAGE to reviewed registry dige
 Create postgres, cms/media, backup-staging and caddy data/config/logs under BLOG_DATA_ROOT. The CMS media directory must be writable by UID/GID 1000. Protected source recovery archives remain separate from live service storage. The backup staging directory must be writable by the operations image user. Render Compose before starting any service:
 
 ```sh
-docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml config --quiet
-docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml up -d postgres
+docker compose --env-file /etc/blog/production.env -f deploy/compose.yaml config --quiet
+docker compose --env-file /etc/blog/production.env -f deploy/compose.yaml up -d postgres
 ```
 
 Before first CMS startup, create blog_cms and its schema in the configured database using the administrator and interactive psql password command described in [CMS setup](../../author-cms/README.md). Review actual role membership and inherited grants; it must not read legacy tables. CMS startup runs checksum-validated migrations as that role before serving requests. Do not grant superuser to repair a failed schema setup.
@@ -32,9 +32,9 @@ Before first CMS startup, create blog_cms and its schema in the configured datab
 Set the owner password through stdin (never a command-line argument), then start the reviewed CMS/site/Caddy services. The CMS command below reads a password supplied through the caller's stdin:
 
 ```sh
-docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml up -d cms
-docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml exec -T cms node author-cms/scripts/manage.mjs owner --password-stdin
-docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml up -d site caddy
+docker compose --env-file /etc/blog/production.env -f deploy/compose.yaml up -d cms
+docker compose --env-file /etc/blog/production.env -f deploy/compose.yaml exec -T cms node author-cms/scripts/manage.mjs owner --password-stdin
+docker compose --env-file /etc/blog/production.env -f deploy/compose.yaml up -d site caddy
 ```
 
 When migrating, follow [CMS cutover](cms-migration.md) instead of starting an empty CMS as the formal source. Verify actual running port mappings: only Caddy publishes host ports. Site and CMS run as node with read-only roots, a writable media bind mount only for CMS, and /tmp tmpfs.

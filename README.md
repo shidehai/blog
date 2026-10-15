@@ -33,14 +33,13 @@ Docker 安装方式见 [Docker 官方 Debian 安装说明](https://docs.docker.c
 
 ### 2. 下载并初始化
 
-当前包含写作后台的代码位于 `codex/author-cms` 分支。首次部署请使用新的检出目录和空的数据目录。
+部署使用 `main` 分支，待部署的改动请先合并到 `main`。代码直接放在 `/opt/blog`，无需 `current` 子目录。首次部署请使用新的检出目录和空的数据目录。
 
 **要一并迁入本机文章和图片时，先阅读[迁入现有内容](#迁入现有内容)，初始化时使用带 `--import` 的命令。**
 
 ```sh
-mkdir -p /opt/personal-journal
-git clone --branch codex/author-cms --single-branch https://github.com/shidehai/blog.git /opt/personal-journal/current
-cd /opt/personal-journal/current
+git clone --branch main --single-branch https://github.com/shidehai/blog.git /opt/blog
+cd /opt/blog
 sh scripts/setup-vps.sh
 ```
 
@@ -58,7 +57,7 @@ sh scripts/setup-vps.sh
 在 VPS 上查看初始后台密码：
 
 ```sh
-cat /srv/personal-journal/data/bootstrap/owner-password.txt
+cat /srv/blog/data/bootstrap/owner-password.txt
 ```
 
 1. 打开 `https://你的域名/admin`，输入密码登录，无需用户名。
@@ -83,7 +82,7 @@ scp -r .data/exports/my-backup/bundle root@YOUR_VPS_IP:/root/blog-content
 在 VPS 下载代码后，用下面的命令完成首次初始化：
 
 ```sh
-cd /opt/personal-journal/current
+cd /opt/blog
 sh scripts/setup-vps.sh --import /root/blog-content
 ```
 
@@ -93,7 +92,7 @@ sh scripts/setup-vps.sh --import /root/blog-content
 
 ## 日常管理
 
-在 VPS 的 `/opt/personal-journal/current` 目录执行：
+在 VPS 的 `/opt/blog` 目录执行：
 
 ```sh
 # 启动服务
@@ -115,13 +114,13 @@ docker compose down
 
 使用默认部署设置时，数据位置如下：
 
-| 位置                                    | 保存的内容                           |
-| --------------------------------------- | ------------------------------------ |
-| `/opt/personal-journal/current/.env`    | 私有运行配置、数据库凭据和读取令牌   |
-| `/srv/personal-journal/data/postgres/`  | 文章、草稿、历史、站点资料和认证数据 |
-| `/srv/personal-journal/data/cms/media/` | 上传图片与原文件                     |
-| `/srv/personal-journal/data/caddy/`     | HTTPS 证书、配置和访问日志           |
-| `/srv/personal-journal/data/bootstrap/` | 初始密码与初始化记录                 |
+| 位置                        | 保存的内容                           |
+| --------------------------- | ------------------------------------ |
+| `/opt/blog/.env`            | 私有运行配置、数据库凭据和读取令牌   |
+| `/srv/blog/data/postgres/`  | 文章、草稿、历史、站点资料和认证数据 |
+| `/srv/blog/data/cms/media/` | 上传图片与原文件                     |
+| `/srv/blog/data/caddy/`     | HTTPS 证书、配置和访问日志           |
+| `/srv/blog/data/bootstrap/` | 初始密码与初始化记录                 |
 
 推送 GitHub 只保存代码。恢复博客需要数据库和媒体的备份；上述私有配置、密码和内容包应保存在受保护的位置。
 

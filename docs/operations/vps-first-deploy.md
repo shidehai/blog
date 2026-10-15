@@ -6,12 +6,13 @@
 
 先安装 Docker Engine / Compose 插件和 Git。只需一个域名，A 记录解析到 VPS 公网 IP；仅在有可用公网 IPv6 时添加 AAAA。博客使用根路径，后台使用同域名的 `/admin`。保留 SSH，放行 TCP 80、443，确认这些端口没有被其他网站占用。
 
+先将待部署的改动合并到 `main`。代码直接放在 `/opt/blog`，无需 `current` 子目录；首次部署使用新的检出目录和空的数据目录。如果需要迁入本机文章和图片，初始化时使用后文的 `--import` 命令。
+
 在 VPS 的 root 终端执行：
 
 ```sh
-mkdir -p /opt/personal-journal
-git clone --branch codex/author-cms --single-branch https://github.com/shidehai/blog.git /opt/personal-journal/current
-cd /opt/personal-journal/current
+git clone --branch main --single-branch https://github.com/shidehai/blog.git /opt/blog
+cd /opt/blog
 sh scripts/setup-vps.sh
 ```
 
@@ -22,7 +23,7 @@ sh scripts/setup-vps.sh
 后台初始密码只保存在 VPS 私有文件中，查看方式：
 
 ```sh
-cat /srv/personal-journal/data/bootstrap/owner-password.txt
+cat /srv/blog/data/bootstrap/owner-password.txt
 ```
 
 访问 `https://你的域名` 和 `https://你的域名/admin`。Caddy 自动申请并续期证书；首次启动后仍须实际访问检查 HTTPS。后台的登录、接口、脚本、字体和认证图片都位于 `/admin` 下。
@@ -41,7 +42,7 @@ scp -r .data/exports/my-backup/bundle root@YOUR_VPS_IP:/root/blog-content
 在 VPS 的首次初始化命令上增加一个参数：
 
 ```sh
-cd /opt/personal-journal/current
+cd /opt/blog
 sh scripts/setup-vps.sh --import /root/blog-content
 ```
 
@@ -51,7 +52,7 @@ sh scripts/setup-vps.sh --import /root/blog-content
 
 ## 日常管理
 
-在 `/opt/personal-journal/current` 执行标准 Compose 命令：
+在 `/opt/blog` 执行标准 Compose 命令：
 
 ```sh
 docker compose up -d
@@ -65,11 +66,11 @@ docker compose down
 ## 配置、数据和备份
 
 - `.env`：实际运行配置，权限 0600；不要公开或提交。
-- `/srv/personal-journal/data/`：PostgreSQL、CMS 图片、Caddy 数据与私有初始化记录。
-- `/srv/personal-journal/data/bootstrap/owner-password.txt`：首次生成的后台密码，之后重置密码不会改写此旧记录。
+- `/srv/blog/data/`：PostgreSQL、CMS 图片、Caddy 数据与私有初始化记录。
+- `/srv/blog/data/bootstrap/owner-password.txt`：首次生成的后台密码，之后重置密码不会改写此旧记录。
 - 生产仅 Caddy 暴露 80/443，数据库与应用端口不开放公网。
 
-首次启动不会自动建立异机备份仓库。按[备份恢复](backup-restore.md)配置真实 Restic 仓库、凭据和定时器，并完成一次空目标恢复。使用现有 systemd 单元时，将受保护的运行配置路径对齐到 `/etc/personal-journal/production.env`，可使用指向当前 `.env` 的 root 管理符号链接；不要保留两份逐渐不一致的秘密配置。SFTP 备份还需给备份容器准备只读 SSH 私钥与 known_hosts 挂载。
+首次启动不会自动建立异机备份仓库。按[备份恢复](backup-restore.md)配置真实 Restic 仓库、凭据和定时器，并完成一次空目标恢复。使用现有 systemd 单元时，将受保护的运行配置路径对齐到 `/etc/blog/production.env`，可使用指向当前 `.env` 的 root 管理符号链接；不要保留两份逐渐不一致的秘密配置。SFTP 备份还需给备份容器准备只读 SSH 私钥与 known_hosts 挂载。
 
 Docker 官方 Debian 安装说明：`https://docs.docker.com/engine/install/debian/`。初始化脚本要求支持 `include` 的 Compose v2.20.0 或更高版本；不支持旧版 `docker-compose` v1。
 

@@ -12,8 +12,8 @@ done
 
 staging=${BACKUP_STAGING_DIR:-/backup-staging}
 cms_media=${BACKUP_CMS_MEDIA_DIR:-/data/cms-media}
-tag=${BACKUP_TAG:-personal-journal}
-backup_host=${BACKUP_HOST:-personal-journal-vps}
+tag=${BACKUP_TAG:-blog}
+backup_host=${BACKUP_HOST:-blog-vps}
 
 case "$staging" in
   "" | /)
