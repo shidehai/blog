@@ -40,4 +40,4 @@ pnpm --filter frontend-v2 verify
 
 覆盖严格类型、ESLint、实际 fixture/Markdown 自检和生产构建。跨应用即时发布测试由根 `pnpm test:runtime` 执行，数据库只能使用本机 `_test` 目标。
 
-本机已有日常博客时，必须使用独立数据库和空闲端口。例如设置 `CMS_TEST_DATABASE_URL` 指向专门的本机 `_test` 库，再运行 `xvfb-run --auto-servernum pnpm test:runtime --site-port 4341 --cms-port 4342 --browser`。需要先执行 `pnpm --filter author-cms exec playwright install chromium`，Linux 需安装 Xvfb。测试会关闭 Playwright 默认的焦点模拟，在隔离显示器内实际切换标签页。端口占用会在重置测试 schema 前拒绝；`--browser` 仅在这一隔离实例执行登录、原生 CDP 文件投递、发布、实际标签页焦点/可见性、历史导航和归档。截图、trace 与证据保存在运行日志目录；不会使用日常账户。浏览器原生事件不等同于物理桌面文件管理器拖拽，Link 预取保持关闭，测试另行验证 RSC 预取请求的 no-store 边界。
+本机已有日常博客时，必须使用独立数据库和空闲端口。例如设置 `CMS_TEST_DATABASE_URL` 指向专门的本机 `_test` 库，再运行 `xvfb-run --auto-servernum pnpm test:runtime --site-port 4341 --cms-port 4342 --proxy-port 4340 --browser`。需要先执行 `pnpm --filter author-cms exec playwright install chromium`，Linux 需安装 Xvfb；`--proxy-port` 使用本机 Docker 启动真实 Caddy，将博客与 `/admin` 置于同一入口。测试会关闭 Playwright 默认的焦点模拟，在隔离显示器内实际切换标签页。端口占用会在重置测试 schema 前拒绝；`--browser` 仅在这一隔离实例执行登录、原生 CDP 文件投递、发布、实际标签页焦点/可见性、历史导航和归档。截图、trace 与证据保存在运行日志目录；不会使用日常账户。浏览器原生事件不等同于物理桌面文件管理器拖拽，Link 预取保持关闭，测试另行验证 RSC 预取请求的 no-store 边界。

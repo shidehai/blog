@@ -36,7 +36,6 @@ env_file=$work/compose.env
 cat >"$env_file" <<EOF
 COMPOSE_PROJECT_NAME=personal-journal-validation
 SITE_DOMAIN=blog.example.test
-CMS_DOMAIN=cms.example.test
 ACME_EMAIL=owner@example.test
 SITE_IMAGE=ghcr.io/example/personal-journal@sha256:0000000000000000000000000000000000000000000000000000000000000000
 CMS_IMAGE=ghcr.io/example/personal-journal-cms@sha256:0000000000000000000000000000000000000000000000000000000000000000
@@ -46,6 +45,7 @@ BLOG_DATA_ROOT=$work/data
 POSTGRES_DB=blog
 POSTGRES_USER=blog
 POSTGRES_PASSWORD=fixture-database-password
+CMS_DB_PASSWORD=fixture-cms-database-password-at-least-32-characters
 RESTIC_REPOSITORY=rest:http://backup.example.test/
 RESTIC_PASSWORD=fixture-restic-password
 EOF
@@ -79,10 +79,17 @@ docker compose \
   --profile maintenance \
   config --format json |
   node "$script_dir/validate-compose.mjs" --local
+docker compose \
+  --env-file "$env_file" \
+  -f "$repository_root/docker-compose.yml" \
+  --profile backup \
+  --profile restore \
+  --profile maintenance \
+  config --format json |
+  node "$script_dir/validate-compose.mjs" --standalone
 
 docker run --rm \
   --env ACME_EMAIL=owner@example.test \
-  --env CMS_DOMAIN=cms.example.test \
   --env SITE_DOMAIN=blog.example.test \
   --volume "$repository_root/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" \
   caddy:2.10.2-alpine \

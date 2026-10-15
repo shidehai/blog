@@ -1,10 +1,18 @@
 import assert from "node:assert/strict";
-import { chmod, mkdir, open, readFile, writeFile } from "node:fs/promises";
+import {
+  chmod,
+  mkdir,
+  open,
+  readFile,
+  readdir,
+  writeFile,
+} from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { setTimeout as delay } from "node:timers/promises";
 import path from "node:path";
 import { chromium, expect, type Page } from "@playwright/test";
 import { mediaSchema } from "@blog/content-contracts";
+import { cmsPath } from "@blog/content-contracts/paths";
 import { z } from "zod";
 import sharp from "sharp";
 
@@ -106,6 +114,13 @@ export async function checkBrowser(preview: {
   await editor.setViewportSize({ width: 1440, height: 1000 });
   await reader.setViewportSize({ width: 1440, height: 1000 });
   const cdp = await context.newCDPSession(editor);
+  const downloads = path.join(preview.logDirectory, "downloads");
+  await mkdir(downloads, { mode: 0o700 });
+  await cdp.send("Browser.setDownloadBehavior", {
+    behavior: "allowAndName",
+    downloadPath: downloads,
+    eventsEnabled: true,
+  });
   for (const page of [editor, reader])
     page.on("pageerror", (error) => errors.push(error.message));
   try {
@@ -115,7 +130,78 @@ export async function checkBrowser(preview: {
       .getByLabel("密码", { exact: true })
       .fill("isolated-preview-owner-2026");
     await editor.getByRole("button", { name: "进入写作空间" }).click();
-    await expect(editor).toHaveURL(`${preview.cms}/`);
+    await expect(editor).toHaveURL(preview.cms);
+    const navigation = editor.getByRole("navigation", { name: "后台导航" });
+    await navigation.getByRole("link", { name: "媒体库", exact: true }).click();
+    await expect(editor).toHaveURL(`${preview.cms}/media`);
+    await expect(
+      navigation.getByRole("link", { name: "媒体库", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
+    await navigation
+      .getByRole("link", { name: "站点资料", exact: true })
+      .click();
+    await expect(editor).toHaveURL(`${preview.cms}/settings`);
+    await expect(editor.locator(".avatar-setting img")).toHaveAttribute(
+      "src",
+      cmsPath("/avatar.svg"),
+    );
+    await expect
+      .poll(() =>
+        editor
+          .locator(".avatar-setting img")
+          .evaluate(
+            (image) =>
+              image instanceof HTMLImageElement && image.naturalWidth > 0,
+          ),
+      )
+      .toBe(true);
+    const exportResponse = await context.request.get(
+      `${preview.cms}/api/admin/export`,
+    );
+    assert.equal(exportResponse.status(), 200);
+    assert.match(
+      exportResponse.headers()["content-disposition"] ?? "",
+      /attachment; filename=blog-content.json/,
+    );
+    await editor.getByRole("link", { name: "导出内容", exact: true }).click();
+    // The native noDefaults CDP context does not forward Playwright's download
+    // event. Verify the actual browser-written file, not just the API response.
+    await expect
+      .poll(
+        async () =>
+          (await readdir(downloads)).filter(
+            (name) => !name.endsWith(".crdownload"),
+          ).length,
+      )
+      .toBe(1);
+    const [downloadedName] = (await readdir(downloads)).filter(
+      (name) => !name.endsWith(".crdownload"),
+    );
+    assert.ok(downloadedName);
+    const downloaded: unknown = JSON.parse(
+      await readFile(path.join(downloads, downloadedName), "utf8"),
+    );
+    const expectedExport: unknown = await exportResponse.json();
+    const exportSchema = z.object({
+      data: z.record(z.string(), z.array(z.unknown())),
+    });
+    assert.deepEqual(
+      exportSchema.parse(downloaded).data,
+      exportSchema.parse(expectedExport).data,
+    );
+    const blogLink = editor.getByRole("link", {
+      name: "查看博客",
+      exact: true,
+    });
+    await expect(blogLink).toHaveAttribute("href", cmsPath("/blog"));
+    const blogRedirect = await context.request.get(`${preview.cms}/blog`, {
+      maxRedirects: 0,
+    });
+    assert.equal(blogRedirect.status(), 302);
+    assert.equal(
+      new URL(blogRedirect.headers().location!).origin,
+      new URL(preview.site).origin,
+    );
     await editor.goto(preview.editor);
     const title = "浏览器原生拖图与即时发布验收";
     await editor.getByLabel("文章标题", { exact: true }).fill(title);
@@ -173,7 +259,7 @@ export async function checkBrowser(preview: {
     const media = mediaSchema.parse(await uploaded.json());
     await expect(body).toContainText(`/media/${media.id}`);
     const previewImage = editor.locator(
-      `.preview-content img[src="/api/admin/media/${media.id}"]`,
+      `.preview-content img[src="${cmsPath(`/api/admin/media/${media.id}`)}"]`,
     );
     await expect(previewImage).toBeVisible();
     await expect
@@ -438,6 +524,20 @@ export async function checkBrowser(preview: {
         await (await context.request.get(`${preview.site}/sitemap.xml`)).text()
       ).includes("a-quiet-writing-room"),
     );
+    await editor.bringToFront();
+    await editor.setViewportSize({ width: 1440, height: 1000 });
+    await editor.getByRole("button", { name: "退出登录", exact: true }).click();
+    await expect(editor).toHaveURL(`${preview.cms}/login`);
+    assert.equal(
+      (await context.request.get(`${preview.cms}/api/admin/contents`)).status(),
+      401,
+    );
+    assert.equal(
+      (
+        await context.request.get(`${preview.cms}/api/admin/media/${media.id}`)
+      ).status(),
+      401,
+    );
     assert.deepEqual(errors, [], "浏览器不得产生未处理页面错误");
     const evidence = {
       passed: true,
@@ -453,6 +553,7 @@ export async function checkBrowser(preview: {
         "RSC prefetch transport no-store before/after publication",
         "desktop/mobile overflow and planned tool states",
         "UI archive refreshes existing reader to 404",
+        "/admin navigation, active sidebar, JSON download, blog link and logout",
       ],
       limits: [
         "CDP injects trusted browser file gestures; no physical desktop file-manager drag",

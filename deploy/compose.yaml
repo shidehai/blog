@@ -15,7 +15,6 @@ services:
         condition: service_healthy
     environment:
       ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL}
-      CMS_DOMAIN: ${CMS_DOMAIN:?Set CMS_DOMAIN}
       SITE_DOMAIN: ${SITE_DOMAIN:?Set SITE_DOMAIN}
     ports:
       - "80:80"
@@ -90,7 +89,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: ${CMS_DATABASE_URL:?Set CMS_DATABASE_URL}
-      CMS_ORIGIN: https://${CMS_DOMAIN:?Set CMS_DOMAIN}
+      CMS_ORIGIN: https://${SITE_DOMAIN:?Set SITE_DOMAIN}
       CMS_SITE_ORIGIN: https://${SITE_DOMAIN:?Set SITE_DOMAIN}
       CMS_READ_TOKEN: ${CMS_READ_TOKEN:?Set CMS_READ_TOKEN}
       CMS_MEDIA_ROOT: /data/cms-media
@@ -109,7 +108,13 @@ services:
     cpus: 1.0
     pids_limit: 128
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4322/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4322/admin/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
       interval: 30s
       timeout: 5s
       start_period: 15s

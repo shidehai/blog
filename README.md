@@ -13,7 +13,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-在已完成本地切换的工作区，用 `pnpm local:up` 同时启动博客和写作后台；博客为 `http://localhost:4321`，后台为 `http://localhost:4322`。数据保存在独立的持久目录，停止后不会丢失。启动、登录及本地备份说明见 [本地使用](docs/operations/local-cms.md)。
+在已完成本地切换的工作区，用 `pnpm local:up` 同时启动博客和写作后台；博客为 `http://localhost:4321`，后台为 `http://localhost:4322/admin`。数据保存在独立的持久目录，停止后不会丢失。启动、登录及本地备份说明见 [本地使用](docs/operations/local-cms.md)。
 
 `pnpm dev` 运行博客源码开发服务；本机的 `frontend-v2/.env.local` 指向新 CMS，修改后台源码时另运行 `pnpm cms:dev`，先停止占用相同端口的容器。新工作区没有环境配置时，开发默认使用 fixture。CMS 的初始化、受限数据库账号和本机环境设置见 [后台说明](author-cms/README.md)。日常操作见 [写作指南](docs/authoring.md)。fixture 只用于开发与检查，不能作为内容服务故障的回退。
 
@@ -30,6 +30,15 @@ pnpm dev
 `/archives/[slug]` 是规范文章地址，旧地址和 `/writing/[slug]` 永久跳到当前规范地址。未知文章、`/writing` 与 `/notes/*` 保持 404。随记、专题及其关系保留在后台管理，首版没有它们的公开频道。
 
 ## 构建与部署
+
+VPS 首次部署使用根目录 `docker-compose.yml`。安装 Docker/Compose、将一个域名解析到 VPS 后，在 VPS 全新检出运行：
+
+```sh
+sh scripts/setup-vps.sh
+# 带上本机完整内容包时：sh scripts/setup-vps.sh --import /root/blog-content
+```
+
+按提示填写一个域名和邮箱；后台自动使用同域名的 `/admin`，，脚本自动准备配置、数据库、后台密码和镜像并启动服务。之后用 `docker compose up -d`、`docker compose ps`、`docker compose logs` 管理。完整步骤见 [Debian 12 部署指南](docs/operations/vps-first-deploy.md)。
 
 ```sh
 docker build --target runtime --tag blog-site:local .

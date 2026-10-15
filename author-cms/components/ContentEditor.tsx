@@ -30,6 +30,7 @@ import {
   type Taxonomy,
 } from "@blog/content-contracts";
 import { MarkdownContent } from "@blog/markdown/react";
+import { cmsPath } from "@blog/content-contracts/paths";
 import { deriveReadingMinutes, deriveWordCount, slugify } from "@blog/markdown";
 import {
   api,
@@ -611,7 +612,7 @@ export function ContentEditor({
                 {draft.content ? (
                   <MarkdownContent
                     content={draft.content}
-                    mediaBase="/api/admin/media"
+                    mediaBase={cmsPath("/api/admin/media")}
                   />
                 ) : (
                   <p className="preview-placeholder">
@@ -775,7 +776,7 @@ export function ContentEditor({
                 {draft.coverId ? (
                   <div className="cover-selection">
                     <img
-                      src={`/api/admin/media/${draft.coverId}`}
+                      src={cmsPath(`/api/admin/media/${draft.coverId}`)}
                       alt="当前文章封面"
                     />
                     <div>
@@ -893,7 +894,7 @@ export function ContentEditor({
                   <h3>{historyEntry.data.title}</h3>
                   <MarkdownContent
                     content={historyEntry.data.content}
-                    mediaBase="/api/admin/media"
+                    mediaBase={cmsPath("/api/admin/media")}
                   />
                   <button
                     className="button primary"

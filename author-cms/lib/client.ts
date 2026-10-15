@@ -1,6 +1,7 @@
 "use client";
 import { z } from "zod";
 import { mediaSchema } from "@blog/content-contracts";
+import { cmsPath } from "@blog/content-contracts/paths";
 
 export class ApiError extends Error {
   constructor(
@@ -16,7 +17,7 @@ export async function api<T>(
   method = "GET",
   data?: unknown,
 ): Promise<T> {
-  const response = await fetch(`/api/${path}`, {
+  const response = await fetch(cmsPath(`/api/${path}`), {
     method,
     credentials: "same-origin",
     cache: "no-store",
@@ -45,7 +46,7 @@ export function uploadImage(
 ) {
   return new Promise<z.infer<typeof mediaSchema>>((resolve, reject) => {
     const request = new XMLHttpRequest();
-    request.open("POST", "/api/admin/media");
+    request.open("POST", cmsPath("/api/admin/media"));
     request.timeout = 120000;
     request.upload.onprogress = (event) => {
       if (event.lengthComputable)

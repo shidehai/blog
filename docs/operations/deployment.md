@@ -2,7 +2,9 @@
 
 Production runs Caddy, site, cms and PostgreSQL. Content publishing updates the CMS transaction directly. CI builds code images without CMS/database credentials; manual workflow dispatch pushes both immutable images. The forced SSH key still replaces only site. CMS, schema, Compose, Caddy and host changes require an owner-run maintenance release from a reviewed commit.
 
-For the first owner-run deployment on Debian 12, follow the [Chinese VPS guide](vps-first-deploy.md), including the portable transfer of current local content and media. It builds both images on the server and pins their local image IDs; the forced SSH publisher still requires registry digest references.
+One hostname serves the public blog at `/` and the CMS at `/admin`. Set only SITE_DOMAIN; no CMS_DOMAIN or subdomain DNS record is required. Next.js builds the CMS with `/admin` as its fixed basePath. Caddy forwards `/admin` and `/admin/*` to CMS without stripping the prefix, and sends all other paths to site. Both applications must be upgraded together for this path change; no database/content migration is needed. CMS_ORIGIN and CMS_INTERNAL_URL remain root origins without `/admin`: clients add the shared prefix to HTTP paths. The host-only Secure cookie retains Path=/ and exact Origin checks.
+
+For a first deployment on Debian 12, use the root `docker-compose.yml` and `sh scripts/setup-vps.sh`, following the [Chinese VPS guide](vps-first-deploy.md). The script creates protected configuration, builds the images sequentially, pins their actual local image IDs, initializes a new database and owner, and optionally restores a current CMS bundle with `--import DIR`. Repeating it preserves existing credentials, owner sessions and completed imports. The advanced host/registry setup below remains available; the forced SSH publisher still requires registry digest references.
 
 ## Host configuration
 

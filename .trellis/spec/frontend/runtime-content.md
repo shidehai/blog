@@ -7,10 +7,10 @@ in an already-built site.
 
 ## 2. Signatures
 
-- CMS GET /api/public/catalog|generation|posts/:slug: server-only bearer token.
+- CMS GET /admin/api/public/catalog|generation|posts/:slug: server-only bearer token.
 - Site GET /api/content-generation: {generation}, no-store, no token exposure.
 - ContentFreshness({generation}): pathname/focus/popstate/pageshow/visibility checks.
-- CMS/site GET /media/:uuid: only current allowed publication media.
+- CMS GET /admin/media/:uuid and site GET /media/:uuid: current allowed publication media.
 - pageMetadata(input), sitemapEntries(catalog, siteUrl): configured absolute public URLs.
 
 ## 3. Contracts
@@ -25,7 +25,9 @@ while updating metadata: verify visible body, not just head/title. Avoid concurr
 checks/reload loops. Failed checks show reconnect; cached state is not confirmed
 fresh. No continuous polling/push while readers stay idle.
 
-Proxy media only to configured CMS. Owner preview resolves media through private
+All internal CMS calls, including the public middleware availability probe, add
+the shared cmsPath prefix to the configured root origin. Proxy media only to
+configured CMS. Owner preview resolves media through private
 authenticated endpoints; public same-origin images need no login. Every public
 request checks privacy/references and immutable bytes. No static cache bypasses
 revocation. Shared sanitized GFM retains heading IDs and image proportions;

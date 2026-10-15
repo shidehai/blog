@@ -8,12 +8,18 @@ Each app owns its type/lint gate; root ignores app files intentionally.
 pnpm --filter frontend-v2 verify
 CMS_TEST_DATABASE_URL=postgres://.../author_cms_test pnpm --filter author-cms verify
 CMS_TEST_DATABASE_URL=postgres://.../author_cms_test pnpm test:runtime
-CMS_TEST_DATABASE_URL=postgres://.../isolated_launch_test xvfb-run --auto-servernum pnpm test:runtime --site-port 4341 --cms-port 4342 --browser
+CMS_TEST_DATABASE_URL=postgres://.../isolated_launch_test xvfb-run --auto-servernum pnpm test:runtime --site-port 4341 --cms-port 4342 --proxy-port 4340 --browser
 ```
 
 Shared changes require root verify/operations checks. Tests exercise real schemas,
 renderers/store/HTTP boundaries. DB tests need isolated local _test config and no
 preview sharing its schema. A skipped DB test is not passing DB evidence.
+
+The optional --proxy-port starts the pinned Caddy container with the shipping
+path/header rules and isolated native upstream ports. It requires Linux Docker
+host networking, preflights all three ports and removes its container on exit.
+This HTTP test proves one-origin routing/CSRF/navigation/resources; public-domain
+certificate acceptance remains a production check.
 
 ## Runtime and visual regression
 

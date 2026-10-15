@@ -1,0 +1,185 @@
+{
+  "date": "2026-10-15",
+  "mainConversationOnly": true,
+  "aiConcurrency": 1,
+  "domainCount": 1,
+  "cmsBasePath": "/admin",
+  "fullGate": {
+    "passed": true,
+    "cmsTests": 7,
+    "skipped": 0,
+    "bothApplicationBuilds": true,
+    "operationsRegression": true
+  },
+  "sameOriginCaddy": {
+    "passed": true,
+    "buildIds": [
+      "SBl6ODa8sABHIukBZlM-o",
+      "vDWwrrrghz0deNeL_pL2_"
+    ],
+    "pids": [
+      347611,
+      347640
+    ],
+    "checks": [
+      "previously-404 slug",
+      "list/category/series/search summaries",
+      "draft isolation",
+      "publish update",
+      "archive and media revoke",
+      "reader-only boundary",
+      "unavailable returns 503",
+      "no rebuild/restart",
+      "configured canonical/OG/Twitter and sharing PNG",
+      "dynamic published-only sitemap after publish/rename/archive",
+      "robots and disabled unused image optimizer",
+      "/admin redirects, static assets, private API and exact proxy path boundary"
+    ],
+    "sameOriginCaddy": true,
+    "preview": {
+      "cms": "http://localhost:4340/admin",
+      "site": "http://localhost:4340",
+      "editor": "http://localhost:4340/admin/write/ccd4003d-6c45-4239-81d9-e69cbb0c32ab",
+      "logDirectory": "/tmp/blog-cms-runtime-1792055852809"
+    }
+  },
+  "browser": {
+    "passed": true,
+    "chromium": "151.0.7922.34",
+    "nativeBrowserDefaults": true,
+    "nativeDrop": {
+      "trusted": true,
+      "files": [
+        {
+          "name": "native-browser-drop.png",
+          "type": "image/png"
+        }
+      ]
+    },
+    "nativeEvents": [
+      {
+        "type": "focus",
+        "trusted": true,
+        "visibility": "visible"
+      },
+      {
+        "type": "focus",
+        "trusted": true,
+        "visibility": "visible"
+      },
+      {
+        "type": "blur",
+        "trusted": true,
+        "visibility": "visible"
+      },
+      {
+        "type": "visibilitychange",
+        "trusted": true,
+        "visibility": "hidden"
+      },
+      {
+        "type": "visibilitychange",
+        "trusted": true,
+        "visibility": "visible"
+      },
+      {
+        "type": "focus",
+        "trusted": true,
+        "visibility": "visible"
+      },
+      {
+        "type": "visibilitychange",
+        "trusted": true,
+        "visibility": "hidden"
+      },
+      {
+        "type": "focus",
+        "trusted": true,
+        "visibility": "visible"
+      },
+      {
+        "type": "blur",
+        "trusted": true,
+        "visibility": "visible"
+      },
+      {
+        "type": "visibilitychange",
+        "trusted": true,
+        "visibility": "hidden"
+      },
+      {
+        "type": "visibilitychange",
+        "trusted": true,
+        "visibility": "visible"
+      },
+      {
+        "type": "focus",
+        "trusted": true,
+        "visibility": "visible"
+      },
+      {
+        "type": "visibilitychange",
+        "trusted": true,
+        "visibility": "hidden"
+      },
+      {
+        "type": "focus",
+        "trusted": true,
+        "visibility": "visible"
+      }
+    ],
+    "checks": [
+      "trusted CDP file drop and live preview",
+      "published image exact bytes and revocation",
+      "UI publish from previous 404 and real back/forward",
+      "trusted native focus/visibility reloads visible title and body",
+      "RSC prefetch transport no-store before/after publication",
+      "desktop/mobile overflow and planned tool states",
+      "UI archive refreshes existing reader to 404",
+      "/admin navigation, active sidebar, JSON download, blog link and logout"
+    ],
+    "limits": [
+      "CDP injects trusted browser file gestures; no physical desktop file-manager drag",
+      "Link speculative prefetch remains disabled; no claim of populated client prefetch cache"
+    ]
+  },
+  "imageScans": {
+    "cms": {
+      "passed": true,
+      "imageID": "sha256:41a717a81b73ccd5f123482cf8b8f91c27908c0a6f1032cb1c69539970874411",
+      "configID": "sha256:e304091a6dcff620e050aadf9611b4c3781f4114cd6e1c8568f42093cdbb69c7",
+      "rootFilesystemExactlyMatchesRunningImage": true,
+      "imageArchiveSha256": "963657700711f95b4d5caf2d171314a617d78671f3f0b20d686fb20918ba72f5",
+      "highCritical": 0
+    },
+    "site": {
+      "passed": true,
+      "imageID": "sha256:d827649a1deb2e58c540b9d23ebff9417d58f36e0b2019a3c2a2692e607c2608",
+      "configID": "sha256:9c8cc4841af5da5934533893704f116751ccc921e073b4560287b248febe6ad7",
+      "rootFilesystemExactlyMatchesRunningImage": true,
+      "imageArchiveSha256": "c399ddd902f32264f38cf77acff857ab58c39bddb93859725470d504fa9413a3",
+      "highCritical": 0
+    }
+  },
+  "composeBootstrap": {
+    "scope": "single_domain_admin_path_with_newly_built_images",
+    "remoteDeployment": false,
+    "tlsTested": false,
+    "buildsRepeated": false,
+    "freshInitialization": true,
+    "restrictedRoleAndSchema": true,
+    "secureCookie": true,
+    "authenticatedPublicationAndMedia": true,
+    "publicRuntimeArticle": true,
+    "repeatedSetupPreservesCredentialsOwnerSessionsAndContent": true,
+    "separateBundleRestoreAndReexportEqual": true,
+    "mediaBytesEqual": true,
+    "repeatedImportPreservesNewerDraftsAndSessions": true,
+    "logsOmitRuntimeSecrets": true,
+    "contentCount": 1,
+    "mediaFileCount": 1,
+    "isolatedStacksStopped": true
+  },
+  "remoteDeployment": false,
+  "publicDomainHttpsVerified": false
+}

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cmsPath } from "@blog/content-contracts/paths";
 import { readRuntimeEnvironment } from "../../../lib/env";
 export const dynamic="force-dynamic";
 export async function GET(_request:Request,{params}:{params:Promise<{id:string}>}){
@@ -6,7 +7,7 @@ export async function GET(_request:Request,{params}:{params:Promise<{id:string}>
   if(!z.uuid().safeParse(id).success)return new Response(null,{status:404,headers});
   try{
     const environment=readRuntimeEnvironment();if(environment.source!=="cms")return new Response(null,{status:404,headers});
-    const response=await fetch(`${environment.url}/media/${id}`,{cache:"no-store",signal:AbortSignal.timeout(10000)});
+    const response=await fetch(`${environment.url}${cmsPath(`/media/${id}`)}`,{cache:"no-store",signal:AbortSignal.timeout(10000)});
     if(response.status===404)return new Response(null,{status:404,headers});
     if(!response.ok||!/^image\/(jpeg|png|gif|webp|avif)$/.test(response.headers.get("content-type")??"")||Number(response.headers.get("content-length"))>20*1024*1024)throw new Error();
     return new Response(response.body,{headers:{...headers,"Content-Type":response.headers.get("content-type")!,"Content-Disposition":`inline; filename="${id}"`}});

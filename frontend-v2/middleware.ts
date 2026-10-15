@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { readRuntimeEnvironment } from "./lib/env";
+import { cmsPath } from "@blog/content-contracts/paths";
 export async function middleware(){
   try {
     const environment=readRuntimeEnvironment();
     if(environment.source==="cms"){
-      const result=await fetch(`${environment.url}/api/public/generation`,{headers:{Authorization:`Bearer ${environment.token}`},cache:"no-store",signal:AbortSignal.timeout(5000)});
+      const result=await fetch(`${environment.url}${cmsPath("/api/public/generation")}`,{headers:{Authorization:`Bearer ${environment.token}`},cache:"no-store",signal:AbortSignal.timeout(5000)});
       if(!result.ok)throw new Error();
     }
     const response=NextResponse.next();response.headers.set("Cache-Control","private, no-store, max-age=0");return response;

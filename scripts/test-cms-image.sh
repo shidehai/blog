@@ -3,6 +3,7 @@ set -eu
 
 image=${1:-}
 [ "$#" -eq 1 ] && [ -n "$image" ] || { echo "Usage: test-cms-image.sh IMAGE" >&2; exit 2; }
+script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 network="blog-cms-image-test-$$"
 database="$network-db"
 container="$network-app"
@@ -21,7 +22,9 @@ trap cleanup EXIT
 docker network create --internal "$network" >/dev/null
 docker run --detach --name "$database" --network "$network" --network-alias database \
   --env POSTGRES_PASSWORD=isolated-image-database-password \
+  --env CMS_DB_PASSWORD=isolated-image-owner-database-password \
   --env POSTGRES_DB=cms_image_test --tmpfs /var/lib/postgresql/data \
+  --volume "$script_dir/../deploy/init-cms-role.sh:/docker-entrypoint-initdb.d/10-author-cms.sh:ro" \
   postgres:17.9-alpine >/dev/null
 deadline=$(($(date +%s) + 60))
 until docker exec "$database" pg_isready -h 127.0.0.1 -U postgres >/dev/null 2>&1; do
@@ -29,8 +32,6 @@ until docker exec "$database" pg_isready -h 127.0.0.1 -U postgres >/dev/null 2>&
   sleep 1
 done
 docker exec -i "$database" psql -v ON_ERROR_STOP=1 -U postgres -d cms_image_test >/dev/null <<'SQL'
-CREATE ROLE cms_image_owner LOGIN PASSWORD 'isolated-image-owner-database-password' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION;
-CREATE SCHEMA author_cms AUTHORIZATION cms_image_owner;
 CREATE TABLE public.legacy_sentinel (value text);
 INSERT INTO public.legacy_sentinel VALUES ('legacy data must remain inaccessible');
 SQL
@@ -38,12 +39,12 @@ SQL
 docker run --detach --name "$container" --network "$network" \
   --read-only --tmpfs /tmp --tmpfs /data/cms-media:uid=1000,gid=1000,mode=0700 \
   --cap-drop ALL --security-opt no-new-privileges \
-  --env DATABASE_URL=postgres://cms_image_owner:isolated-image-owner-database-password@database:5432/cms_image_test \
+  --env DATABASE_URL=postgres://blog_cms:isolated-image-owner-database-password@database:5432/cms_image_test \
   --env CMS_ORIGIN=http://localhost:4322 --env CMS_SITE_ORIGIN=http://localhost:4321 \
   --env CMS_READ_TOKEN=isolated-image-reader-token-32-characters \
   --env CMS_MEDIA_ROOT=/data/cms-media "$image" >/dev/null
 deadline=$(($(date +%s) + 60))
-until docker exec "$container" node -e "fetch('http://127.0.0.1:4322/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" >/dev/null 2>&1; do
+until docker exec "$container" node -e "fetch('http://127.0.0.1:4322/admin/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" >/dev/null 2>&1; do
   [ "$(docker inspect --format '{{.State.Status}}' "$container")" = running ] || {
     docker logs "$container" >&2; exit 1;
   }
@@ -75,7 +76,7 @@ for(const text of ['Blog','中文']) {
   let ink=0;for(let pixel=0;pixel<data.length;pixel+=info.channels)if(data[pixel]<128)ink++;
   assert.ok(ink>150,`SVG text produced no readable pixels: ${text}`);
 }
-const origin='http://localhost:4322', base='http://127.0.0.1:4322';
+const origin='http://localhost:4322', base='http://127.0.0.1:4322/admin';
 assert.equal((await fetch(`${base}/api/admin/contents`)).status,401);
 const login=await fetch(`${base}/api/auth/login`,{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify({password:'isolated-image-owner-password-2026'})});
 assert.equal(login.status,200);

@@ -16,6 +16,7 @@ import {
   type ContentDraft,
 } from "@blog/content-contracts";
 import { api, dateLabel, errorMessage, kindLabels } from "../lib/client";
+import { cmsPath } from "@blog/content-contracts/paths";
 const status = (item: AdminContent) =>
   item.archived ? "archived" : item.publishedRevisionId ? "published" : "draft";
 export function ContentList({ initial }: { initial: AdminContent[] }) {
@@ -139,7 +140,7 @@ export function ContentList({ initial }: { initial: AdminContent[] }) {
               >
                 {item.draft.coverId ? (
                   <img
-                    src={`/api/admin/media/${item.draft.coverId}`}
+                    src={cmsPath(`/api/admin/media/${item.draft.coverId}`)}
                     alt=""
                     loading="lazy"
                   />
