@@ -1,65 +1,33 @@
 # Frontend Component Guidelines
 
-## Server First
+Server components load typed view models. Client components own CodeMirror,
+preview, navigation/theme/search, code-copy and reading interactions. React/browser
+state suffices; no global state library. Semantic classes need real CSS rules.
+CMS visual direction is in author-cms/DESIGN.md; preserve public visual changes.
 
-Next App Router pages and layout components are server components by default.
-Fetch the typed snapshot through `lib/content.ts` in that layer and pass only
-view-model props to presentation components. Use `"use client"` only when a
-component needs browser state, event handlers, storage, clipboard access, or
-observers.
+## Writing and images
 
-Current client boundaries are intentionally local: navigation/theme controls,
-the command menu, the reading-page interaction layer, and Markdown copy
-behavior. Do not add a global state library or client provider to move a
-single interaction upward.
+CodeMirror owns cursor selection. Upload, file-drop, clipboard-image and library
+insertion share one upload path, inserting escaped Markdown at cursor. Retain text
+and alt on failures. Preview uses @blog/markdown, not an alternate grammar. Title
+grows with content/viewport. Wide screens split edit/preview; mobile switches tabs
+and must show the active mode correctly.
 
-## Semantic CSS Ownership
+Save states use text; conflicts keep local text and offer reload/clone. Reload
+requires confirmation. Publish waits for saves/images and locks on unknown outcome.
+Leave guards include text, uploads and uncertain publication. Media dialog controls
+cancel/close during upload; never discard an unfinished image silently.
 
-`app/globals.css` is the authoritative token and component-style layer. JSX
-uses semantic classes such as `command-menu-*` and `project-card-*`; those
-classes must have a real project-owned rule in the stylesheet.
+## Accessibility/navigation
 
-Tailwind, PostCSS utility generation, and utility-only class strings are not
-part of this application. When changing a visible component, add or amend the
-matching semantic rule rather than introducing an inert utility dependency.
-Preserve existing global visual changes unless the requested behavior directly
-requires an isolated merge.
+Use landmarks, labels, native controls, headings, alt text and visible focus.
+Closed mobile sidebar is inert; open sidebar makes main inert with backdrop/Escape
+close. State cannot rely only on color. Check reduced motion/narrow screens.
+Search custom clear suppresses native duplicate controls.
 
-## Accessibility Baseline
-
-- Use a landmark, an ordered heading hierarchy, and native controls before
-  adding visual wrappers.
-- Keep keyboard navigation and focus-visible styles working for menus, search,
-  theme controls, sharing, and table-of-contents links.
-- Dialog-like client UI uses `role="dialog"`, `aria-modal`, and an accessible
-  label; its result rows remain buttons or links rather than clickable generic
-  elements.
-- A `type="search"` field with a custom clear button must suppress the WebKit
-  native cancel control, otherwise users see duplicate clear affordances.
-- Motion and color decorate state but do not carry the only meaning. Preserve
-  usable reduced-motion and narrow-width layouts.
-
-## Article Reading Contract
-
-`app/archives/[slug]/ArticleClient.tsx` owns reading progress, heading spy,
-sharing feedback, adjacent article links, and related-article presentation.
-All intra-site detail links in that component use `/archives/<slug>`.
-
-`MarkdownContent` is the sole owner of generated code-copy controls. A reading
-page must not append a second copy button or second listener. `extractHeadings`
-and the Markdown heading renderer must retain matching IDs so the table of
-contents can target actual article headings.
-
-## Command Menu Contract
-
-The command menu searches the already-built `Post[]` props; it does not fetch a
-second content index. Article results navigate to `/archives/<slug>`. Keyboard
-selection, pointer selection, and the empty-query navigation list use the same
-result array so their indexes cannot diverge.
-
-## Component Placement
-
-Create a shared component only after two real consumers share a semantic unit.
-Otherwise keep one-consumer client UI beside its route. Do not turn simple
-components into variant factories, duplicate Directus mapping in a component,
-or recreate page data from `window.location`.
+Public content links disable prefetch. ContentFreshness owns generation checks
+and document reload for changed content/history404. Search consumes current
+PostSummary[]; pointer/keyboard/empty-query share one result array.
+@blog/markdown alone owns code-copy and matching heading IDs. ArticleClient owns
+progress/heading spy/share/adjacent/related links. No duplicate enhancements or
+reconstruction of CMS state from window.location.

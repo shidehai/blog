@@ -1,74 +1,32 @@
 # Frontend Directory Structure
 
-## Current Layout
-
 ```text
-frontend-v2/
-  app/                         # Next App Router routes and global stylesheet
-    archives/[slug]/            # Canonical static article page
-    writing/[slug]/             # Static, known-slug compatibility redirect
-    healthz/                    # Non-cacheable container health route
-  components/                  # Reusable React presentation/client behavior
-  lib/                          # Env, Directus decoder, snapshot, fixture, types
-  public/                       # Authored assets copied into standalone output
-    _cms/                       # Ignored build-generated public raster originals
-deploy/                         # Compose and Caddy topology
-directus/                       # Schema, bootstrap, seed and CMS contracts
-scripts/                        # Build, image and operational validation helpers
-tests/                          # Directus and operations checks
+frontend-v2/app/archives/[slug]/        # Dynamic canonical article
+frontend-v2/app/writing/[slug]/         # Published slug/alias permanent redirect
+frontend-v2/app/media/[id]/             # Same-origin publication media proxy
+frontend-v2/app/api/content-generation/ # Browser freshness, no-store
+frontend-v2/components/                 # Public UI/browser interactions
+frontend-v2/lib/content.ts              # Typed runtime reads, request-local dedup
+frontend-v2/lib/env.ts                  # Server environment boundary
+frontend-v2/lib/fixture-projector.ts    # Pure offline sample projection
+frontend-v2/public/                     # Authored assets, never CMS upload root
+author-cms/app/                         # Login/list/write/media/organize/settings
+author-cms/components/                  # Editor/media picker/shell/controls
+author-cms/lib/                         # API/domain/auth/storage/transfer
+packages/content-contracts/             # Shared schemas and inferred types
+packages/markdown/                      # Shared renderer and article CSS
 ```
 
-Root files own workspace and image configuration. `frontend-v2` owns its own
-dependencies, quality commands, App Router tree, and project-owned CSS.
+Pages are server components; client boundaries own named browser interactions.
+Use promised params. Content routes are force-dynamic; no static slug list or
+dynamicParams=false. archives resolves current publication/aliases and canonical
+redirect; known writing slug returns308, unknown writing/note routes remain404.
+Notes/topics remain manageable without new public channels.
 
-## Route Rules
+Pages consume lib/content.ts, not raw CMS rows/credentials. Root layout embeds no
+permanent catalog. LayoutShell receives summaries; detail only loads for its route.
+Keep filesystem/crypto/DB/env out of client import graphs.
 
-- App Router pages are server components by default. Add `"use client"` only
-  for a named browser interaction.
-- `/archives/[slug]` is the canonical published article route. It exports
-  static params from `getAllPosts()`, uses `dynamicParams = false`, and returns
-  `notFound()` for a slug outside the current snapshot.
-- `/writing/[slug]` generates the same known static params and permanently
-  redirects only a confirmed published slug to `/archives/[slug]`. Do not add
-  `/writing/page.tsx`, a catch-all redirect, or guessed mappings for unknown
-  slugs.
-- `/notes/*` deliberately has no V2 route. Notes and topics can remain CMS
-  records without becoming public URLs.
-- `app/healthz/route.ts` is a lightweight, non-cacheable runtime health
-  endpoint; it must not read the CMS.
-
-## Content Boundary
-
-`lib/env.ts` owns build environment parsing. `lib/directus.ts` decodes external
-responses and constructs `ContentSnapshot`; `lib/content.ts` is the only page
-facing accessor layer. Pages and components consume view models, never raw CMS
-records or `process.env`.
-
-The checked fixture and a Directus response enter the same snapshot builder.
-Fixture mode is offline/default; an explicit Directus build must fail rather
-than silently substituting fixture data. The public projection currently
-contains published article/tutorial records, categories, tags, series, and the
-site profile. It intentionally does not expose CMS notes, topics, junctions, or
-RSS links.
-
-`lib/media.ts` owns Node-only authenticated media materialization; keep its
-filesystem/crypto dependencies out of client imports. The pure Markdown image
-scanner is shared with `MarkdownContent`. The build/dev wrapper alone resets
-the fixed generated namespace before Next workers; loaders only publish atomic
-verified files. Generated output, staging and locks are excluded from Git and
-Docker input. Authored public files are never cleanup targets.
-
-## Naming and Placement
-
-- App Router routes use Next file conventions (`page.tsx`, `route.ts`) and
-  lowercase URL segments. Route-local client UI stays adjacent to its route
-  when it has one consumer; shared UI belongs in `components/` after a second
-  real consumer exists.
-- Components use PascalCase filenames. Content boundary modules use concise
-  lowercase filenames in `lib/`.
-- Global tokens and semantic component classes live in `app/globals.css`.
-  Do not reintroduce Tailwind configuration or utility-only styling without a
-  deliberate, separately reviewed styling-system decision.
-- Tests and executable selfchecks name the behavior they prove. Keep fixture
-  assertions in `lib/*.selfcheck.mts` when they exercise the real decoder and
-  snapshot path.
+Each app owns semantic tokens/classes in app/globals.css; article CSS belongs to
+packages/markdown. Do not add inactive Tailwind/utility config. Keep one-consumer
+UI local; share after real reuse. Preserve authored assets and unrelated changes.

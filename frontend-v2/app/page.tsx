@@ -12,6 +12,16 @@ import { FeaturedPost } from "../components/FeaturedPost";
 import { PostCard } from "../components/PostCard";
 import { SideLeft } from "../components/SideLeft";
 import { SideRight } from "../components/SideRight";
+import { pageMetadata, PUBLIC_PAGES, SITE_NAME } from "../lib/seo";
+
+export async function generateMetadata() {
+  const profile = await getProfile();
+  const title = `${SITE_NAME} · ${profile.name}`;
+  return {
+    ...pageMetadata({ ...PUBLIC_PAGES.home, title, description: profile.bio }),
+    title: { absolute: title },
+  };
+}
 
 export default async function HomePage() {
   const [
@@ -32,7 +42,7 @@ export default async function HomePage() {
     getActivityInfo(),
   ]);
 
-  // 快照可能没有任何已发布文章（Directus 模式下的合法初始状态），
+  // 快照可能没有任何已发布文章（CMS 尚无发布文章时的合法状态），
   // 此时 featured 为 undefined，featured 区与列表都必须安全降级。
   const featured = featuredPosts[0] || allPosts[0];
   const recentPosts = featured

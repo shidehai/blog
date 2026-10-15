@@ -11,24 +11,18 @@
   "scripts": {
     "dev": "pnpm --filter frontend-v2 dev",
     "build": "pnpm --filter frontend-v2 build",
-    "typecheck": "pnpm --filter frontend-v2 typecheck",
-    "lint": "eslint scripts directus && pnpm --filter frontend-v2 lint",
-    "format": "prettier --write --ignore-unknown .prettierrc.json README.md package.json eslint.config.js deploy directus frontend-v2 scripts",
-    "format:check": "prettier --check --ignore-unknown .prettierrc.json README.md package.json eslint.config.js deploy directus frontend-v2 scripts",
-    "directus:schema:diff": "docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.dev.yaml exec -T directus node cli.js schema apply --dry-run --yes /directus/project/schema.yaml",
-    "directus:schema:apply": "docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.dev.yaml exec -T directus node cli.js schema apply --yes /directus/project/schema.yaml && docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.dev.yaml exec -T postgres sh -c 'psql -v ON_ERROR_STOP=1 -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"' < directus/database.sql",
-    "directus:schema:dump": "docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.dev.yaml exec -T directus node cli.js schema snapshot --yes /directus/project/schema.yaml && docker compose --env-file .env -f deploy/compose.yaml -f deploy/compose.dev.yaml exec -T postgres sh -c 'pg_dump -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" --clean --if-exists --no-owner --no-privileges --schema=public' > directus/database.sql.tmp && mv -f directus/database.sql.tmp directus/database.sql",
-    "directus:bootstrap": "node --env-file=.env directus/bootstrap.mjs",
-    "directus:seed": "node --env-file=.env directus/seed/index.mjs",
-    "launch:plan": "node --env-file=.env directus/launch.mjs plan",
-    "launch:apply": "node --env-file=.env directus/launch.mjs apply",
-    "directus:schema:check": "node --env-file=.env tests/directus.mjs schema",
-    "test:directus-access": "node --env-file=.env tests/directus.mjs access",
-    "test:seed-fixture": "node tests/seed-fixture.mjs",
-    "test:seed-install": "node tests/seed-install.mjs",
-    "test:launch-apply": "node tests/launch-apply.mjs",
+    "typecheck": "pnpm --filter frontend-v2 typecheck && pnpm --filter author-cms typecheck",
+    "lint": "eslint scripts && pnpm --filter frontend-v2 lint && pnpm --filter author-cms lint",
+    "format": "prettier --write --ignore-unknown .prettierrc.json README.md package.json eslint.config.js deploy frontend-v2 scripts",
+    "format:check": "prettier --check --ignore-unknown .prettierrc.json README.md package.json eslint.config.js deploy frontend-v2 scripts",
     "test:operations": "sh tests/ops/run.sh",
-    "verify": "pnpm test:seed-fixture && pnpm test:seed-install && pnpm test:launch-apply && pnpm --filter frontend-v2 verify && sh tests/ops/run.sh"
+    "verify": "pnpm --filter frontend-v2 verify && pnpm --filter author-cms verify && sh tests/ops/run.sh",
+    "cms:dev": "pnpm --filter author-cms dev",
+    "local:up": "docker compose --env-file .env --env-file .env.local -f deploy/compose.yaml -f deploy/compose.local.yaml up -d postgres cms site",
+    "local:down": "docker compose --env-file .env --env-file .env.local -f deploy/compose.yaml -f deploy/compose.local.yaml down",
+    "local:status": "docker compose --env-file .env --env-file .env.local -f deploy/compose.yaml -f deploy/compose.local.yaml ps",
+    "local:logs": "docker compose --env-file .env --env-file .env.local -f deploy/compose.yaml -f deploy/compose.local.yaml logs --tail=100 cms site",
+    "test:runtime": "pnpm --filter author-cms test:runtime"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -41,7 +35,10 @@
   },
   "pnpm": {
     "overrides": {
-      "nanoid": "3.3.18"
+      "nanoid": "3.3.18",
+      "next>sharp": "0.35.5",
+      "postcss": "8.5.30",
+      "source-map-js": "1.2.2"
     }
   }
 }

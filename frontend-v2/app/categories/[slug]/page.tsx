@@ -12,6 +12,7 @@ import {
 import { PostCard } from "../../../components/PostCard";
 import { SideLeft } from "../../../components/SideLeft";
 import { SideRight } from "../../../components/SideRight";
+import { pageMetadata } from "../../../lib/seo";
 
 interface CategoryDetailPageProps {
   params: Promise<{
@@ -19,22 +20,17 @@ interface CategoryDetailPageProps {
   }>;
 }
 
-export async function generateStaticParams() {
-  const categories = await getCategories();
-  return categories.map((cat) => ({
-    slug: cat.slug,
-  }));
-}
-
 export async function generateMetadata({ params }: CategoryDetailPageProps) {
   const { slug } = await params;
   const category = await getCategoryBySlug(slug);
-  if (!category) return { title: "分类未找到" };
+  if (!category)
+    return { title: "分类未找到", robots: { index: false, follow: false } };
 
-  return {
+  return pageMetadata({
+    path: `/categories/${encodeURIComponent(category.slug)}`,
     title: `${category.name} · 分类`,
     description: `浏览 ${category.name} 分类下的全部文章与技术总结`,
-  };
+  });
 }
 
 export default async function CategoryDetailPage({
@@ -71,9 +67,13 @@ export default async function CategoryDetailPage({
       <main className="main-content" id="main-content">
         {/* Breadcrumbs */}
         <nav className="breadcrumbs" aria-label="面包屑导航">
-          <Link href="/">首页</Link>
+          <Link prefetch={false} href="/">
+            首页
+          </Link>
           <span aria-hidden="true">/</span>
-          <Link href="/categories">分类</Link>
+          <Link prefetch={false} href="/categories">
+            分类
+          </Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">{category.name}</span>
         </nav>
@@ -111,6 +111,7 @@ export default async function CategoryDetailPage({
           </div>
           <div className="feed-actions">
             <Link
+              prefetch={false}
               href="/categories"
               style={{
                 display: "inline-flex",
@@ -157,6 +158,7 @@ export default async function CategoryDetailPage({
             </p>
             <div style={{ marginTop: "1rem" }}>
               <Link
+                prefetch={false}
                 href="/categories"
                 className="feed-action-primary"
                 style={{ display: "inline-block" }}

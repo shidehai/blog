@@ -42,6 +42,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <div className="project-card-links">
           {project.githubUrl && (
             <Link
+              prefetch={false}
               href={project.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
@@ -52,6 +53,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           )}
           {project.liveUrl && (
             <Link
+              prefetch={false}
               href={project.liveUrl}
               target="_blank"
               rel="noopener noreferrer"

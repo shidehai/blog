@@ -1,11 +1,12 @@
-# Site deployment
+# Site and CMS deployment
 
-## Host contract
+Production runs Caddy, site, cms and PostgreSQL. Content publishing updates the CMS transaction directly. CI builds code images without CMS/database credentials; manual workflow dispatch pushes both immutable images. The forced SSH key still replaces only site. CMS, schema, Compose, Caddy and host changes require an owner-run maintenance release from a reviewed commit.
 
-Use a dedicated checkout such as `/opt/personal-journal/releases/<git-sha>` and
-an owner-controlled `/opt/personal-journal/current` symlink. Routine CI does
-not change that symlink or any checked-in host file. Install the sanitized
-examples as real host configuration:
+For the first owner-run deployment on Debian 12, follow the [Chinese VPS guide](vps-first-deploy.md), including the portable transfer of current local content and media. It builds both images on the server and pins their local image IDs; the forced SSH publisher still requires registry digest references.
+
+## Host configuration
+
+Use a dedicated checkout and protected configuration:
 
 ```sh
 install -d -m 0755 /etc/personal-journal
@@ -15,176 +16,60 @@ install -m 0600 ops/env/production.env.example /etc/personal-journal/production.
 install -m 0644 ops/env/deploy.env.example /etc/personal-journal/deploy.env
 ```
 
-Replace every placeholder. `deploy.env` is deliberately non-secret and must be
-root-owned and not group/world writable; `deploy-site.sh` rejects a weaker
-file. `production.env` contains credentials and must be readable only by the
-host account that runs Compose. That account requires Docker access, which is
-host-equivalent privilege even though the remote SSH key is constrained.
+Replace all placeholders. Set SITE_IMAGE and CMS_IMAGE to reviewed registry digests. Set CMS_DATABASE_URL to a dedicated role owning author_cms, not the PostgreSQL administrator or an identity from a retired service. Set one random CMS_READ_TOKEN shared only by cms and the site server. Compose supplies the public HTTPS origins, SITE_URL from SITE_DOMAIN, and internal CMS URL. Outside Compose, set SITE_URL explicitly to the public root HTTP(S) origin. URI-encode database passwords. Environment files never enter Git, image builds or logs.
 
-Create the data subdirectories named in `deploy/compose.yaml`, set ownership
-for the pinned container users, render Compose, build the operations image, and
-start the stack from the reviewed checkout:
+Create postgres, cms/media, backup-staging and caddy data/config/logs under BLOG_DATA_ROOT. The CMS media directory must be writable by UID/GID 1000. Protected source recovery archives remain separate from live service storage. The backup staging directory must be writable by the operations image user. Render Compose before starting any service:
 
 ```sh
-docker compose --env-file /etc/personal-journal/production.env \
-  --file deploy/compose.yaml config --quiet
-docker compose --env-file /etc/personal-journal/production.env \
-  --file deploy/compose.yaml build backup restore restic-maintenance
-docker compose --env-file /etc/personal-journal/production.env \
-  --file deploy/compose.yaml up -d
+docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml config --quiet
+docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml up -d postgres
 ```
 
-Only Caddy may publish host ports. Verify this against the running containers,
-not only rendered YAML:
+Before first CMS startup, create blog_cms and its schema in the configured database using the administrator and interactive psql password command described in [CMS setup](../../author-cms/README.md). Review actual role membership and inherited grants; it must not read legacy tables. CMS startup runs checksum-validated migrations as that role before serving requests. Do not grant superuser to repair a failed schema setup.
+
+Set the owner password through stdin (never a command-line argument), then start the reviewed CMS/site/Caddy services. The CMS command below reads a password supplied through the caller's stdin:
 
 ```sh
-docker compose --env-file /etc/personal-journal/production.env \
-  --file deploy/compose.yaml ps
-docker port personal-journal-postgres-1
-docker port personal-journal-site-1
+docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml up -d cms
+docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml exec -T cms node author-cms/scripts/manage.mjs owner --password-stdin
+docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml up -d site caddy
 ```
 
-Both `docker port` commands must be empty.
+When migrating, follow [CMS cutover](cms-migration.md) instead of starting an empty CMS as the formal source. Verify actual running port mappings: only Caddy publishes host ports. Site and CMS run as node with read-only roots, a writable media bind mount only for CMS, and /tmp tmpfs.
 
-## Forced SSH key
+## CI and the forced SSH key
 
-Create a dedicated Ed25519 key for GitHub Actions, pin the VPS host key in the
-`VPS_KNOWN_HOSTS` secret, and install its public half using
-`ops/ssh/authorized_keys.example`. The `restrict` option disables forwarding,
-PTY, agent, and X11 access; the forced command ignores a requested shell and
-passes the exact `SSH_ORIGINAL_COMMAND` as one argument to `deploy-site.sh`.
+Production GitHub secrets are VPS_DEPLOY_KEY, VPS_DEPLOY_TARGET and VPS_KNOWN_HOSTS. CMS_READ_TOKEN and DATABASE_URL stay in protected host runtime configuration; GitHub builds need neither. Ordinary pushes and PRs run quality checks; only manual workflow_dispatch performs code publishing.
 
-The deployment script accepts only the configured lowercase
-`ghcr.io/<owner>/<repository>@sha256:<64 lowercase hex>` reference. It rejects
-tags, other repositories, multiple arguments, whitespace, line breaks, and
-shell syntax. Do not give this key a second unrestricted `authorized_keys`
-entry.
+Install the dedicated public key using ops/ssh/authorized_keys.example. It restricts forwarding, PTY and shell access and passes only SSH_ORIGINAL_COMMAND to deploy-site.sh. The script accepts one allow-listed ghcr.io/<owner>/<repository>@sha256:<64 lowercase hex> reference. Do not add an unrestricted duplicate key entry. For private packages, give the host account a separate read-only GHCR pull credential, stored outside application backups; GitHub's temporary package-write token is not a VPS pull credential.
 
-If the GHCR package is private, authenticate the forced-command host account
-once with a dedicated read-only package credential before enabling CI. Keep its
-`~/.docker/config.json` owner-only and outside application backups, verify an
-allow-listed digest can be pulled, and record credential rotation in the
-password-manager inventory. The CI package-write token is not a VPS pull
-credential.
+Under flock, deploy-site.sh resolves the actual running site digest, starts a portless candidate, verifies process and content availability, and removes it before traffic replacement. It records previous/pending state atomically, recreates only site, reloads Caddy DNS, and checks public HTTPS. A failure after replacement restores the previous compatible site digest and exits nonzero. If rollback also fails, exit 70 retains pending-deploy.env for investigation. An idempotent digest request only smokes the live site. Cleanup is restricted to unused images in the configured repository and preserves current/previous digests.
 
-GitHub production configuration:
+The state directory uses 0700, files 0600; deploy.env must be root-owned and not group/world writable. Preserve pending state until the running digest and failure logs have been inspected. Routine CI cannot upgrade CMS or database schema. Record the CMS digest printed by the workflow and deploy it in a separate reviewed maintenance window.
 
-| Name                   | Kind                 | Purpose                                       |
-| ---------------------- | -------------------- | --------------------------------------------- |
-| `DIRECTUS_URL`         | environment variable | Directus endpoint for the build-time snapshot |
-| `DIRECTUS_BUILD_TOKEN` | secret               | Published snapshot and publishable media only |
-| `VPS_DEPLOY_KEY`       | secret               | Private half of the forced-command key        |
-| `VPS_DEPLOY_TARGET`    | secret               | `deploy-user@host`                            |
-| `VPS_KNOWN_HOSTS`      | secret               | Pre-collected, reviewed host key line         |
+## CMS upgrades and rollback
 
-The workflow runs its quality gate on every push to `main` and every pull
-request, but publishing is gated to manual dispatch from `main` and
-`repository_dispatch` type `directus-publish`; a plain push never deploys.
-Every publish event rebuilds the complete published snapshot; an event payload
-is never treated as content. Push/PR runs share a cancellable concurrency
-group, while publish events use a separate non-cancelling production group so
-a push cannot interrupt an in-flight deployment. The token is mounted as
-a BuildKit secret during that build; the resulting Next runtime image receives
-neither the Directus URL/token nor a content-source setting.
+Take a verified backup and record both running image digests and migration checksums. Ship additive SQL migrations first with compatible CMS code; do not edit an applied migration. Start the candidate against a disposable restored database/media clone before upgrading the real CMS. Startup refuses checksum drift or failed migrations. Verify login, draft save, image upload, publication, public reads and private media after the upgrade.
 
-The Directus Flow declares `items.create`, `items.update`, and
-`items.delete` for `posts`, `topics`, `posts_topics`, `categories`, `tags`,
-`series`, `posts_tags`, `site_settings`, `social_links`, and
-`directus_files`. Draft-version saves are outside this matrix. File events proceed only when their event payload identifies the
-`publishable-assets` folder. Before enabling the Flow, exercise promotion,
-metadata update, and deletion against the pinned Directus version and confirm
-the payload filter dispatches every public-file transition; the static
-repository contract cannot prove runtime event payloads.
+A code rollback must be compatible with the installed schema and preserve current content. A database rollback needs a clean restored target and reconciliation of all newer writes. Switching back to the old Directus database after new CMS writes is not an ordinary image rollback.
 
-A rejected GitHub request creates a Directus notification for the Author
-without including the token or content body. The Flow cannot be activated
-without an Author recipient. Inspect the Flow log for the bounded request
-failure, then use the main-branch manual workflow dispatch to reconcile the
-complete snapshot.
-
-## Public image delivery
-
-The Directus build materializes only public images referenced by the published
-article/tutorial snapshot and profile. The actual Build Reader token reads
-`/files/<id>` metadata and canonical `/assets/<id>` originals; the exporter
-requires the exact publishable folder, raster MIME/signature and bounded byte
-size before writing `frontend-v2/public/_cms/<sha256>.<ext>`. Docker copies those
-files with the public directory, so the read-only standalone runtime serves
-them anonymously without CMS network access or credentials. Public CMS
-originals need no anonymous permission and may continue returning 403.
-
-Do not loosen Public or production Build Reader policies to repair browser
-images. Missing/forbidden/private files and invalid originals fail the build.
-Authors must deliberately move intended body uploads from the editor's private
-folder into `publishable-assets`. Only JPEG, PNG, WebP, GIF and AVIF originals
-are exported (20 MiB each, 100 MiB unique references, 15 seconds/request); SVG
-CMS uploads, transformations, HTML and reference-style CMS images are refused.
-Authored local SVG assets remain supported.
-
-Rebuild and deploy to revoke an already-published image, just as for static
-article text. Verify public-file removal/promotion triggers against the pinned
-Flow event payload; use manual dispatch to reconcile when needed. The build
-wrapper resets only the generated namespace once before Next workers and after
-failure, including fixture builds. Use isolated checkouts for concurrent builds;
-never invoke `next build` directly to bypass that lifecycle.
-
-Before deployment, inspect the exact token consumed by the successful image,
-then start that image with `--network none --read-only` and verify anonymous
-site cover/body bytes and MIME, private/unreferenced absence, and no CMS runtime
-environment. This delivery test is separate from the licensed production
-status/field/folder permission acceptance.
-
-## Candidate, replacement, and rollback
-
-`scripts/deploy-site.sh` performs these steps under `flock`:
-
-1. Resolve the actual running Compose site's `.Config.Image` and require an
-   allow-listed digest.
-2. Pull the requested digest and start a uniquely named `docker compose run`
-   candidate. Compose run publishes no port and does not receive the `site`
-   network alias, so Caddy cannot route to it.
-3. Wait for Docker health and execute `/healthz` plus `/` inside that candidate.
-4. Remove the candidate, atomically record the running digest as `previous`,
-   and create `pending-deploy.env` before replacing traffic.
-5. Recreate only `site`, wait for health, reload Caddy to refresh Docker DNS,
-   and check `/healthz` plus `/` through public HTTPS.
-6. On success, atomically record `current`, `previous`, `site-image.env`, and
-   deployment time. On any failure after replacement starts, recreate `site`
-   from the recorded prior digest, reload Caddy, and smoke it again. The failed
-   deployment still exits nonzero so CI notifies the owner.
-
-State lives under `DEPLOY_STATE_DIR` with mode `0700`; state files use `0600`.
-If automatic rollback itself fails, the script exits 70 and deliberately keeps
-`pending-deploy.env` for diagnosis. A later invocation validates that file
-against the actual running digest: it finishes a healthy interrupted switch,
-restores the recorded prior digest when the switched image fails smoke, or
-fails closed when the running digest matches neither value. Do not edit or
-remove pending state before inspecting the running container and failure logs.
-
-An idempotent request for the running digest performs the external smoke check
-and does not recreate the service. A candidate failure never reaches traffic.
-
-Manual prior-image rollback uses the same preflight and replacement path:
+## Local image checks
 
 ```sh
-scripts/deploy-site.sh "$(cat /var/lib/personal-journal/deploy/previous-image)"
-```
-
-Image cleanup enumerates only the configured site repository, skips `current`
-and `previous`, and refuses to remove an image referenced by any container. It
-never invokes a generic Docker prune.
-
-## Local contract checks
-
-These commands do not contact a production account or deploy externally:
-
-```sh
-sh tests/ops/run.sh
 sh scripts/validate-operations.sh
-pnpm build
-docker build --target runtime --tag blog-site:fixture .
-scripts/test-runtime-image.sh blog-site:fixture
+docker build --target runtime --tag blog-site:local .
+docker build --target cms-runtime --tag blog-cms:local .
+sh scripts/test-runtime-image.sh blog-site:local
+sh scripts/test-cms-image.sh blog-cms:local
+CMS_READ_TOKEN=isolated-inspection-token-32-characters sh scripts/assert-image-secret-free.sh blog-site:local
+CMS_READ_TOKEN=isolated-inspection-token-32-characters sh scripts/assert-image-secret-free.sh blog-cms:local
 ```
 
-Set `OPS_BUILD_IMAGES=1` for `validate-operations.sh` to build the PostgreSQL /
-Restic operations image too.
+The CMS smoke creates its own isolated database/container/network, uses a non-superuser schema owner, proves legacy table reads denied, and tests CLI, login, Sharp upload and publication under read-only/non-root constraints. It does not contact production or modify existing containers.
+
+Before an Internet launch, require the production audit and actual OCI high/critical
+scan, then verify the deployed HTTPS canonical/OG/Twitter URLs, share.png,
+robots.txt and dynamic sitemap.xml. Publish/rename/archive should change public
+URLs and sitemap immediately; private media and archived aliases remain denied.
+Local validation does not replace real-domain HTTPS, offsite restore, storage
+monitoring and alert delivery acceptance.

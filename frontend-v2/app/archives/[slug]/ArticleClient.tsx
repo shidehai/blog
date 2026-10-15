@@ -4,15 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 import { MarkdownContent } from "../../../components/MarkdownContent";
-import type { HeadingItem, Post } from "../../../lib/types";
+import type { HeadingItem, Post, PostSummary } from "../../../lib/types";
 
 interface ArticleClientProps {
   post: Post;
   formattedDate: string;
   headings: HeadingItem[];
-  prevPost: Post | null;
-  nextPost: Post | null;
-  relatedPosts: Post[];
+  prevPost: PostSummary | null;
+  nextPost: PostSummary | null;
+  relatedPosts: PostSummary[];
 }
 
 export function ArticleClient({
@@ -81,9 +81,9 @@ export function ArticleClient({
     <div className="layout post-layout">
       <main className="main-content" id="main-content">
         <nav className="breadcrumbs" aria-label="面包屑导航">
-          <Link href="/">首页</Link>
+          <Link prefetch={false} href="/">首页</Link>
           <span aria-hidden="true">/</span>
-          <Link href="/categories">{post.category}</Link>
+          <Link prefetch={false} href="/categories">{post.category}</Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">{post.title}</span>
         </nav>
@@ -114,6 +114,7 @@ export function ArticleClient({
               <div className="tags" aria-label="文章标签">
                 {post.tags.map((tag) => (
                   <Link
+              prefetch={false}
                     key={tag}
                     href={`/tags?tag=${encodeURIComponent(tag)}`}
                     className="tag"
@@ -132,7 +133,7 @@ export function ArticleClient({
             {post.series && (
               <p className="post-series">
                 所属系列：{" "}
-                <Link href={`/series/${post.series.slug}`}>
+                <Link prefetch={false} href={`/series/${post.series.slug}`}>
                   {post.series.name}
                 </Link>
                 {post.series.order ? ` · 第 ${post.series.order} 篇` : ""}
@@ -165,7 +166,7 @@ export function ArticleClient({
 
         <nav className="post-nav" aria-label="相邻文章">
           {prevPost ? (
-            <Link href={`/archives/${prevPost.slug}`} className="glass">
+            <Link prefetch={false} href={`/archives/${prevPost.slug}`} className="glass">
               <span className="pn-label">← 上一篇</span>
               <span className="pn-title">{prevPost.title}</span>
             </Link>
@@ -173,7 +174,7 @@ export function ArticleClient({
             <div />
           )}
           {nextPost && (
-            <Link href={`/archives/${nextPost.slug}`} className="glass pn-next">
+            <Link prefetch={false} href={`/archives/${nextPost.slug}`} className="glass pn-next">
               <span className="pn-label">下一篇 →</span>
               <span className="pn-title">{nextPost.title}</span>
             </Link>
@@ -194,6 +195,7 @@ export function ArticleClient({
             <div className="related-grid">
               {relatedPosts.map((relatedPost) => (
                 <Link
+              prefetch={false}
                   key={relatedPost.id}
                   href={`/archives/${relatedPost.slug}`}
                   className="glass related-card"

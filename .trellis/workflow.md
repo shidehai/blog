@@ -1,5 +1,15 @@
 # Development Workflow
 
+## Project Override: Main Session Only
+
+The hard rule in `AGENTS.md` applies to every phase and every platform in this project:
+
+- Only the current main session may perform AI work; total AI session concurrency, including the main session, is **1**.
+- Do not spawn sub-agents, Trellis channel workers, external AI processes, or other AI sessions to delegate any work.
+- Research, planning, implementation, review, and validation run sequentially in the main session. Tool calls also run sequentially.
+- Any dispatch instructions below or in skills/templates are superseded by this rule. Perform the corresponding responsibilities inline and retain their quality requirements.
+- Codex uses `codex.dispatch_mode: inline`; implementation and checks load context directly in the main session.
+
 ---
 
 ## Core Principles

@@ -102,7 +102,9 @@ max_journal_lines: 2000
 channel:
   worker_guard:
     idle_timeout: 5m
-    max_live_workers: 6
+    # Defensive ceiling only: AGENTS.md forbids starting any AI worker.
+    # This counts workers, not the main session; it does not permit dispatch.
+    max_live_workers: 1
   # trusted_context_dirs:
   #   - /work/user/trellis_workspace
   # auto_trust_trellis_symlinks: false
@@ -126,8 +128,9 @@ channel:
 # hint lines in those files) — there is no config.yaml knob for this,
 # `trellis update` preserves your edits across regeneration.
 #
-# codex:
-#   dispatch_mode: auto  # or "inline"; legacy alias: "sub-agent"
+codex:
+  # Project hard rule: only the main session may research, implement, and check.
+  dispatch_mode: inline
 
 #-------------------------------------------------------------------------------
 # Sub-agent context injection limits

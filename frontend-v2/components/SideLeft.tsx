@@ -31,6 +31,7 @@ export function SideLeft({
         <div className="profile-desc">{profile.title}</div>
         <div className="profile-links">
           <Link
+              prefetch={false}
             href={profile.socials.github}
             target="_blank"
             rel="noopener"
@@ -50,7 +51,7 @@ export function SideLeft({
               <path d="M8 19c-3 .9-3-1.5-4.2-1.8" />
             </svg>
           </Link>
-          <Link href="/about" title="关于">
+          <Link prefetch={false} href="/about" title="关于">
             <svg
               className="ui-icon"
               viewBox="0 0 24 24"
@@ -73,7 +74,7 @@ export function SideLeft({
         <h4>分类</h4>
         {categories.map((cat) => (
           <div key={cat.slug} className="cat-item">
-            <Link href={`/categories/${cat.slug}`}>
+            <Link prefetch={false} href={`/categories/${cat.slug}`}>
               {cat.name}
               <span className="sr-only"> 分类文章</span>
             </Link>
@@ -88,6 +89,7 @@ export function SideLeft({
         <div className="side-tags">
           {tags.map((tag) => (
             <Link
+              prefetch={false}
               key={tag.slug}
               href={`/tags?tag=${encodeURIComponent(tag.name)}`}
               className="side-tag"
@@ -105,6 +107,7 @@ export function SideLeft({
         <div className="side-series-list">
           {seriesList.map((series) => (
             <Link
+              prefetch={false}
               key={series.id}
               className="side-series-item"
               href={`/series/${series.slug}`}
@@ -142,7 +145,7 @@ export function SideLeft({
             </Link>
           ))}
         </div>
-        <Link className="side-series-all" href="/series">
+        <Link prefetch={false} className="side-series-all" href="/series">
           查看全部系列{" "}
           <svg
             className="ui-icon"

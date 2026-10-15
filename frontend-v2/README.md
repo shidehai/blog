@@ -1,82 +1,43 @@
 # Frontend V2
 
-`frontend-v2` 是博客当前公开使用的 Next.js 15 App Router 前端。页面在构建期
-从统一内容快照生成；默认 fixture 让无需 CMS 的开发和 CI 可复现，生产构建则显式读取
-Directus 的已发布 article/tutorial 数据。
+公开 Next.js 15 App Router 应用，监听 4321。`lib/content.ts` 是唯一页面读取边界，运行时从自建 CMS 读取已发布 article/tutorial；React cache 只在同一次服务器渲染内去重，没有跨请求正文快照。
 
-## 开发
+## 开发与运行
 
-在仓库根目录执行：
-
-```bash
+```sh
 pnpm --filter frontend-v2 dev
 ```
 
-访问 <http://localhost:4321>。默认 `CONTENT_SOURCE=fixture`，无需启动数据库。
-当前 Next 字体编译仍需联网获取 Google Fonts；fixture 内容本身不请求 CMS。
+开发默认 fixture，数据库不是开发阅读界面的前提。要接入编辑后台，在 `.env.local` 设置：
 
-要在本机使用 Directus 内容，必须同时提供 URL 和 Build Reader token；错误凭据、
-读取失败或不完整配置都会让构建/页面渲染失败，而不会回退到 fixture：
-
-```bash
-CONTENT_SOURCE=directus \
-DIRECTUS_URL=http://localhost:8055 \
-DIRECTUS_BUILD_TOKEN=<build-reader-token> \
-pnpm --filter frontend-v2 build
+```dotenv
+CONTENT_SOURCE=cms
+SITE_URL=http://localhost:4321
+CMS_INTERNAL_URL=http://localhost:4322
+CMS_READ_TOKEN=the-same-private-service-reader-token-as-cms
 ```
 
-运行时 standalone 镜像不需要也不接收这些变量；它只提供已生成的页面和
-`/healthz`。公开 CMS 图片也在构建期保存为站点静态文件。
+生产默认 CMS，缺配置或 CMS 失败不会回退 fixture。两个镜像构建均无需内容凭据；Inter 和 JetBrains Mono 从锁定的 Fontsource 包本地编译，无需连接 Google Fonts。令牌只在服务端使用，不能传给浏览器。
 
-## 图片发布
+生产 CMS 模式还要求 `SITE_URL` 为无路径、凭据、查询参数的 HTTP(S) 站点根地址。Compose 正式环境从 `SITE_DOMAIN` 生成 HTTPS 地址，本地覆盖为 `http://localhost:4321`。canonical、Open Graph、Twitter、robots 和动态 sitemap 统一使用此配置，不使用来访 Host。sitemap 只包含当前已发布内容及有公开文章的分类/系列；草稿、归档、历史别名和媒体地址不收录。页面使用原生图片，Next 图片优化接口已关闭。
 
-Directus 模式仅下载已发布 article/tutorial 的封面、公开头像和正文行内 Markdown
-图片引用。构建使用同一个 Build Reader token 读取文件元数据，要求文件位于
-`publishable-assets`，再下载原图并保存为 `/_cms/<sha256>.<扩展名>`。访客直接
-读取网站图片，无需 CMS 登录；CMS 原始 `/assets/<id>` 继续匿名返回 403 也不影响显示。
+## 内容与路由
 
-正文支持 `![说明](directus://<uuid> "标题")`，也支持当前 CMS 的绝对
-`/assets/<uuid>` 地址与相对 `/assets/<uuid>`。普通本地图片和外部 HTTP(S) 图片
-保持原样；代码块、行内代码中的示例不会下载。CMS 的变换查询、HTML 图片和
-引用式图片语法不在此支持范围，需改为行内语法。
+- `/archives` 和 `/archives/[slug]` 为规范列表/详情，新增发布地址无需重新构建。
+- 旧 `/writing/[slug]` 与历史地址对已发布文章永久跳到当前规范地址；未知内容、`/writing` 和 `/notes/*` 为 404。
+- 分类、系列、标签、搜索和侧栏使用 PostSummary；目录不批量向客户端传递全部正文。
+- `/media/[id]` 同源代理当前公开引用的图片，响应 no-store；草稿素材不开放。
+- `/api/content-generation` 只返回公开版本号。导航、focus、pageshow/popstate 和可见性恢复时检查版本；变化时重载文档，清除曾为 404 的缓存边界。
+- CMS 故障时 middleware 返回明确的 503。`/healthz` 为独立进程存活检查，不代表内容依赖健康。
 
-只有 JPEG、PNG、WebP、GIF、AVIF 原图进入生成目录，每张最多 20 MiB，引用的
-唯一文件合计最多 100 MiB，每次请求最多 15 秒。缺失文件、私有文件、类型或
-大小不符会让构建失败。正文编辑器新上传的文件默认私有，作者须在 Studio
-明确移至 `publishable-assets` 后再发布。现有本地 `/avatar.svg` 不受此限制。
+预览与公开正文均来自 `@blog/markdown`，文章样式来自共享包。旧 SDK、构建取文和图片物化流程已移除。`fixture-projector.ts` 仅映射离线开发样本；图片扫描器供 Markdown 自检与离线源快照转换使用。
 
-请使用包的 `build`/`dev` 命令：入口会先清理专属生成目录，避免旧图片残留，
-并阻止同一 checkout 中并行构建。Directus 开发快照或图片修改后重启 dev。
-若进程被强制终止而留下 `.cms-build.lock`，先确认该 checkout 已无 build/dev
-进程，再移除这个锁目录后重试。
-生成目录不提交到 Git，也不作为 Docker 输入；镜像在构建阶段重新生成并复制
-它。撤回公开图片须重新构建并部署，已有镜像仍持有其原静态快照。
+## 验证
 
-## 路由
-
-| 路径                              | 用途                                                |
-| --------------------------------- | --------------------------------------------------- |
-| `/`                               | 首页                                                |
-| `/archives`                       | 已发布文章归档                                      |
-| `/archives/[slug]`                | 规范文章详情页                                      |
-| `/writing/[slug]`                 | 当前已发布文章的永久兼容重定向到 `/archives/[slug]` |
-| `/categories`、`/tags`、`/series` | 分类、标签和系列浏览                                |
-| `/projects`、`/tools`、`/about`   | 站点附属公开页面                                    |
-| `/healthz`                        | 容器健康检查                                        |
-
-`/writing`、未知的 `/writing/[slug]` 和所有 `/notes/*` 没有兼容 catch-all，均为
-404。Directus 中的 notes、topics 和它们的关系仍保留给 CMS/作者工作流，只是不再
-进入 V2 的公开快照。
-
-## 质量检查
-
-```bash
-pnpm --filter frontend-v2 typecheck
-pnpm --filter frontend-v2 lint
-pnpm --filter frontend-v2 selfcheck
-pnpm --filter frontend-v2 build
+```sh
 pnpm --filter frontend-v2 verify
 ```
 
-页面使用 `app/globals.css` 中的项目语义样式；本项目不再包含 utility-CSS、RSS 或
-预览运行时。
+覆盖严格类型、ESLint、实际 fixture/Markdown 自检和生产构建。跨应用即时发布测试由根 `pnpm test:runtime` 执行，数据库只能使用本机 `_test` 目标。
+
+本机已有日常博客时，必须使用独立数据库和空闲端口。例如设置 `CMS_TEST_DATABASE_URL` 指向专门的本机 `_test` 库，再运行 `xvfb-run --auto-servernum pnpm test:runtime --site-port 4341 --cms-port 4342 --browser`。需要先执行 `pnpm --filter author-cms exec playwright install chromium`，Linux 需安装 Xvfb。测试会关闭 Playwright 默认的焦点模拟，在隔离显示器内实际切换标签页。端口占用会在重置测试 schema 前拒绝；`--browser` 仅在这一隔离实例执行登录、原生 CDP 文件投递、发布、实际标签页焦点/可见性、历史导航和归档。截图、trace 与证据保存在运行日志目录；不会使用日常账户。浏览器原生事件不等同于物理桌面文件管理器拖拽，Link 预取保持关闭，测试另行验证 RSC 预取请求的 no-store 边界。

@@ -1,0 +1,87 @@
+{
+  "date": "2026-10-15",
+  "scope": "local-only",
+  "mainConversationOnly": true,
+  "aiConcurrency": 1,
+  "backupRoot": "/home/sdh/vibehub/blog/.data/backups/local-launch-prep-20261015-145756",
+  "dataCounts": {
+    "contents": 28,
+    "content_revisions": 37,
+    "taxonomies": 0,
+    "site_profile": 1,
+    "slug_aliases": 10,
+    "media": 2,
+    "published_media_refs": 2,
+    "public_state": 1,
+    "migration_mappings": 35,
+    "source_archives": 1
+  },
+  "mediaFilesIncludingOriginals": 3,
+  "businessDataExactlyUnchanged": true,
+  "mediaManifestExactlyUnchanged": true,
+  "allExportedMediaAndMarkdownBytesExactlyUnchanged": true,
+  "rawMediaTreeExactlyUnchanged": true,
+  "databaseContainerNotReplaced": true,
+  "runtime": {
+    "siteAndCmsHealthy": true,
+    "ownerLoginPassed": true,
+    "adminAnonymousAndReaderDenied": true,
+    "originalPublicArticles200": 9,
+    "legacyWritingRedirects308": 9,
+    "publicMediaChecksumChecks": 2,
+    "privateMedia404Checks": 2,
+    "sitemapPublishedOnly": true,
+    "configuredCanonicalDespiteSpoofedHost": true,
+    "sharingPng1200x630": true,
+    "cmsRobotsDisallow": true,
+    "unusedImageOptimizer404": true
+  },
+  "previousApplications": {
+    "site": {
+      "image": "sha256:009513df844b8c965c0010f309aaf4dbae4bea4d6ec2d7eab8ff2c1e2b72af64",
+      "startedAt": "2026-10-15T03:26:40.078936814Z",
+      "health": "healthy",
+      "running": true
+    },
+    "cms": {
+      "image": "sha256:af788993aa44d6a705046e1bc2b50dc6893844121f3ea9581f5b54bda7b7d125",
+      "startedAt": "2026-10-15T03:26:34.399210312Z",
+      "health": "healthy",
+      "running": true
+    },
+    "postgres": {
+      "image": "sha256:c7526c0f6c3f30260a563d7bcf8ad778effac59a44f8ffa86678c35418338609",
+      "startedAt": "2026-10-15T02:26:38.206501575Z",
+      "health": "healthy",
+      "running": true
+    }
+  },
+  "runningApplications": {
+    "site": {
+      "image": "sha256:520122eaf04faf9a6b84a9a0dff708b40acf30a326d51afed14b8198998dd382",
+      "startedAt": "2026-10-15T06:58:05.077190508Z",
+      "health": "healthy",
+      "running": true
+    },
+    "cms": {
+      "image": "sha256:e2a49b68b8e1cd44ac33c7504e0f20a8eeb3b64a4628f46fe66f465efb2f24d9",
+      "startedAt": "2026-10-15T06:57:59.138379927Z",
+      "health": "healthy",
+      "running": true
+    },
+    "postgres": {
+      "image": "sha256:c7526c0f6c3f30260a563d7bcf8ad778effac59a44f8ffa86678c35418338609",
+      "startedAt": "2026-10-15T02:26:38.206501575Z",
+      "health": "healthy",
+      "running": true
+    }
+  },
+  "candidateImages": {
+    "site": "sha256:520122eaf04faf9a6b84a9a0dff708b40acf30a326d51afed14b8198998dd382",
+    "cms": "sha256:e2a49b68b8e1cd44ac33c7504e0f20a8eeb3b64a4628f46fe66f465efb2f24d9"
+  },
+  "acceptedHistoricalLimitations": 68,
+  "remoteDeployment": false,
+  "committed": false,
+  "pushed": false
+}

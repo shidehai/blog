@@ -1,0 +1,18 @@
+CREATE TABLE author_cms.owner (id integer PRIMARY KEY CHECK (id = 1), password_hash text NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE author_cms.sessions (token_hash text PRIMARY KEY, owner_id integer NOT NULL DEFAULT 1 REFERENCES author_cms.owner(id), expires_at timestamptz NOT NULL, last_seen timestamptz NOT NULL DEFAULT now());
+CREATE TABLE author_cms.login_limits (key text PRIMARY KEY, attempts integer NOT NULL, blocked_until timestamptz NOT NULL, updated_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE author_cms.contents (id uuid PRIMARY KEY, kind text NOT NULL CHECK (kind IN ('article','tutorial','note','topic')), draft_slug text UNIQUE, version integer NOT NULL DEFAULT 1, draft_revision_id uuid, published_revision_id uuid, archived boolean NOT NULL DEFAULT false, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE author_cms.content_revisions (id uuid PRIMARY KEY, content_id uuid NOT NULL REFERENCES author_cms.contents(id), data jsonb NOT NULL, source text NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
+ALTER TABLE author_cms.contents ADD CONSTRAINT contents_draft_fk FOREIGN KEY (draft_revision_id) REFERENCES author_cms.content_revisions(id) DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE author_cms.contents ADD CONSTRAINT contents_published_fk FOREIGN KEY (published_revision_id) REFERENCES author_cms.content_revisions(id) DEFERRABLE INITIALLY DEFERRED;
+CREATE INDEX content_revisions_content ON author_cms.content_revisions(content_id, created_at DESC);
+CREATE TABLE author_cms.taxonomies (id uuid PRIMARY KEY, kind text NOT NULL CHECK (kind IN ('category','tag','series')), name text NOT NULL, slug text NOT NULL, description text NOT NULL DEFAULT '', UNIQUE(kind, slug), UNIQUE(kind, name));
+CREATE TABLE author_cms.site_profile (id integer PRIMARY KEY CHECK (id=1), data jsonb NOT NULL, version integer NOT NULL DEFAULT 1);
+CREATE TABLE author_cms.slug_aliases (slug text PRIMARY KEY, content_id uuid NOT NULL REFERENCES author_cms.contents(id));
+CREATE TABLE author_cms.media (id uuid PRIMARY KEY, storage_key text NOT NULL UNIQUE, filename text NOT NULL, mime text NOT NULL, bytes integer NOT NULL, width integer NOT NULL, height integer NOT NULL, sha256 text NOT NULL, publishable boolean NOT NULL DEFAULT true, source_metadata jsonb, created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE author_cms.published_media_refs (media_id uuid NOT NULL REFERENCES author_cms.media(id), source_id text NOT NULL, PRIMARY KEY (media_id,source_id));
+CREATE TABLE author_cms.public_state (id integer PRIMARY KEY CHECK (id=1), generation bigint NOT NULL DEFAULT 0);
+INSERT INTO author_cms.public_state(id) VALUES (1);
+CREATE TABLE author_cms.publication_requests (key uuid PRIMARY KEY, content_id uuid NOT NULL REFERENCES author_cms.contents(id), request jsonb NOT NULL, result jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE author_cms.migration_mappings (source text NOT NULL, source_id text NOT NULL, target_id uuid NOT NULL, checksum text NOT NULL, PRIMARY KEY(source,source_id));
+CREATE TABLE author_cms.source_archives (batch_id text PRIMARY KEY, data jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now());

@@ -9,10 +9,6 @@ playwright-report/
 test-results/
 coverage/
 exports/
-public/_media/
-frontend-v2/public/_cms/
-frontend-v2/.cms-staging/
-frontend-v2/.cms-build.lock/
 
 .env
 .env.*
@@ -21,8 +17,9 @@ frontend-v2/.cms-build.lock/
 .data/
 data/
 backups/
-directus/uploads/
 
 .DS_Store
 *.log
 *.local
+
+.tools/

@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-15",
+  "scope": "isolated-local-restore",
+  "passed": true,
+  "backupRoot": "/home/sdh/vibehub/blog/.data/backups/local-launch-prep-20261015-145756",
+  "restoredWithImage": "sha256:e2a49b68b8e1cd44ac33c7504e0f20a8eeb3b64a4628f46fe66f465efb2f24d9",
+  "sourceDatabaseNotRestoredOrReset": true,
+  "businessDataExactlyEqual": true,
+  "mediaManifestExactlyEqual": true,
+  "markdownAndMediaBytesExactlyEqual": true,
+  "ownerPasswordHashExactlyEqual": true,
+  "dataCounts": {
+    "contents": 28,
+    "content_revisions": 37,
+    "taxonomies": 0,
+    "site_profile": 1,
+    "slug_aliases": 10,
+    "media": 2,
+    "published_media_refs": 2,
+    "public_state": 1,
+    "migration_mappings": 35,
+    "source_archives": 1
+  },
+  "mediaFilesIncludingOriginals": 3,
+  "freshDatabaseWasCreated": true,
+  "databaseDumpIncludesAuthentication": true,
+  "temporaryRestoreDatabaseRemoved": true
+}

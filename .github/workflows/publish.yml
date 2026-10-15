@@ -4,12 +4,13 @@ on:
   pull_request:
   push:
     branches: [main]
-  repository_dispatch:
-    types: [directus-publish]
   workflow_dispatch:
 
 permissions:
   contents: read
+
+env:
+  TRIVY_IMAGE: ghcr.io/aquasecurity/trivy:0.76.0
 
 concurrency:
   # push/PR 的 quality 运行可被后续 push 取消；发布运行独占 production-publish
@@ -22,8 +23,7 @@ concurrency:
     }}
   cancel-in-progress: >-
     ${{
-      github.event_name != 'workflow_dispatch' &&
-      github.event_name != 'repository_dispatch'
+      github.event_name != 'workflow_dispatch'
     }}
 
 jobs:
@@ -31,6 +31,19 @@ jobs:
     name: Quality and container contracts
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17.9-alpine
+        env:
+          POSTGRES_DB: author_cms_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: isolated-ci-test-password
+        ports: ["55432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      CMS_TEST_DATABASE_URL: postgres://postgres:isolated-ci-test-password@127.0.0.1:55432/author_cms_test
     steps:
       - name: Check out repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -38,7 +51,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@1e60f620b9541dca151540d0c3c1c0b0a01711d1 # v4.0.3
         with:
-          node-version: 24.15.0
+          node-version: 24.22.0
 
       - name: Enable pinned pnpm
         run: |
@@ -54,25 +67,53 @@ jobs:
       - name: Run application quality gate
         run: pnpm verify
 
+      - name: Install isolated browser regression runtime
+        run: pnpm --filter author-cms exec playwright install --with-deps chromium
+
+      - name: Verify immediate publishing and native browser interactions
+        run: xvfb-run --auto-servernum pnpm test:runtime --browser
+
       - name: Validate Compose, Caddy, and operations image
         env:
           OPS_BUILD_IMAGES: "1"
         run: sh scripts/validate-operations.sh
 
-      - name: Build fixture runtime image
+      - name: Build site runtime image
         run: docker build --target runtime --tag blog-site:fixture .
 
       - name: Exercise fixture runtime image
         run: scripts/test-runtime-image.sh blog-site:fixture
 
+      - name: Build CMS runtime image
+        run: docker build --target cms-runtime --tag blog-cms:test .
+
+      - name: Exercise CMS image and restricted database role
+        run: sh scripts/test-cms-image.sh blog-cms:test
+
+      - name: Inspect images for embedded runtime credentials
+        env:
+          CMS_READ_TOKEN: isolated-inspection-token-not-used-at-build
+        run: |
+          scripts/assert-image-secret-free.sh blog-site:fixture
+          scripts/assert-image-secret-free.sh blog-cms:test
+
+      - name: Scan both runtime images for high and critical vulnerabilities
+        run: |
+          mkdir -p "$RUNNER_TEMP/trivy-cache"
+          for image in blog-site:fixture blog-cms:test; do
+            docker run --rm \
+              --volume /var/run/docker.sock:/var/run/docker.sock \
+              --volume "$RUNNER_TEMP/trivy-cache:/root/.cache/trivy" \
+              "$TRIVY_IMAGE" image --exit-code 1 --severity HIGH,CRITICAL --scanners vuln --no-progress "$image"
+          done
+
   publish:
     name: Build immutable image and deploy
     needs: quality
     # 普通 push 到 main 只跑 quality 门禁；发布仅限手动触发
-    # （Actions 页面 Run workflow）或 Directus 内容发布事件。
+    # （Actions 页面 Run workflow）。内容发布由 CMS 事务直接更新。
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'repository_dispatch'
+      github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
       packages: write
@@ -83,45 +124,35 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Validate production inputs
-        env:
-          DIRECTUS_BUILD_TOKEN: ${{ secrets.DIRECTUS_BUILD_TOKEN }}
-          DIRECTUS_URL: ${{ vars.DIRECTUS_URL }}
-        run: |
-          test -n "$DIRECTUS_BUILD_TOKEN"
-          test -n "$DIRECTUS_URL"
-
-      - name: Build published snapshot image
+      - name: Build code images without CMS credentials
         id: build
-        env:
-          DIRECTUS_BUILD_TOKEN: ${{ secrets.DIRECTUS_BUILD_TOKEN }}
-          DIRECTUS_URL: ${{ vars.DIRECTUS_URL }}
         run: |
           image_repository=$(printf 'ghcr.io/%s' "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
           image_tag="$image_repository:sha-$GITHUB_SHA"
-          docker build \
-            --target runtime \
-            --secret id=directus_build_token,env=DIRECTUS_BUILD_TOKEN \
-            --build-arg CONTENT_SOURCE=directus \
-            --build-arg DIRECTUS_URL="$DIRECTUS_URL" \
-            --label org.opencontainers.image.revision="$GITHUB_SHA" \
-            --tag "$image_tag" \
-            .
+          cms_repository="$image_repository-cms"
+          cms_tag="$cms_repository:sha-$GITHUB_SHA"
+          docker build --target runtime --label org.opencontainers.image.revision="$GITHUB_SHA" --tag "$image_tag" .
+          docker build --target cms-runtime --label org.opencontainers.image.revision="$GITHUB_SHA" --tag "$cms_tag" .
           scripts/test-runtime-image.sh "$image_tag"
-          scripts/assert-image-secret-free.sh "$image_tag"
+          CMS_READ_TOKEN=isolated-image-inspection-token-32-characters scripts/assert-image-secret-free.sh "$image_tag"
+          CMS_READ_TOKEN=isolated-image-inspection-token-32-characters scripts/assert-image-secret-free.sh "$cms_tag"
           echo "image_repository=$image_repository" >>"$GITHUB_OUTPUT"
           echo "image_tag=$image_tag" >>"$GITHUB_OUTPUT"
+          echo "cms_repository=$cms_repository" >>"$GITHUB_OUTPUT"
+          echo "cms_tag=$cms_tag" >>"$GITHUB_OUTPUT"
 
       - name: Scan runtime image for high and critical vulnerabilities
         env:
           IMAGE_TAG: ${{ steps.build.outputs.image_tag }}
+          CMS_TAG: ${{ steps.build.outputs.cms_tag }}
         run: |
           mkdir -p "$RUNNER_TEMP/trivy-cache"
-          docker run --rm \
-            --volume /var/run/docker.sock:/var/run/docker.sock \
-            --volume "$RUNNER_TEMP/trivy-cache:/root/.cache/trivy" \
-            aquasec/trivy:0.65.0 \
-            image --exit-code 1 --severity HIGH,CRITICAL --scanners vuln --no-progress "$IMAGE_TAG"
+          for image in "$IMAGE_TAG" "$CMS_TAG"; do
+            docker run --rm \
+              --volume /var/run/docker.sock:/var/run/docker.sock \
+              --volume "$RUNNER_TEMP/trivy-cache:/root/.cache/trivy" \
+              "$TRIVY_IMAGE" image --exit-code 1 --severity HIGH,CRITICAL --scanners vuln --no-progress "$image"
+          done
 
       - name: Push image and resolve registry digest
         id: registry
@@ -129,9 +160,14 @@ jobs:
           GHCR_TOKEN: ${{ github.token }}
           IMAGE_REPOSITORY: ${{ steps.build.outputs.image_repository }}
           IMAGE_TAG: ${{ steps.build.outputs.image_tag }}
+          CMS_TAG: ${{ steps.build.outputs.cms_tag }}
+          CMS_REPOSITORY: ${{ steps.build.outputs.cms_repository }}
         run: |
           printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
           docker push "$IMAGE_TAG"
+          docker push "$CMS_TAG"
+          cms_digest=$(docker buildx imagetools inspect "$CMS_TAG" --format '{{.Manifest.Digest}}')
+          echo "CMS image for reviewed rollout: $CMS_REPOSITORY@$cms_digest"
           digest=$(docker buildx imagetools inspect "$IMAGE_TAG" --format '{{.Manifest.Digest}}')
           digest_hex=${digest#sha256:}
           test "$digest" != "$digest_hex"

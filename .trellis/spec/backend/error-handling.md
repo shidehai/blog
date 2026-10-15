@@ -1,31 +1,55 @@
-# Error Handling
+# Boundary errors and recovery
 
-## Fail at the Boundary
+## 1. Scope / Trigger
 
-Configuration is validated before a build reaches content loading. V2 owns
-build-time parsing in `frontend-v2/lib/env.ts`; Docker validates the requested
-source/secret before invoking Next; operations scripts validate their own
-required infrastructure values.
+CMS APIs, frontend runtime reads and operational failure paths.
 
-| Condition                                                                                       | Required behavior                                                                                |
-| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Fixture build with no CMS secret                                                                | Continue using the checked fixture                                                               |
-| Directus build with missing/invalid URL or token                                                | Fail before or during build; never use fixture fallback                                          |
-| Directus request or decoder failure                                                             | Abort the Next build with field/operation context, never the token                               |
-| Runtime image receives CMS source/credential env                                                | Configuration/image validation fails                                                             |
-| `/healthz` is requested                                                                         | Return non-cacheable success without CMS I/O                                                     |
-| Backup variable absent                                                                          | Exit before `pg_dump`                                                                            |
-| Dump cannot be listed by `pg_restore`                                                           | Exit without creating a Restic snapshot                                                          |
-| Any backup exit path                                                                            | Remove the mode-0600 temporary dump                                                              |
-| Launch configured/manifest HTTP(S) origins differ or either URL is invalid/contains credentials | Exit before authentication or CMS requests; never print URL parser input or embedded credentials |
+## 2. Signatures
 
-Errors may name a missing field, service, or failed operation. They must not
-print tokens, passwords, request headers, Markdown bodies, private URLs, or a
-complete environment object.
+`CmsError(status, message)` → `errorResponse(error)` → `{error: string}`.
+`handleApi(request, path)` owns parsing/auth; frontend readers throw ContentUnavailable.
+JSON/media/generation/health responses use no-store.
 
-## Propagation
+## 3. Contracts
 
-Prefer process exit status and stderr for small build/operations entrypoints.
-Let Next, Docker, Compose, Caddy, and Directus retain native diagnostics; wrap
-an error only to add safe record/field context. Do not add a fallback that
-changes a requested Directus build into a fixture build.
+Parse external JSON from unknown with shared Zod schemas. Limit streamed bodies.
+Every private request checks owner session; writes/login require exact Origin.
+Public bearer reader cannot access admin APIs. Never expose reader token in props.
+Save failures retain text; 409 offers reload/clone. Publish waits for saves/images.
+Unknown outcome retains the same key, locks editing and offers confirmation; only
+confirmed commit is success. A query 404 during a network failure is not rollback.
+Missing detail is 404; outage is explicit 503, never empty catalog/fixture fallback.
+Configuration errors name keys, not values. Health is independent of content I/O.
+Operations validate inputs before replacing data and clean temporary secret files.
+
+## 4. Validation & Error Matrix
+
+| Condition | Result |
+| --- | --- |
+| Missing owner / invalid reader token | 401 |
+| Wrong write Origin | 403 |
+| Missing publication / denied public image | 404 |
+| Version, slug/name or request-key conflict | 409 |
+| Oversized request/image | 413 |
+| Invalid JSON/schema/publication fields | 422 |
+| Login busy/limited | 429 |
+| Unexpected DB/service failure | Bounded 503 |
+| Publication response lost | Query/retry same key; retain locked state |
+| Backup invalid / restore input absent | Nonzero exit before replacement |
+
+## 5. Good / Base / Bad Cases
+
+- Good: failed save keeps text and explains recovery.
+- Base: unavailable CMS shows reconnect with 503.
+- Bad: optimistic published success, raw SQL/parser errors or fixture fallback.
+
+## 6. Tests Required
+
+Assert auth/origin, conflicts, rollback/idempotency, invalid/oversized requests,
+private media and outage 503. Browser checks cover conflict retention/retry.
+Operations prove refusal before mutation and cleanup on every exit.
+
+## 7. Wrong vs Correct
+
+Wrong: `loadCms().catch(() => fixture())`.
+Correct: propagate ContentUnavailable as a non-cacheable 503 with reconnect UI.

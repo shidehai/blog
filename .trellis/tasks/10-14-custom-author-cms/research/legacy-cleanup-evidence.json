@@ -1,0 +1,151 @@
+{
+  "date": "2026-10-15",
+  "scope": "local-only",
+  "mainConversationOnly": true,
+  "aiConcurrency": 1,
+  "backupRoot": "/home/sdh/vibehub/blog/.data/backups/legacy-cleanup-20261015-103907",
+  "dataCounts": {
+    "contents": 28,
+    "content_revisions": 37,
+    "taxonomies": 0,
+    "site_profile": 1,
+    "slug_aliases": 10,
+    "media": 2,
+    "published_media_refs": 2,
+    "public_state": 1,
+    "migration_mappings": 35,
+    "source_archives": 1
+  },
+  "mediaFilesIncludingOriginals": 3,
+  "businessDataExactlyUnchanged": true,
+  "mediaManifestExactlyUnchanged": true,
+  "allExportedMediaAndMarkdownBytesExactlyUnchanged": true,
+  "runtime": {
+    "siteAndCmsHealthy": true,
+    "ownerLoginPassed": true,
+    "adminAnonymousAndReaderDenied": true,
+    "originalPublicArticles200": 9,
+    "legacyWritingRedirects308": 9,
+    "publicMediaChecksumChecks": 2,
+    "privateMedia404Checks": 2
+  },
+  "runningApplications": {
+    "blog-local-site-1": {
+      "image": "sha256:009513df844b8c965c0010f309aaf4dbae4bea4d6ec2d7eab8ff2c1e2b72af64",
+      "startedAt": "2026-10-15T03:26:40.078936814Z",
+      "health": "healthy"
+    },
+    "blog-local-cms-1": {
+      "image": "sha256:af788993aa44d6a705046e1bc2b50dc6893844121f3ea9581f5b54bda7b7d125",
+      "startedAt": "2026-10-15T03:26:34.399210312Z",
+      "health": "healthy"
+    },
+    "blog-local-postgres-1": {
+      "image": "sha256:c7526c0f6c3f30260a563d7bcf8ad778effac59a44f8ffa86678c35418338609",
+      "startedAt": "2026-10-15T02:26:38.206501575Z",
+      "health": "healthy"
+    }
+  },
+  "images": {
+    "site": {
+      "tag": "blog-site:local-cms",
+      "smokePassed": true,
+      "runtimeCredentialAbsentFromImage": true,
+      "envFilesAndLegacySdkAbsent": true
+    },
+    "cms": {
+      "tag": "blog-cms:local-cms",
+      "smokePassed": true,
+      "runtimeCredentialAbsentFromImage": true,
+      "envFilesAndLegacySdkAbsent": true,
+      "fontDownloadMirrorForThisBuild": "Tsinghua Alpine mirror; pinned versions and signature verification unchanged"
+    }
+  },
+  "retirementComplete": true,
+  "remoteDeployment": false,
+  "committed": false,
+  "pushed": false,
+  "browserNativeGestureCoverageUnchanged": true,
+  "acceptedHistoricalLimitations": 68,
+  "removedContainers": [
+    "blog-cleanup-test-directus-1",
+    "blog-cleanup-test-postgres-1",
+    "personal-journal-directus-1",
+    "personal-journal-postgres-1"
+  ],
+  "removedVolumes": [
+    "blog-cleanup-test_uploads",
+    "blog-cleanup-test_postgres_data"
+  ],
+  "removedNetworks": [
+    "blog-cleanup-test_default",
+    "personal-journal_web",
+    "personal-journal_data",
+    "personal-journal_backup-egress"
+  ],
+  "removedLegacyDirectories": [
+    ".data/directus",
+    ".data/cleanup-test",
+    ".data/postgres",
+    ".data/caddy",
+    ".data/backup-staging"
+  ],
+  "legacyColdArchivesVerified": {
+    "historical-postgres-cold.tar": {
+      "sha256": "d2e634ff207a83acd6e78948f600b624b6a2a16346f3430a2240ddf3cc435e62",
+      "bytes": 69245440,
+      "members": 1525,
+      "coldStoppedPostgres": true,
+      "tarVerified": true
+    },
+    "cleanup-postgres-cold.tar": {
+      "sha256": "b9325c1e5c544fb003b4115583f26a0ee64d57b3949aefc35035dd25b218cd8c",
+      "bytes": 68823552,
+      "members": 1523,
+      "coldStoppedPostgres": true,
+      "tarVerified": true
+    },
+    "cleanup-uploads.tar": {
+      "sha256": "f3ba5080f41ceb850e7f9ac87367fed0c026d40401b7ff5133fd38c7edf9123e",
+      "bytes": 23040,
+      "members": 4,
+      "coldStoppedPostgres": false,
+      "tarVerified": true
+    }
+  },
+  "completeProtectedBackupRetained": true,
+  "removedRetiredImageTags": [
+    "blog-cms:author-cms-history-test",
+    "blog-cms:author-cms-test",
+    "blog-site:author-cms-test",
+    "blog-site:cleanup-fixture-media-20261010",
+    "blog-site:cleanup-media-test-20261010",
+    "blog-site:cleanup-directus-test-20261009",
+    "blog-site:cleanup-validation-20261009",
+    "blog-site:cleanup-development-20261009",
+    "blog-site:fixture",
+    "blog-site:ecr-diagnostic",
+    "blog-site:test",
+    "personal-journal-ops:validation",
+    "personal-journal-backup:latest",
+    "directus/directus:12.2.0"
+  ],
+  "quality": {
+    "rootLintPassed": true,
+    "frontendVerifyPassed": true,
+    "cmsVerifyPassed": true,
+    "cmsDatabaseTestsPassed": 7,
+    "cmsDatabaseTestsSkipped": 0,
+    "operationsRegressionIncludingBuildContextPassed": true,
+    "productionDevelopmentLocalComposeAndCaddyPassed": true,
+    "actualLocalComposePassed": true,
+    "newImageSmokeAndFilesystemInspectionsPassed": true,
+    "cleanupRootVerifyReinvocationCompleted": false,
+    "allRootVerifyComponentsPassedIndividually": true,
+    "finalDiffCheckPassed": true,
+    "postRetirementResourceAuditPassed": true
+  },
+  "privateConfigurationAndBackupsPermissionsVerified": true,
+  "independentPreviewAndQualityDatabasesPreserved": true,
+  "mainSessionConfigurationStillEnforced": true
+}

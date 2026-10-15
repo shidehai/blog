@@ -1,0 +1,2536 @@
+{
+  "batchId": "7c3dd47b1ca0d6bff8e89475f3e2fe109cb9e491021cc724b0b3211c22b2dd26",
+  "sourceCounts": {
+    "posts": 16,
+    "topics": 6,
+    "categories": 0,
+    "tags": 0,
+    "series": 0,
+    "posts_tags": 0,
+    "posts_topics": 28,
+    "site_settings": 1,
+    "social_links": 0,
+    "directus_files": 2,
+    "directus_versions": 0,
+    "directus_revisions": 75,
+    "directus_activity": 95
+  },
+  "targetCounts": {
+    "contents": 27,
+    "content_revisions": 33,
+    "taxonomies": 0,
+    "site_profile": 1,
+    "slug_aliases": 9,
+    "media": 2,
+    "published_media_refs": 2,
+    "public_state": 1,
+    "migration_mappings": 35,
+    "source_archives": 1
+  },
+  "addresses": [
+    {
+      "slug": "production-llm-reliability-boundaries",
+      "content_id": "f2000000-0000-4000-8000-000000000101"
+    },
+    {
+      "slug": "rag-retrieval-reranking-attribution",
+      "content_id": "f2000000-0000-4000-8000-000000000102"
+    },
+    {
+      "slug": "typescript-observable-rag-pipeline",
+      "content_id": "f2000000-0000-4000-8000-000000000103"
+    },
+    {
+      "slug": "structured-output-schema-retry-validation",
+      "content_id": "f2000000-0000-4000-8000-000000000105"
+    },
+    {
+      "slug": "safe-tool-calling-typescript",
+      "content_id": "f2000000-0000-4000-8000-000000000106"
+    },
+    {
+      "slug": "llm-evaluation-regression-loop",
+      "content_id": "f2000000-0000-4000-8000-000000000108"
+    },
+    {
+      "slug": "prompt-regression-golden-set",
+      "content_id": "f2000000-0000-4000-8000-000000000109"
+    },
+    {
+      "slug": "prompt-injection-data-flow",
+      "content_id": "f2000000-0000-4000-8000-000000000111"
+    },
+    {
+      "slug": "streaming-llm-sse-cancellation",
+      "content_id": "f2000000-0000-4000-8000-000000000112"
+    }
+  ],
+  "mediaChecksums": [
+    {
+      "id": "620b6d35-ffe0-40a3-aa18-2d605ed74034",
+      "sha256": "666002f894f46da14b86f0bb2b9e963e1f69907cf714b089b939afd6fe8fc26b"
+    },
+    {
+      "id": "df3f2cec-bfaa-4b6f-89e3-fef12d664344",
+      "sha256": "d14d76e159f0080dd62874e294dce587b4d564b1c4be496db7c6c5877f621287"
+    }
+  ],
+  "historyReconciliation": {
+    "version": 1,
+    "counts": {
+      "versions": 0,
+      "revisions": 75,
+      "activitiesWithoutRevision": 20,
+      "converted": 6,
+      "recoveredArchivedRevisions": 5,
+      "recoveredArchivedContents": 5,
+      "archiveOnly": 68,
+      "eventOnly": 16
+    },
+    "records": [
+      {
+        "source": "revisions",
+        "id": "14",
+        "collection": "site_settings",
+        "item": "f0000000-0000-4000-8000-000000000001",
+        "activityId": "22",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:26.982Z",
+        "disposition": "archive-only",
+        "code": "non-content-history",
+        "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+        "missingFields": []
+      },
+      {
+        "source": "revisions",
+        "id": "15",
+        "collection": "topics",
+        "item": "f1000000-0000-4000-8000-000000000001",
+        "activityId": "25",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.022Z",
+        "disposition": "converted",
+        "targetId": "f1000000-0000-4000-8000-000000000001",
+        "targetRevisionId": "11eae07e-c4ba-455f-bca6-4c563e06ed86"
+      },
+      {
+        "source": "revisions",
+        "id": "16",
+        "collection": "topics",
+        "item": "f1000000-0000-4000-8000-000000000002",
+        "activityId": "26",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.039Z",
+        "disposition": "converted",
+        "targetId": "f1000000-0000-4000-8000-000000000002",
+        "targetRevisionId": "612538ae-ea8b-434b-a468-3a3d59317fb9"
+      },
+      {
+        "source": "revisions",
+        "id": "17",
+        "collection": "topics",
+        "item": "f1000000-0000-4000-8000-000000000003",
+        "activityId": "27",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.058Z",
+        "disposition": "converted",
+        "targetId": "f1000000-0000-4000-8000-000000000003",
+        "targetRevisionId": "dd1c50ad-d719-4e9a-ab3b-85c8e4b77310"
+      },
+      {
+        "source": "revisions",
+        "id": "18",
+        "collection": "topics",
+        "item": "f1000000-0000-4000-8000-000000000004",
+        "activityId": "28",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.075Z",
+        "disposition": "converted",
+        "targetId": "f1000000-0000-4000-8000-000000000004",
+        "targetRevisionId": "96921e48-08c5-47ee-b579-86e74952517d"
+      },
+      {
+        "source": "revisions",
+        "id": "19",
+        "collection": "topics",
+        "item": "f1000000-0000-4000-8000-000000000005",
+        "activityId": "29",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.089Z",
+        "disposition": "converted",
+        "targetId": "f1000000-0000-4000-8000-000000000005",
+        "targetRevisionId": "d94ac546-05b6-41a1-addb-5e80929868b9"
+      },
+      {
+        "source": "revisions",
+        "id": "20",
+        "collection": "topics",
+        "item": "f1000000-0000-4000-8000-000000000006",
+        "activityId": "30",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.109Z",
+        "disposition": "converted",
+        "targetId": "f1000000-0000-4000-8000-000000000006",
+        "targetRevisionId": "dd967fb4-626a-4e62-88db-a1beedeaee9d"
+      },
+      {
+        "source": "revisions",
+        "id": "21",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000101",
+        "activityId": "31",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.124Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "22",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000102",
+        "activityId": "32",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.144Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "23",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000103",
+        "activityId": "33",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.161Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "24",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000104",
+        "activityId": "34",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.182Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "25",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000105",
+        "activityId": "35",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.198Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "26",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000106",
+        "activityId": "36",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.244Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "27",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000107",
+        "activityId": "37",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.265Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "28",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000108",
+        "activityId": "38",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.286Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "29",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000109",
+        "activityId": "39",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.307Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "30",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000110",
+        "activityId": "40",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.331Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "31",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000111",
+        "activityId": "41",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.358Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "32",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000112",
+        "activityId": "42",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.375Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "33",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000001",
+        "activityId": "43",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.396Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "34",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000002",
+        "activityId": "44",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.408Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "35",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000003",
+        "activityId": "45",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.420Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "36",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000004",
+        "activityId": "46",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.432Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "37",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000005",
+        "activityId": "47",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.445Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "38",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000006",
+        "activityId": "48",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.457Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "39",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000007",
+        "activityId": "49",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.475Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "40",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000008",
+        "activityId": "50",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.493Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "41",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000009",
+        "activityId": "51",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.505Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "42",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000010",
+        "activityId": "52",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.516Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "43",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000011",
+        "activityId": "53",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.529Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "44",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000012",
+        "activityId": "54",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.548Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "45",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000013",
+        "activityId": "55",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.568Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "46",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000014",
+        "activityId": "56",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.584Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "47",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000015",
+        "activityId": "57",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.607Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "48",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000016",
+        "activityId": "58",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.624Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "49",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000017",
+        "activityId": "59",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.638Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "50",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000018",
+        "activityId": "60",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.650Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "51",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000019",
+        "activityId": "61",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.667Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "52",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000020",
+        "activityId": "62",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.679Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "53",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000021",
+        "activityId": "63",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.693Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "54",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000022",
+        "activityId": "64",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.707Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "55",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000023",
+        "activityId": "65",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.717Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "56",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000024",
+        "activityId": "66",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.727Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "57",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000025",
+        "activityId": "67",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.737Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "58",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000026",
+        "activityId": "68",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.747Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "59",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000027",
+        "activityId": "69",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.762Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "60",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000028",
+        "activityId": "70",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.776Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "61",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000001",
+        "activityId": "71",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.794Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "62",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000002",
+        "activityId": "72",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.816Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "63",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000003",
+        "activityId": "73",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.844Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "64",
+        "collection": "posts",
+        "item": "f2000000-0000-4000-8000-000000000004",
+        "activityId": "74",
+        "action": "create",
+        "timestamp": "2026-10-09T10:30:27.866Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "76",
+        "collection": "posts",
+        "item": "37370a9f-8f77-4dc0-9086-aaede9b92469",
+        "activityId": "89",
+        "action": "create",
+        "timestamp": "2026-10-09T10:36:02.237Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "77",
+        "collection": "topics",
+        "item": "74affe12-f050-4448-9eb3-6c4aad71253e",
+        "activityId": "90",
+        "action": "create",
+        "timestamp": "2026-10-09T10:36:02.259Z",
+        "disposition": "recovered-archived",
+        "targetId": "74affe12-f050-4448-9eb3-6c4aad71253e",
+        "targetRevisionId": "0c93e506-5f08-4350-b98d-a9d4eea53fd3"
+      },
+      {
+        "source": "revisions",
+        "id": "78",
+        "collection": "posts_topics",
+        "item": "712efbfd-d587-4148-ba1c-6b015cb2d2b3",
+        "activityId": "91",
+        "action": "create",
+        "timestamp": "2026-10-09T10:36:02.276Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "110",
+        "collection": "posts",
+        "item": "4d30e4c1-f477-4d76-8537-fe00bb1a5b56",
+        "activityId": "145",
+        "action": "create",
+        "timestamp": "2026-10-09T10:55:14.178Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "111",
+        "collection": "topics",
+        "item": "ac609fa5-408c-40f5-b7e3-c719d235d30a",
+        "activityId": "146",
+        "action": "create",
+        "timestamp": "2026-10-09T10:55:14.200Z",
+        "disposition": "recovered-archived",
+        "targetId": "ac609fa5-408c-40f5-b7e3-c719d235d30a",
+        "targetRevisionId": "884ff03e-6dda-4d5b-bd06-bf1e995e705f"
+      },
+      {
+        "source": "revisions",
+        "id": "112",
+        "collection": "posts_topics",
+        "item": "da2a7ef2-ddd4-4932-8517-a32048d47c65",
+        "activityId": "147",
+        "action": "create",
+        "timestamp": "2026-10-09T10:55:14.213Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "113",
+        "collection": "site_settings",
+        "item": "f0000000-0000-4000-8000-000000000001",
+        "activityId": "159",
+        "action": "update",
+        "timestamp": "2026-10-09T10:59:55.489Z",
+        "disposition": "archive-only",
+        "code": "non-content-history",
+        "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+        "missingFields": []
+      },
+      {
+        "source": "revisions",
+        "id": "114",
+        "collection": "site_settings",
+        "item": "f0000000-0000-4000-8000-000000000001",
+        "activityId": "161",
+        "action": "update",
+        "timestamp": "2026-10-09T10:59:56.509Z",
+        "disposition": "archive-only",
+        "code": "non-content-history",
+        "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+        "missingFields": []
+      },
+      {
+        "source": "revisions",
+        "id": "115",
+        "collection": "site_settings",
+        "item": "f0000000-0000-4000-8000-000000000001",
+        "activityId": "162",
+        "action": "update",
+        "timestamp": "2026-10-09T10:59:56.520Z",
+        "disposition": "archive-only",
+        "code": "non-content-history",
+        "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+        "missingFields": []
+      },
+      {
+        "source": "revisions",
+        "id": "116",
+        "collection": "site_settings",
+        "item": "f0000000-0000-4000-8000-000000000001",
+        "activityId": "164",
+        "action": "update",
+        "timestamp": "2026-10-09T10:59:57.205Z",
+        "disposition": "archive-only",
+        "code": "non-content-history",
+        "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+        "missingFields": []
+      },
+      {
+        "source": "revisions",
+        "id": "117",
+        "collection": "site_settings",
+        "item": "f0000000-0000-4000-8000-000000000001",
+        "activityId": "167",
+        "action": "update",
+        "timestamp": "2026-10-09T11:02:17.030Z",
+        "disposition": "archive-only",
+        "code": "non-content-history",
+        "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+        "missingFields": []
+      },
+      {
+        "source": "revisions",
+        "id": "118",
+        "collection": "site_settings",
+        "item": "f0000000-0000-4000-8000-000000000001",
+        "activityId": "169",
+        "action": "update",
+        "timestamp": "2026-10-09T11:02:17.761Z",
+        "disposition": "archive-only",
+        "code": "non-content-history",
+        "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+        "missingFields": []
+      },
+      {
+        "source": "revisions",
+        "id": "119",
+        "collection": "site_settings",
+        "item": "f0000000-0000-4000-8000-000000000001",
+        "activityId": "170",
+        "action": "update",
+        "timestamp": "2026-10-09T11:02:17.778Z",
+        "disposition": "archive-only",
+        "code": "non-content-history",
+        "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+        "missingFields": []
+      },
+      {
+        "source": "revisions",
+        "id": "120",
+        "collection": "site_settings",
+        "item": "f0000000-0000-4000-8000-000000000001",
+        "activityId": "172",
+        "action": "update",
+        "timestamp": "2026-10-09T11:02:18.439Z",
+        "disposition": "archive-only",
+        "code": "non-content-history",
+        "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+        "missingFields": []
+      },
+      {
+        "source": "revisions",
+        "id": "121",
+        "collection": "posts",
+        "item": "32235fbe-acb1-4a91-ba12-3c7c9cf83520",
+        "activityId": "174",
+        "action": "create",
+        "timestamp": "2026-10-09T11:02:19.179Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "122",
+        "collection": "topics",
+        "item": "e17267bd-27b6-456d-a8d8-ae39c1b1448c",
+        "activityId": "175",
+        "action": "create",
+        "timestamp": "2026-10-09T11:02:19.191Z",
+        "disposition": "recovered-archived",
+        "targetId": "e17267bd-27b6-456d-a8d8-ae39c1b1448c",
+        "targetRevisionId": "c4879b54-a823-4817-a616-94df9166fb71"
+      },
+      {
+        "source": "revisions",
+        "id": "123",
+        "collection": "posts_topics",
+        "item": "9bae69fb-0324-479a-89ed-3519d355506c",
+        "activityId": "176",
+        "action": "create",
+        "timestamp": "2026-10-09T11:02:19.202Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "124",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000001",
+        "activityId": "189",
+        "action": "create",
+        "timestamp": "2026-10-09T11:06:06.856Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "125",
+        "collection": "posts",
+        "item": "5ecb761b-0611-4f45-8b0c-21d9a9d4cb96",
+        "activityId": "191",
+        "action": "create",
+        "timestamp": "2026-10-09T11:09:31.950Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "126",
+        "collection": "topics",
+        "item": "bb536ad0-8849-4c05-846f-6b9d9707c164",
+        "activityId": "192",
+        "action": "create",
+        "timestamp": "2026-10-09T11:09:31.971Z",
+        "disposition": "recovered-archived",
+        "targetId": "bb536ad0-8849-4c05-846f-6b9d9707c164",
+        "targetRevisionId": "afec1f6a-c8f3-44c3-97ef-27ff201310f4"
+      },
+      {
+        "source": "revisions",
+        "id": "127",
+        "collection": "posts_topics",
+        "item": "c5c671d8-5948-4ec1-954a-b3633beac828",
+        "activityId": "193",
+        "action": "create",
+        "timestamp": "2026-10-09T11:09:31.985Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "128",
+        "collection": "posts",
+        "item": "3ab04d05-93eb-4230-ae6a-82c5eb900391",
+        "activityId": "203",
+        "action": "create",
+        "timestamp": "2026-10-10T01:07:26.879Z",
+        "disposition": "archive-only",
+        "code": "incomplete-history-relations",
+        "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+        "missingFields": [
+          "tags",
+          "topics"
+        ]
+      },
+      {
+        "source": "revisions",
+        "id": "129",
+        "collection": "topics",
+        "item": "f55170a2-44e6-4e36-9f57-23297ea35160",
+        "activityId": "204",
+        "action": "create",
+        "timestamp": "2026-10-10T01:07:26.898Z",
+        "disposition": "recovered-archived",
+        "targetId": "f55170a2-44e6-4e36-9f57-23297ea35160",
+        "targetRevisionId": "d061ab56-f1f8-4767-aa28-1378a46d24e9"
+      },
+      {
+        "source": "revisions",
+        "id": "130",
+        "collection": "posts_topics",
+        "item": "db171fe0-45a6-4feb-9621-43b38ab9a27c",
+        "activityId": "205",
+        "action": "create",
+        "timestamp": "2026-10-10T01:07:26.912Z",
+        "disposition": "archive-only",
+        "code": "junction-history",
+        "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+        "missingFields": [
+          "posts_id",
+          "topics_id"
+        ]
+      },
+      {
+        "source": "activities",
+        "id": "23",
+        "collection": "social_links",
+        "item": "f3000000-0000-4000-8000-000000000001",
+        "activityId": "23",
+        "action": "delete",
+        "timestamp": "2026-10-09T10:30:27.000Z",
+        "disposition": "archive-only",
+        "code": "deleted-item-without-snapshot",
+        "reason": "只有删除活动，没有该内容的原始快照，无法重建被删除字段",
+        "missingFields": [
+          "data"
+        ]
+      },
+      {
+        "source": "activities",
+        "id": "24",
+        "collection": "social_links",
+        "item": "f3000000-0000-4000-8000-000000000002",
+        "activityId": "24",
+        "action": "delete",
+        "timestamp": "2026-10-09T10:30:27.008Z",
+        "disposition": "archive-only",
+        "code": "deleted-item-without-snapshot",
+        "reason": "只有删除活动，没有该内容的原始快照，无法重建被删除字段",
+        "missingFields": [
+          "data"
+        ]
+      },
+      {
+        "source": "activities",
+        "id": "134",
+        "collection": "posts_topics",
+        "item": "712efbfd-d587-4148-ba1c-6b015cb2d2b3",
+        "activityId": "134",
+        "action": "delete",
+        "timestamp": "2026-10-09T10:36:05.146Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "135",
+        "collection": "posts",
+        "item": "37370a9f-8f77-4dc0-9086-aaede9b92469",
+        "activityId": "135",
+        "action": "delete",
+        "timestamp": "2026-10-09T10:36:05.161Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "136",
+        "collection": "topics",
+        "item": "74affe12-f050-4448-9eb3-6c4aad71253e",
+        "activityId": "136",
+        "action": "delete",
+        "timestamp": "2026-10-09T10:36:05.173Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "150",
+        "collection": "posts_topics",
+        "item": "da2a7ef2-ddd4-4932-8517-a32048d47c65",
+        "activityId": "150",
+        "action": "delete",
+        "timestamp": "2026-10-09T10:55:16.367Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "151",
+        "collection": "topics",
+        "item": "ac609fa5-408c-40f5-b7e3-c719d235d30a",
+        "activityId": "151",
+        "action": "delete",
+        "timestamp": "2026-10-09T10:55:16.378Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "152",
+        "collection": "posts",
+        "item": "4d30e4c1-f477-4d76-8537-fe00bb1a5b56",
+        "activityId": "152",
+        "action": "delete",
+        "timestamp": "2026-10-09T10:55:16.390Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "179",
+        "collection": "posts_topics",
+        "item": "9bae69fb-0324-479a-89ed-3519d355506c",
+        "activityId": "179",
+        "action": "delete",
+        "timestamp": "2026-10-09T11:02:20.914Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "180",
+        "collection": "topics",
+        "item": "e17267bd-27b6-456d-a8d8-ae39c1b1448c",
+        "activityId": "180",
+        "action": "delete",
+        "timestamp": "2026-10-09T11:02:20.921Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "181",
+        "collection": "posts",
+        "item": "32235fbe-acb1-4a91-ba12-3c7c9cf83520",
+        "activityId": "181",
+        "action": "delete",
+        "timestamp": "2026-10-09T11:02:20.929Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "185",
+        "collection": "posts_topics",
+        "item": "f4000000-0000-4000-8000-000000000001",
+        "activityId": "185",
+        "action": "delete",
+        "timestamp": "2026-10-09T11:06:05.476Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "187",
+        "collection": "social_links",
+        "item": "f3000000-0000-4000-8000-000000000001",
+        "activityId": "187",
+        "action": "delete",
+        "timestamp": "2026-10-09T11:06:06.675Z",
+        "disposition": "archive-only",
+        "code": "deleted-item-without-snapshot",
+        "reason": "只有删除活动，没有该内容的原始快照，无法重建被删除字段",
+        "missingFields": [
+          "data"
+        ]
+      },
+      {
+        "source": "activities",
+        "id": "188",
+        "collection": "social_links",
+        "item": "f3000000-0000-4000-8000-000000000002",
+        "activityId": "188",
+        "action": "delete",
+        "timestamp": "2026-10-09T11:06:06.684Z",
+        "disposition": "archive-only",
+        "code": "deleted-item-without-snapshot",
+        "reason": "只有删除活动，没有该内容的原始快照，无法重建被删除字段",
+        "missingFields": [
+          "data"
+        ]
+      },
+      {
+        "source": "activities",
+        "id": "196",
+        "collection": "posts_topics",
+        "item": "c5c671d8-5948-4ec1-954a-b3633beac828",
+        "activityId": "196",
+        "action": "delete",
+        "timestamp": "2026-10-09T11:09:34.374Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "197",
+        "collection": "topics",
+        "item": "bb536ad0-8849-4c05-846f-6b9d9707c164",
+        "activityId": "197",
+        "action": "delete",
+        "timestamp": "2026-10-09T11:09:34.380Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "198",
+        "collection": "posts",
+        "item": "5ecb761b-0611-4f45-8b0c-21d9a9d4cb96",
+        "activityId": "198",
+        "action": "delete",
+        "timestamp": "2026-10-09T11:09:34.387Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "208",
+        "collection": "posts_topics",
+        "item": "db171fe0-45a6-4feb-9621-43b38ab9a27c",
+        "activityId": "208",
+        "action": "delete",
+        "timestamp": "2026-10-10T01:07:29.083Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "209",
+        "collection": "topics",
+        "item": "f55170a2-44e6-4e36-9f57-23297ea35160",
+        "activityId": "209",
+        "action": "delete",
+        "timestamp": "2026-10-10T01:07:29.092Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      },
+      {
+        "source": "activities",
+        "id": "210",
+        "collection": "posts",
+        "item": "3ab04d05-93eb-4230-ae6a-82c5eb900391",
+        "activityId": "210",
+        "action": "delete",
+        "timestamp": "2026-10-10T01:07:29.104Z",
+        "disposition": "event-only",
+        "code": "delete-event",
+        "reason": "删除操作仅保留活动元数据，历史快照另行对账"
+      }
+    ],
+    "policy": "只恢复独立完整快照；历史关系不借用当前值。已删除内容仅归档恢复，不自动发布或占用地址。原档案保留不等于可编辑历史已重建。"
+  },
+  "limitations": [
+    {
+      "source": "revisions",
+      "id": "14",
+      "collection": "site_settings",
+      "item": "f0000000-0000-4000-8000-000000000001",
+      "activityId": "22",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:26.982Z",
+      "disposition": "archive-only",
+      "code": "non-content-history",
+      "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+      "missingFields": []
+    },
+    {
+      "source": "revisions",
+      "id": "21",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000101",
+      "activityId": "31",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.124Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "22",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000102",
+      "activityId": "32",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.144Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "23",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000103",
+      "activityId": "33",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.161Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "24",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000104",
+      "activityId": "34",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.182Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "25",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000105",
+      "activityId": "35",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.198Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "26",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000106",
+      "activityId": "36",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.244Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "27",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000107",
+      "activityId": "37",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.265Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "28",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000108",
+      "activityId": "38",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.286Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "29",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000109",
+      "activityId": "39",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.307Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "30",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000110",
+      "activityId": "40",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.331Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "31",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000111",
+      "activityId": "41",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.358Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "32",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000112",
+      "activityId": "42",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.375Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "33",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000001",
+      "activityId": "43",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.396Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "34",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000002",
+      "activityId": "44",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.408Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "35",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000003",
+      "activityId": "45",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.420Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "36",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000004",
+      "activityId": "46",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.432Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "37",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000005",
+      "activityId": "47",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.445Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "38",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000006",
+      "activityId": "48",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.457Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "39",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000007",
+      "activityId": "49",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.475Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "40",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000008",
+      "activityId": "50",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.493Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "41",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000009",
+      "activityId": "51",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.505Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "42",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000010",
+      "activityId": "52",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.516Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "43",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000011",
+      "activityId": "53",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.529Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "44",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000012",
+      "activityId": "54",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.548Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "45",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000013",
+      "activityId": "55",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.568Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "46",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000014",
+      "activityId": "56",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.584Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "47",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000015",
+      "activityId": "57",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.607Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "48",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000016",
+      "activityId": "58",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.624Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "49",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000017",
+      "activityId": "59",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.638Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "50",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000018",
+      "activityId": "60",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.650Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "51",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000019",
+      "activityId": "61",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.667Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "52",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000020",
+      "activityId": "62",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.679Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "53",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000021",
+      "activityId": "63",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.693Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "54",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000022",
+      "activityId": "64",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.707Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "55",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000023",
+      "activityId": "65",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.717Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "56",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000024",
+      "activityId": "66",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.727Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "57",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000025",
+      "activityId": "67",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.737Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "58",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000026",
+      "activityId": "68",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.747Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "59",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000027",
+      "activityId": "69",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.762Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "60",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000028",
+      "activityId": "70",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.776Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "61",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000001",
+      "activityId": "71",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.794Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "62",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000002",
+      "activityId": "72",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.816Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "63",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000003",
+      "activityId": "73",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.844Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "64",
+      "collection": "posts",
+      "item": "f2000000-0000-4000-8000-000000000004",
+      "activityId": "74",
+      "action": "create",
+      "timestamp": "2026-10-09T10:30:27.866Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "76",
+      "collection": "posts",
+      "item": "37370a9f-8f77-4dc0-9086-aaede9b92469",
+      "activityId": "89",
+      "action": "create",
+      "timestamp": "2026-10-09T10:36:02.237Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "78",
+      "collection": "posts_topics",
+      "item": "712efbfd-d587-4148-ba1c-6b015cb2d2b3",
+      "activityId": "91",
+      "action": "create",
+      "timestamp": "2026-10-09T10:36:02.276Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "110",
+      "collection": "posts",
+      "item": "4d30e4c1-f477-4d76-8537-fe00bb1a5b56",
+      "activityId": "145",
+      "action": "create",
+      "timestamp": "2026-10-09T10:55:14.178Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "112",
+      "collection": "posts_topics",
+      "item": "da2a7ef2-ddd4-4932-8517-a32048d47c65",
+      "activityId": "147",
+      "action": "create",
+      "timestamp": "2026-10-09T10:55:14.213Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "113",
+      "collection": "site_settings",
+      "item": "f0000000-0000-4000-8000-000000000001",
+      "activityId": "159",
+      "action": "update",
+      "timestamp": "2026-10-09T10:59:55.489Z",
+      "disposition": "archive-only",
+      "code": "non-content-history",
+      "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+      "missingFields": []
+    },
+    {
+      "source": "revisions",
+      "id": "114",
+      "collection": "site_settings",
+      "item": "f0000000-0000-4000-8000-000000000001",
+      "activityId": "161",
+      "action": "update",
+      "timestamp": "2026-10-09T10:59:56.509Z",
+      "disposition": "archive-only",
+      "code": "non-content-history",
+      "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+      "missingFields": []
+    },
+    {
+      "source": "revisions",
+      "id": "115",
+      "collection": "site_settings",
+      "item": "f0000000-0000-4000-8000-000000000001",
+      "activityId": "162",
+      "action": "update",
+      "timestamp": "2026-10-09T10:59:56.520Z",
+      "disposition": "archive-only",
+      "code": "non-content-history",
+      "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+      "missingFields": []
+    },
+    {
+      "source": "revisions",
+      "id": "116",
+      "collection": "site_settings",
+      "item": "f0000000-0000-4000-8000-000000000001",
+      "activityId": "164",
+      "action": "update",
+      "timestamp": "2026-10-09T10:59:57.205Z",
+      "disposition": "archive-only",
+      "code": "non-content-history",
+      "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+      "missingFields": []
+    },
+    {
+      "source": "revisions",
+      "id": "117",
+      "collection": "site_settings",
+      "item": "f0000000-0000-4000-8000-000000000001",
+      "activityId": "167",
+      "action": "update",
+      "timestamp": "2026-10-09T11:02:17.030Z",
+      "disposition": "archive-only",
+      "code": "non-content-history",
+      "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+      "missingFields": []
+    },
+    {
+      "source": "revisions",
+      "id": "118",
+      "collection": "site_settings",
+      "item": "f0000000-0000-4000-8000-000000000001",
+      "activityId": "169",
+      "action": "update",
+      "timestamp": "2026-10-09T11:02:17.761Z",
+      "disposition": "archive-only",
+      "code": "non-content-history",
+      "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+      "missingFields": []
+    },
+    {
+      "source": "revisions",
+      "id": "119",
+      "collection": "site_settings",
+      "item": "f0000000-0000-4000-8000-000000000001",
+      "activityId": "170",
+      "action": "update",
+      "timestamp": "2026-10-09T11:02:17.778Z",
+      "disposition": "archive-only",
+      "code": "non-content-history",
+      "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+      "missingFields": []
+    },
+    {
+      "source": "revisions",
+      "id": "120",
+      "collection": "site_settings",
+      "item": "f0000000-0000-4000-8000-000000000001",
+      "activityId": "172",
+      "action": "update",
+      "timestamp": "2026-10-09T11:02:18.439Z",
+      "disposition": "archive-only",
+      "code": "non-content-history",
+      "reason": "站点/分类等非正文历史保存在源档案中，没有对应的正文恢复界面",
+      "missingFields": []
+    },
+    {
+      "source": "revisions",
+      "id": "121",
+      "collection": "posts",
+      "item": "32235fbe-acb1-4a91-ba12-3c7c9cf83520",
+      "activityId": "174",
+      "action": "create",
+      "timestamp": "2026-10-09T11:02:19.179Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "123",
+      "collection": "posts_topics",
+      "item": "9bae69fb-0324-479a-89ed-3519d355506c",
+      "activityId": "176",
+      "action": "create",
+      "timestamp": "2026-10-09T11:02:19.202Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "124",
+      "collection": "posts_topics",
+      "item": "f4000000-0000-4000-8000-000000000001",
+      "activityId": "189",
+      "action": "create",
+      "timestamp": "2026-10-09T11:06:06.856Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "125",
+      "collection": "posts",
+      "item": "5ecb761b-0611-4f45-8b0c-21d9a9d4cb96",
+      "activityId": "191",
+      "action": "create",
+      "timestamp": "2026-10-09T11:09:31.950Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "127",
+      "collection": "posts_topics",
+      "item": "c5c671d8-5948-4ec1-954a-b3633beac828",
+      "activityId": "193",
+      "action": "create",
+      "timestamp": "2026-10-09T11:09:31.985Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "128",
+      "collection": "posts",
+      "item": "3ab04d05-93eb-4230-ae6a-82c5eb900391",
+      "activityId": "203",
+      "action": "create",
+      "timestamp": "2026-10-10T01:07:26.879Z",
+      "disposition": "archive-only",
+      "code": "incomplete-history-relations",
+      "reason": "历史快照缺少完整的标签/专题关系，不能用当前关系补齐",
+      "missingFields": [
+        "tags",
+        "topics"
+      ]
+    },
+    {
+      "source": "revisions",
+      "id": "130",
+      "collection": "posts_topics",
+      "item": "db171fe0-45a6-4feb-9621-43b38ab9a27c",
+      "activityId": "205",
+      "action": "create",
+      "timestamp": "2026-10-10T01:07:26.912Z",
+      "disposition": "archive-only",
+      "code": "junction-history",
+      "reason": "关联表历史不转换为正文修订；缺失端点不能从当前关系推断",
+      "missingFields": [
+        "posts_id",
+        "topics_id"
+      ]
+    },
+    {
+      "source": "activities",
+      "id": "23",
+      "collection": "social_links",
+      "item": "f3000000-0000-4000-8000-000000000001",
+      "activityId": "23",
+      "action": "delete",
+      "timestamp": "2026-10-09T10:30:27.000Z",
+      "disposition": "archive-only",
+      "code": "deleted-item-without-snapshot",
+      "reason": "只有删除活动，没有该内容的原始快照，无法重建被删除字段",
+      "missingFields": [
+        "data"
+      ]
+    },
+    {
+      "source": "activities",
+      "id": "24",
+      "collection": "social_links",
+      "item": "f3000000-0000-4000-8000-000000000002",
+      "activityId": "24",
+      "action": "delete",
+      "timestamp": "2026-10-09T10:30:27.008Z",
+      "disposition": "archive-only",
+      "code": "deleted-item-without-snapshot",
+      "reason": "只有删除活动，没有该内容的原始快照，无法重建被删除字段",
+      "missingFields": [
+        "data"
+      ]
+    },
+    {
+      "source": "activities",
+      "id": "187",
+      "collection": "social_links",
+      "item": "f3000000-0000-4000-8000-000000000001",
+      "activityId": "187",
+      "action": "delete",
+      "timestamp": "2026-10-09T11:06:06.675Z",
+      "disposition": "archive-only",
+      "code": "deleted-item-without-snapshot",
+      "reason": "只有删除活动，没有该内容的原始快照，无法重建被删除字段",
+      "missingFields": [
+        "data"
+      ]
+    },
+    {
+      "source": "activities",
+      "id": "188",
+      "collection": "social_links",
+      "item": "f3000000-0000-4000-8000-000000000002",
+      "activityId": "188",
+      "action": "delete",
+      "timestamp": "2026-10-09T11:06:06.684Z",
+      "disposition": "archive-only",
+      "code": "deleted-item-without-snapshot",
+      "reason": "只有删除活动，没有该内容的原始快照，无法重建被删除字段",
+      "missingFields": [
+        "data"
+      ]
+    }
+  ],
+  "readyForCutover": false,
+  "rawSourcePreserved": true
+}

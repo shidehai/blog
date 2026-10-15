@@ -14,12 +14,12 @@ import {
   X,
 } from "lucide-react";
 
-import type { Post } from "../lib/types";
+import type { PostSummary } from "../lib/types";
 
 interface CommandMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  posts: Post[];
+  posts: PostSummary[];
 }
 
 export function CommandMenu({ isOpen, onClose, posts }: CommandMenuProps) {

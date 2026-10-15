@@ -11,6 +11,8 @@ services:
     depends_on:
       site:
         condition: service_healthy
+      cms:
+        condition: service_healthy
     environment:
       ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL}
       CMS_DOMAIN: ${CMS_DOMAIN:?Set CMS_DOMAIN}
@@ -49,6 +51,11 @@ services:
       retries: 3
 
   site:
+    environment:
+      CONTENT_SOURCE: cms
+      SITE_URL: https://${SITE_DOMAIN:?Set SITE_DOMAIN}
+      CMS_INTERNAL_URL: http://cms:4322
+      CMS_READ_TOKEN: ${CMS_READ_TOKEN:?Set CMS_READ_TOKEN}
     image: ${SITE_IMAGE:?Set SITE_IMAGE to an immutable digest}
     restart: unless-stopped
     init: true
@@ -74,59 +81,39 @@ services:
       start_period: 10s
       retries: 3
 
-  directus:
-    image: directus/directus:12.2.0
+  cms:
+    image: ${CMS_IMAGE:?Set CMS_IMAGE to an immutable digest}
     restart: unless-stopped
     init: true
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      DB_CLIENT: pg
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: ${POSTGRES_DB:?Set POSTGRES_DB}
-      DB_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
-      SECRET: ${DIRECTUS_SECRET:?Set DIRECTUS_SECRET}
-      LICENSE_KEY: ${DIRECTUS_LICENSE_KEY:-}
-      PUBLIC_URL: https://${CMS_DOMAIN:?Set CMS_DOMAIN}
-      TELEMETRY: "false"
-      WEBSOCKETS_ENABLED: "false"
-      FILES_MAX_UPLOAD_SIZE: 20mb
-      FILES_MIME_TYPE_ALLOW_LIST: image/jpeg,image/png,image/webp,image/avif,image/gif,image/svg+xml
-      FLOWS_ENV_ALLOW_LIST: GITHUB_DISPATCH_TOKEN,GITHUB_REPOSITORY
-      GITHUB_DISPATCH_TOKEN: ${GITHUB_DISPATCH_TOKEN:-}
-      GITHUB_REPOSITORY: ${GITHUB_REPOSITORY:-}
-      STORAGE_LOCATIONS: local
-      STORAGE_LOCAL_DRIVER: local
-      STORAGE_LOCAL_ROOT: /directus/uploads
+      DATABASE_URL: ${CMS_DATABASE_URL:?Set CMS_DATABASE_URL}
+      CMS_ORIGIN: https://${CMS_DOMAIN:?Set CMS_DOMAIN}
+      CMS_SITE_ORIGIN: https://${SITE_DOMAIN:?Set SITE_DOMAIN}
+      CMS_READ_TOKEN: ${CMS_READ_TOKEN:?Set CMS_READ_TOKEN}
+      CMS_MEDIA_ROOT: /data/cms-media
+      CMS_TRUST_PROXY: "false"
     volumes:
       - type: bind
-        source: ${BLOG_DATA_ROOT:-../.data}/directus/uploads
-        target: /directus/uploads
-      - type: bind
-        source: ../directus
-        target: /directus/project
-        read_only: true
+        source: ${BLOG_DATA_ROOT:-../.data}/cms/media
+        target: /data/cms-media
     networks: [web, data]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
     logging: *default-logging
     mem_limit: 768m
     cpus: 1.0
-    pids_limit: 256
+    pids_limit: 128
     healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:8055/server/ping').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
-        ]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4322/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 5s
-      start_period: 30s
-      retries: 5
+      start_period: 15s
+      retries: 3
 
   postgres:
     image: postgres:17.9-alpine
@@ -173,8 +160,8 @@ services:
       RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:?Set RESTIC_REPOSITORY}
     volumes:
       - type: bind
-        source: ${BLOG_DATA_ROOT:-../.data}/directus/uploads
-        target: /data/uploads
+        source: ${BLOG_DATA_ROOT:-../.data}/cms/media
+        target: /data/cms-media
         read_only: true
       - type: bind
         source: ${BLOG_DATA_ROOT:-../.data}/backup-staging
@@ -210,11 +197,11 @@ services:
       RESTIC_PASSWORD: ${RESTIC_PASSWORD:?Set RESTIC_PASSWORD}
       RESTIC_REPOSITORY: ${RESTIC_REPOSITORY:?Set RESTIC_REPOSITORY}
       RESTORE_CONFIRM: ${RESTORE_CONFIRM:-}
-      RESTORE_UPLOADS_TARGET: /restore/uploads
+      RESTORE_CMS_MEDIA_TARGET: /restore/cms-media
     volumes:
       - type: bind
-        source: ${BLOG_DATA_ROOT:-../.data}/directus/uploads
-        target: /restore/uploads
+        source: ${BLOG_DATA_ROOT:-../.data}/cms/media
+        target: /restore/cms-media
       - type: bind
         source: ${BLOG_DATA_ROOT:-../.data}/backup-staging
         target: /backup-staging

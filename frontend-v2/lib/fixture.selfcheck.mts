@@ -1,15 +1,12 @@
 /**
- * 夹具映射自检：跑 FIXTURE_ROWS 经 buildSnapshot 的降级路径，断言派生值与
- * 构建期环境边界。类型通过不等于映射正确。
+ * 显式离线夹具的映射与运行时环境边界自检。
  */
 import assert from "node:assert/strict";
-import { inspect } from "node:util";
-
-import { buildSnapshot, loadFromDirectus, rawPostSchema } from "./directus.js";
-import { readBuildEnvironment } from "./env.js";
+import { buildSnapshot, rawPostSchema } from "./fixture-projector.js";
+import { readRuntimeEnvironment } from "./env.js";
 import { FIXTURE_ROWS } from "./fixture.js";
 
-const snap = buildSnapshot(FIXTURE_ROWS, "");
+const snap = buildSnapshot(FIXTURE_ROWS);
 
 assert.equal(snap.posts.length, 3, "公开快照应有 3 篇文章");
 
@@ -78,67 +75,105 @@ assert.equal(
   "note 不能进入 V2 公开快照",
 );
 
-// --- 回归：fixture 可离线；Directus 模式必须在读取前失败闭环 ---
-assert.deepEqual(readBuildEnvironment({ NODE_ENV: "test" }), {
+// --- 运行时环境：离线样本必须显式选择；生产配置失败不能回退 ---
+assert.deepEqual(readRuntimeEnvironment({ NODE_ENV: "test" }), {
   source: "fixture",
+  siteUrl: "http://localhost:4321",
 });
-assert.throws(
-  () => readBuildEnvironment({ NODE_ENV: "test", CONTENT_SOURCE: "directus" }),
-  /DIRECTUS_URL.*DIRECTUS_BUILD_TOKEN/,
-  "Directus 模式缺凭据必须失败",
+assert.deepEqual(
+  readRuntimeEnvironment({ NODE_ENV: "production", CONTENT_SOURCE: "fixture" }),
+  { source: "fixture", siteUrl: "http://localhost:4321" },
 );
+for (const input of [
+  { NODE_ENV: "production" },
+  { NODE_ENV: "test", CONTENT_SOURCE: "cms" },
+] as const) {
+  assert.throws(
+    () => readRuntimeEnvironment(input),
+    /CMS_INTERNAL_URL.*CMS_READ_TOKEN/,
+    "CMS 模式缺凭据必须失败",
+  );
+}
 assert.throws(
-  () =>
-    readBuildEnvironment({
-      NODE_ENV: "test",
-      CONTENT_SOURCE: "directus",
-      DIRECTUS_URL: "not-a-url",
-      DIRECTUS_BUILD_TOKEN: "x".repeat(24),
-    }),
-  /DIRECTUS_URL/,
-  "Directus URL 必须合法",
-);
-assert.throws(
-  () => readBuildEnvironment({ NODE_ENV: "test", CONTENT_SOURCE: "unknown" }),
+  () => readRuntimeEnvironment({ NODE_ENV: "test", CONTENT_SOURCE: "unknown" }),
   /CONTENT_SOURCE/,
   "未知内容源必须失败",
 );
-assert.deepEqual(
-  readBuildEnvironment({
-    NODE_ENV: "test",
-    CONTENT_SOURCE: "directus",
-    DIRECTUS_URL: "http://directus.test/",
-    DIRECTUS_BUILD_TOKEN: "x".repeat(24),
-  }),
-  {
-    source: "directus",
-    directus: {
-      url: "http://directus.test",
-      token: "x".repeat(24),
-    },
-  },
-);
-
-const buildToken = "fixture-build-reader-token-do-not-log";
-const originalFetch = globalThis.fetch;
-globalThis.fetch = async () => {
-  throw new Error(`Private transport diagnostic: ${buildToken}`);
-};
-try {
-  await assert.rejects(
-    loadFromDirectus({ url: "http://directus.test", token: buildToken }),
+const readerToken = "fixture-runtime-reader-token-do-not-log";
+for (const url of [
+  "not-a-url",
+  "file:///etc/hosts",
+  "https://private-user:private-password@cms.example.test/",
+  "https://cms.example.test/subpath",
+  "https://cms.example.test/?token=private-query",
+  "https://cms.example.test/#private-fragment",
+]) {
+  assert.throws(
+    () =>
+      readRuntimeEnvironment({
+        NODE_ENV: "test",
+        CONTENT_SOURCE: "cms",
+        CMS_INTERNAL_URL: url,
+        CMS_READ_TOKEN: readerToken,
+      }),
     (error: unknown) => {
       assert.ok(error instanceof Error);
-      assert.equal(
-        error.message,
-        "[directus] Failed to load the published build snapshot from Directus",
-      );
-      assert.equal(inspect(error).includes(buildToken), false);
+      assert.match(error.message, /CMS_INTERNAL_URL/);
+      assert.equal(error.message.includes(url), false);
+      assert.equal(error.message.includes(readerToken), false);
       return true;
     },
   );
-} finally {
-  globalThis.fetch = originalFetch;
+}
+assert.throws(
+  () =>
+    readRuntimeEnvironment({
+      NODE_ENV: "test",
+      CONTENT_SOURCE: "cms",
+      CMS_INTERNAL_URL: "http://cms.example.test/",
+      CMS_READ_TOKEN: "short-private-token",
+    }),
+  /CMS_READ_TOKEN/,
+);
+assert.deepEqual(
+  readRuntimeEnvironment({
+    NODE_ENV: "production",
+    CMS_INTERNAL_URL: "http://cms.example.test/",
+    CMS_READ_TOKEN: readerToken,
+    SITE_URL: "https://blog.example.test/",
+  }),
+  {
+    source: "cms",
+    url: "http://cms.example.test",
+    token: readerToken,
+    siteUrl: "https://blog.example.test",
+  },
+);
+
+for (const siteUrl of [
+  undefined,
+  "file:///etc/hosts",
+  "https://private-user:private-password@blog.example.test/",
+  "https://blog.example.test/subpath",
+  "https://blog.example.test/?secret=private-query",
+  "https://blog.example.test/#private-fragment",
+]) {
+  assert.throws(
+    () =>
+      readRuntimeEnvironment({
+        NODE_ENV: "production",
+        CMS_INTERNAL_URL: "http://cms.example.test",
+        CMS_READ_TOKEN: readerToken,
+        SITE_URL: siteUrl,
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.match(error.message, /SITE_URL/);
+      assert.equal(error.message.includes(readerToken), false);
+      if (siteUrl) assert.equal(error.message.includes(siteUrl), false);
+      return true;
+    },
+  );
 }
 
 console.log(`fixture selfcheck ok: ${snap.posts.length} published posts`);

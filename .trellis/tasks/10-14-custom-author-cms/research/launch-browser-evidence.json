@@ -1,0 +1,94 @@
+{
+  "passed": true,
+  "chromium": "151.0.7922.34",
+  "nativeBrowserDefaults": true,
+  "nativeDrop": {
+    "trusted": true,
+    "files": [
+      {
+        "name": "native-browser-drop.png",
+        "type": "image/png"
+      }
+    ]
+  },
+  "nativeEvents": [
+    {
+      "type": "focus",
+      "trusted": true,
+      "visibility": "visible"
+    },
+    {
+      "type": "blur",
+      "trusted": true,
+      "visibility": "visible"
+    },
+    {
+      "type": "visibilitychange",
+      "trusted": true,
+      "visibility": "hidden"
+    },
+    {
+      "type": "focus",
+      "trusted": true,
+      "visibility": "hidden"
+    },
+    {
+      "type": "visibilitychange",
+      "trusted": true,
+      "visibility": "visible"
+    },
+    {
+      "type": "visibilitychange",
+      "trusted": true,
+      "visibility": "hidden"
+    },
+    {
+      "type": "focus",
+      "trusted": true,
+      "visibility": "visible"
+    },
+    {
+      "type": "blur",
+      "trusted": true,
+      "visibility": "visible"
+    },
+    {
+      "type": "visibilitychange",
+      "trusted": true,
+      "visibility": "hidden"
+    },
+    {
+      "type": "visibilitychange",
+      "trusted": true,
+      "visibility": "visible"
+    },
+    {
+      "type": "focus",
+      "trusted": true,
+      "visibility": "visible"
+    },
+    {
+      "type": "visibilitychange",
+      "trusted": true,
+      "visibility": "hidden"
+    },
+    {
+      "type": "focus",
+      "trusted": true,
+      "visibility": "visible"
+    }
+  ],
+  "checks": [
+    "trusted CDP file drop and live preview",
+    "published image exact bytes and revocation",
+    "UI publish from previous 404 and real back/forward",
+    "trusted native focus/visibility reloads visible title and body",
+    "RSC prefetch transport no-store before/after publication",
+    "desktop/mobile overflow and planned tool states",
+    "UI archive refreshes existing reader to 404"
+  ],
+  "limits": [
+    "CDP injects trusted browser file gestures; no physical desktop file-manager drag",
+    "Link speculative prefetch remains disabled; no claim of populated client prefetch cache"
+  ]
+}

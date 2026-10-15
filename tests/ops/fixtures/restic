@@ -24,17 +24,24 @@ case "$command" in
     done
     [ -n "$target" ]
     set_directory=$target/backup-staging/backup.fixture
-    mkdir -p "$set_directory" "$target/data/uploads"
+    mkdir -p "$set_directory"
     printf 'fixture-postgresql-custom-dump\n' >"$set_directory/postgres.dump"
     checksum=$(sha256sum "$set_directory/postgres.dump" | cut -d ' ' -f 1)
     cat >"$set_directory/manifest.env" <<EOF
-format_version=1
+format_version=${MOCK_BACKUP_FORMAT_VERSION:-2}
 created_at=2026-08-04T00:00:00Z
 dump_file=postgres.dump
 dump_sha256=$checksum
 dump_bytes=31
 EOF
-    printf 'fixture-upload\n' >"$target/data/uploads/example.webp"
+    if [ "${MOCK_MISSING_CMS_MEDIA:-0}" != 1 ]; then
+      mkdir -p "$target/data/cms-media/originals"
+      printf 'fixture-cms-media\n' >"$target/data/cms-media/cms-image.webp"
+      printf 'fixture-source-original\n' >"$target/data/cms-media/originals/source.svg"
+      if [ "${MOCK_CMS_MEDIA_SYMLINK:-0}" = 1 ]; then
+        ln -s /etc/hosts "$target/data/cms-media/unsafe-link"
+      fi
+    fi
     ;;
   snapshots)
     timestamp=${MOCK_SNAPSHOT_TIME:-2026-08-04T00:00:00Z}

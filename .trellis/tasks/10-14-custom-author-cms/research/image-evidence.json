@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-15",
+  "buildsNeedContentOrSecrets": false,
+  "runtimeSmokePassed": true,
+  "cmsRestrictedRoleSmokePassed": true,
+  "licenseNoticesPresent": true,
+  "configHistoryLayersInspectionPassed": true,
+  "syntheticInspectionMarkerUsedAtBuild": false,
+  "site": {
+    "tag": "blog-site:author-cms-test",
+    "configDigest": "sha256:789305bad12979d8126af929892475a97f4a21719b8ebd935da1d31f86de29e3",
+    "manifestListDigest": "sha256:9a4457d10f0c43ca488d3bdbb80aa2dd123a6f00beb01b6aa8db042711fa5794"
+  },
+  "cms": {
+    "tag": "blog-cms:author-cms-history-test",
+    "configDigest": "sha256:8e1162ef7e08a357a0080744d86a23f7e8741dc97fbbf4371833fc5eabc6c869",
+    "manifestListDigest": "sha256:8a5d3ccf881c0dd4e9fce382da90ce92f3bc3e93d98cecc32d025dc9283ff750",
+    "localImageId": "sha256:8a5d3ccf881c0dd4e9fce382da90ce92f3bc3e93d98cecc32d025dc9283ff750",
+    "fontconfig": "2.17.1-r0",
+    "fontNotoCjk": "0_git20220127-r1"
+  },
+  "timezone": "Asia/Shanghai",
+  "cmsSvgTextAndReadOnlyCachePassed": true,
+  "cmsLatinAndChineseGlyphPixelsPassed": true,
+  "actualSourceSvgDisplayVisuallyChecked": true,
+  "cmsImageSourceImportAndSeparateRestorePassed": true,
+  "cmsFontPackageAddedMiB": 88,
+  "siteImageReusedFromPriorVerifiedIteration": true
+}

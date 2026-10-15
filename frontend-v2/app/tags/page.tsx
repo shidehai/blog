@@ -1,3 +1,4 @@
+import { pageMetadata, PUBLIC_PAGES } from "../../lib/seo";
 import { Suspense } from "react";
 import {
   getAllPosts,
@@ -8,10 +9,9 @@ import {
 } from "../../lib/content";
 import { TagsClient } from "./TagsClient";
 
-export const metadata = {
-  title: "标签",
-  description: "按标签浏览全站文章与技术主题",
-};
+export function generateMetadata() {
+  return pageMetadata(PUBLIC_PAGES.tags);
+}
 
 export default async function TagsPage() {
   const [profile, categories, tags, seriesList, posts] = await Promise.all([
