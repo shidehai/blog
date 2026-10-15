@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { catalogSchema, publicDetailSchema, postSummarySchema, type PublicCatalog } from "@blog/content-contracts";
 import { z } from "zod";
+import { cmsPath } from "@blog/content-contracts/paths";
 import { readRuntimeEnvironment } from "./env";
 import { buildSnapshot } from "./fixture-projector";
 import { FIXTURE_ROWS } from "./fixture";
@@ -12,7 +13,7 @@ export async function readPublished<T>(path: string, schema: z.ZodType<T>): Prom
   const environment=readRuntimeEnvironment();
   if(environment.source!=="cms") throw new ContentUnavailable();
   try {
-    const response=await fetch(`${environment.url}/api/public/${path}`,{cache:"no-store",headers:{Authorization:`Bearer ${environment.token}`},signal:AbortSignal.timeout(5000)});
+    const response=await fetch(`${environment.url}${cmsPath(`/api/public/${path}`)}`,{cache:"no-store",headers:{Authorization:`Bearer ${environment.token}`},signal:AbortSignal.timeout(5000)});
     if(!response.ok) throw new ContentUnavailable();
     return schema.parse(await response.json());
   } catch { throw new ContentUnavailable(); }
@@ -29,7 +30,7 @@ export const getPostDetail=cache(async(slug:string)=>{
   const environment=readRuntimeEnvironment();
   if(environment.source!=="cms")throw new ContentUnavailable();
   try {
-    const response=await fetch(`${environment.url}/api/public/posts/${encodeURIComponent(slug)}`,{cache:"no-store",headers:{Authorization:`Bearer ${environment.token}`},signal:AbortSignal.timeout(5000)});
+    const response=await fetch(`${environment.url}${cmsPath(`/api/public/posts/${encodeURIComponent(slug)}`)}`,{cache:"no-store",headers:{Authorization:`Bearer ${environment.token}`},signal:AbortSignal.timeout(5000)});
     if(response.status===404)return null;
     if(!response.ok)throw new ContentUnavailable();
     return publicDetailSchema.parse(await response.json());

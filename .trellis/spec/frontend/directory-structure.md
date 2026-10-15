@@ -17,6 +17,12 @@ packages/content-contracts/             # Shared schemas and inferred types
 packages/markdown/                      # Shared renderer and article CSS
 ```
 
+The CMS uses fixed Next basePath `/admin`. Next Link/router/redirect consume
+application-local paths; native fetch/XHR/img/a and private preview media use
+cmsPath from `@blog/content-contracts/paths`. Do not double-prefix Next navigation.
+Stored Markdown/public cover/avatar media remain `/media/UUID`. Root public
+robots excludes `/admin`, and CMS responses stay noindex/no-store.
+
 Pages are server components; client boundaries own named browser interactions.
 Use promised params. Content routes are force-dynamic; no static slug list or
 dynamicParams=false. archives resolves current publication/aliases and canonical

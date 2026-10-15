@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { z } from "zod";
 import { mediaSchema, type Media } from "@blog/content-contracts";
+import { cmsPath } from "@blog/content-contracts/paths";
 import { api, errorMessage, uploadImage } from "../lib/client";
 import { Dialog } from "./Dialog";
 export function MediaLibrary({
@@ -154,7 +155,7 @@ export function MediaLibrary({
           >
             <div className="media-image">
               <img
-                src={`/api/admin/media/${media.id}`}
+                src={cmsPath(`/api/admin/media/${media.id}`)}
                 alt={media.filename}
                 loading="lazy"
                 width={media.width}
@@ -222,7 +223,7 @@ export function MediaLibrary({
         >
           <img
             className="media-detail-image"
-            src={`/api/admin/media/${selected.id}`}
+            src={cmsPath(`/api/admin/media/${selected.id}`)}
             alt={selected.filename}
           />
           <p className="muted">

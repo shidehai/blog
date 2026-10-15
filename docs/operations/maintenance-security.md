@@ -13,9 +13,9 @@ Routine CI/forced SSH changes only site. CMS, SQL migrations, Compose/Caddy, Pos
 | /api/content-generation | no-store; version number only |
 | /sitemap.xml, /robots.txt | configured SITE_URL; current published URLs only |
 | /_next/static/* | fingerprinted code assets, immutable |
-| CMS pages, APIs and private images | owner session required, private/no-store |
-| Internal /api/public/* | separate server reader token, published projection only |
-| /healthz | process probe; CMS probe also verifies database access |
+| /admin pages, owner APIs and private images | owner session required, private/no-store; login and code assets are public/noindex |
+| Internal /admin/api/public/* | separate server reader token, published projection only |
+| /healthz, /admin/healthz | site process probe; CMS probe also verifies database access |
 
 Caddy keeps HTTPS, framing denial, nosniff and same-origin script/connect policies. Next hydration needs the current inline script allowance. CMS and site media routes verify current access instead of exposing a static upload directory. The site checks CMS availability before reading content and returns 503 on failure; healthz alone does not prove public content is available. Existing pages check generation on navigation/focus/return and reload the document when it changes, including a previously cached 404.
 

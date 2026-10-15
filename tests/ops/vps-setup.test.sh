@@ -60,7 +60,8 @@ chmod +x "$work/bin/git" "$work/bin/docker" "$work/bin/chown"
 export PATH="$work/bin:$PATH"
 export MOCK_STATE="$work/state"
 export MOCK_TEST_ROOT="$work"
-export SITE_DOMAIN=blog.vps.test CMS_DOMAIN=cms.vps.test ACME_EMAIL=owner@vps.test
+unset CMS_DOMAIN
+export SITE_DOMAIN=blog.vps.test ACME_EMAIL=owner@vps.test
 script=$work/project/scripts/setup-vps.sh
 env_file=$work/project/.env
 data_root=$work/data
@@ -91,6 +92,8 @@ owner_file=$data_root/bootstrap/owner-password.txt
 assert_equal 600 "$(stat -c %a "$owner_file")" "private owner password mode"
 assert_file_contains "$env_file" 'BLOG_SETUP_VERSION=1' "owned config has explicit format"
 assert_file_contains "$env_file" 'SITE_IMAGE=sha256:' "running application image is immutable"
+assert_file_not_contains "$env_file" 'CMS_DOMAIN=' "single domain setup needs no CMS hostname"
+assert_file_contains "$work/out" '后台：https://blog.vps.test/admin' "owner opens the same hostname under /admin"
 assert_file_contains "$MOCK_STATE/ownership-requests" "1000:1000 $data_root/cms/media $data_root/backup-staging" "container writable roots use their runtime identity"
 assert_file_not_contains "$env_file" 'CMS_OWNER_PASSWORD=' "owner password never enters runtime env"
 for name in POSTGRES_PASSWORD CMS_DB_PASSWORD CMS_READ_TOKEN; do

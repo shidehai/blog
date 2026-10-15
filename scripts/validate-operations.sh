@@ -36,7 +36,6 @@ env_file=$work/compose.env
 cat >"$env_file" <<EOF
 COMPOSE_PROJECT_NAME=personal-journal-validation
 SITE_DOMAIN=blog.example.test
-CMS_DOMAIN=cms.example.test
 ACME_EMAIL=owner@example.test
 SITE_IMAGE=ghcr.io/example/personal-journal@sha256:0000000000000000000000000000000000000000000000000000000000000000
 CMS_IMAGE=ghcr.io/example/personal-journal-cms@sha256:0000000000000000000000000000000000000000000000000000000000000000
@@ -91,7 +90,6 @@ docker compose \
 
 docker run --rm \
   --env ACME_EMAIL=owner@example.test \
-  --env CMS_DOMAIN=cms.example.test \
   --env SITE_DOMAIN=blog.example.test \
   --volume "$repository_root/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" \
   caddy:2.10.2-alpine \

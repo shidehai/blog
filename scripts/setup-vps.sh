@@ -16,7 +16,7 @@ fail() { printf '%s\n' "$1" >&2; exit 1; }
 usage() {
   echo "首次部署：sh scripts/setup-vps.sh [--import 内容包目录]"
   echo "可选：--env-file FILE --data-dir DIR --compose-override FILE --skip-build"
-  echo "非交互输入域名：SITE_DOMAIN、CMS_DOMAIN、ACME_EMAIL；不会读取密码环境变量。"
+  echo "非交互输入：SITE_DOMAIN、ACME_EMAIL；后台固定使用 /admin。不会读取密码环境变量。"
 }
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -78,17 +78,14 @@ random_secret() { od -An -N32 -tx1 /dev/urandom | tr -d ' \n'; }
 release=$(git rev-parse --short=12 HEAD)
 if [ ! -e "$env_file" ]; then
   site_domain=${SITE_DOMAIN:-}
-  cms_domain=${CMS_DOMAIN:-}
   acme_email=${ACME_EMAIL:-}
   if [ -z "$site_domain" ]; then printf '博客域名（不带 https://）：'; IFS= read -r site_domain; fi
-  if [ -z "$cms_domain" ]; then printf '后台域名（不带 https://）：'; IFS= read -r cms_domain; fi
   if [ -z "$acme_email" ]; then printf 'HTTPS 证书联系邮箱：'; IFS= read -r acme_email; fi
-  for domain in "$site_domain" "$cms_domain"; do
+  for domain in "$site_domain"; do
     [ "${#domain}" -le 253 ] && printf '%s\n' "$domain" | LC_ALL=C grep -Eq '^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$' ||
       fail "域名格式无效；只填写完整域名，不含协议、端口或路径。"
     case "$domain" in blog.example.com|cms.example.com) fail "请填写自己的真实域名。" ;; esac
   done
-  [ "$site_domain" != "$cms_domain" ] || fail "博客和后台需要不同域名。"
   printf '%s\n' "$acme_email" | LC_ALL=C grep -Eq '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' || fail "邮箱格式无效。"
   project_name=${COMPOSE_PROJECT_NAME:-personal-journal}
   printf '%s\n' "$project_name" | LC_ALL=C grep -Eq '^[a-z0-9][a-z0-9_-]*$' || fail "Compose 项目名无效。"
@@ -109,7 +106,6 @@ if [ ! -e "$env_file" ]; then
 BLOG_SETUP_VERSION=1
 COMPOSE_PROJECT_NAME=$project_name
 SITE_DOMAIN=$site_domain
-CMS_DOMAIN=$cms_domain
 ACME_EMAIL=$acme_email
 SITE_IMAGE=${SITE_IMAGE:-blog-site:$release}
 CMS_IMAGE=${CMS_IMAGE:-blog-cms:$release}
@@ -138,7 +134,6 @@ unset BLOG_DATA_ROOT POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD CMS_DB_PASSWORD
 unset RESTIC_REPOSITORY RESTIC_PASSWORD BACKUP_HOST BACKUP_TAG BACKUP_MAX_AGE_SECONDS BLOG_CAPACITY_MAX_PERCENT
 data_root=$(read_setting BLOG_DATA_ROOT)
 site_domain=$(read_setting SITE_DOMAIN)
-cms_domain=$(read_setting CMS_DOMAIN)
 install -d -m 0755 "$data_root"
 # PostgreSQL takes ownership on first startup; leave that directory untouched on retries.
 [ -d "$data_root/postgres" ] || install -d -m 0700 "$data_root/postgres"
@@ -207,6 +202,6 @@ case "$owner_exists" in
   *) fail "无法确认所有者状态，已停止。" ;;
 esac
 dc up -d --wait --wait-timeout 180
-printf '\n服务已启动。博客：https://%s\n后台：https://%s\n' "$site_domain" "$cms_domain"
-echo "请访问两个域名确认 HTTPS，并配置异机备份。日常管理使用 docker compose up -d / ps / logs / down。"
+printf '\n服务已启动。博客：https://%s\n后台：https://%s/admin\n' "$site_domain" "$site_domain"
+echo "请访问博客和 /admin 确认 HTTPS，并配置异机备份。日常管理使用 docker compose up -d / ps / logs / down。"
 if [ "$env_file" != "$repository_root/.env" ]; then printf '本次使用自定义配置：%s；日常命令需保留 --env-file 参数。\n' "$env_file"; fi

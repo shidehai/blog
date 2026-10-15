@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { z } from "zod";
+import { cmsPath } from "@blog/content-contracts/paths";
 import { api, errorMessage } from "../lib/client";
 import { Dialog } from "./Dialog";
 const navigation = [
@@ -119,7 +120,7 @@ export function StudioShell({ children }: { children: React.ReactNode }) {
           <p>写下值得留下的。</p>
           <a
             className="sidebar-link"
-            href="/blog"
+            href={cmsPath("/blog")}
             target="_blank"
             rel="noreferrer"
           >
@@ -145,7 +146,7 @@ export function StudioShell({ children }: { children: React.ReactNode }) {
           <p>编辑内容仍保留在当前页面。请在新窗口登录后，回到这里重试保存。</p>
           <a
             className="button primary"
-            href="/login"
+            href={cmsPath("/login")}
             target="_blank"
             rel="noreferrer"
           >

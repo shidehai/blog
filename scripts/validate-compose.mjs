@@ -108,9 +108,10 @@ assert(
   (site.cap_drop ?? []).includes("ALL"),
   "site must drop all capabilities",
 );
-const imagePattern = local || standalone
-  ? /^(?:ghcr\.io\/[a-z0-9./_-]+@)?sha256:[0-9a-f]{64}$/
-  : /^ghcr\.io\/[a-z0-9./_-]+@sha256:[0-9a-f]{64}$/;
+const imagePattern =
+  local || standalone
+    ? /^(?:ghcr\.io\/[a-z0-9./_-]+@)?sha256:[0-9a-f]{64}$/
+    : /^ghcr\.io\/[a-z0-9./_-]+@sha256:[0-9a-f]{64}$/;
 assert(imagePattern.test(site.image ?? ""), "site image must be immutable");
 const siteEnvironment = site.environment ?? {};
 assert(
@@ -153,6 +154,16 @@ assert(
 assert(
   cms.environment?.CMS_READ_TOKEN === siteEnvironment.CMS_READ_TOKEN,
   "reader tokens must match",
+);
+assert(
+  cms.environment?.CMS_ORIGIN ===
+    (local ? "http://localhost:4322" : siteEnvironment.SITE_URL) &&
+    cms.environment?.CMS_SITE_ORIGIN === siteEnvironment.SITE_URL,
+  "CMS uses the same public origin under /admin; local apps retain loopback ports",
+);
+assert(
+  !Object.hasOwn(caddy.environment ?? {}, "CMS_DOMAIN"),
+  "production proxy needs only SITE_DOMAIN",
 );
 assert(
   Object.hasOwn(cms.environment ?? {}, "DATABASE_URL"),

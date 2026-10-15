@@ -1,0 +1,87 @@
+{
+  "date": "2026-10-15",
+  "scope": "local-only-admin-path",
+  "mainConversationOnly": true,
+  "aiConcurrency": 1,
+  "backupRoot": "/home/sdh/vibehub/blog/.data/backups/local-admin-path-20261015-172004",
+  "dataCounts": {
+    "contents": 28,
+    "content_revisions": 37,
+    "taxonomies": 0,
+    "site_profile": 1,
+    "slug_aliases": 10,
+    "media": 2,
+    "published_media_refs": 2,
+    "public_state": 1,
+    "migration_mappings": 35,
+    "source_archives": 1
+  },
+  "mediaFilesIncludingOriginals": 3,
+  "businessDataExactlyUnchanged": true,
+  "mediaManifestExactlyUnchanged": true,
+  "allExportedMediaAndMarkdownBytesExactlyUnchanged": true,
+  "rawMediaTreeExactlyUnchanged": true,
+  "databaseContainerNotReplaced": true,
+  "runtime": {
+    "siteAndCmsHealthy": true,
+    "ownerLoginPassed": true,
+    "adminAnonymousAndReaderDenied": true,
+    "originalPublicArticles200": 9,
+    "legacyWritingRedirects308": 9,
+    "publicMediaChecksumChecks": 2,
+    "privateMedia404Checks": 2,
+    "sitemapPublishedOnly": true,
+    "configuredCanonicalDespiteSpoofedHost": true,
+    "sharingPng1200x630": true,
+    "cmsRobotsDisallow": true,
+    "unusedImageOptimizer404": true
+  },
+  "previousApplications": {
+    "site": {
+      "image": "sha256:520122eaf04faf9a6b84a9a0dff708b40acf30a326d51afed14b8198998dd382",
+      "startedAt": "2026-10-15T06:58:05.077190508Z",
+      "health": "healthy",
+      "running": true
+    },
+    "cms": {
+      "image": "sha256:e2a49b68b8e1cd44ac33c7504e0f20a8eeb3b64a4628f46fe66f465efb2f24d9",
+      "startedAt": "2026-10-15T06:57:59.138379927Z",
+      "health": "healthy",
+      "running": true
+    },
+    "postgres": {
+      "image": "sha256:c7526c0f6c3f30260a563d7bcf8ad778effac59a44f8ffa86678c35418338609",
+      "startedAt": "2026-10-15T02:26:38.206501575Z",
+      "health": "healthy",
+      "running": true
+    }
+  },
+  "runningApplications": {
+    "site": {
+      "image": "sha256:d827649a1deb2e58c540b9d23ebff9417d58f36e0b2019a3c2a2692e607c2608",
+      "startedAt": "2026-10-15T09:20:13.943094569Z",
+      "health": "healthy",
+      "running": true
+    },
+    "cms": {
+      "image": "sha256:41a717a81b73ccd5f123482cf8b8f91c27908c0a6f1032cb1c69539970874411",
+      "startedAt": "2026-10-15T09:20:07.932453598Z",
+      "health": "healthy",
+      "running": true
+    },
+    "postgres": {
+      "image": "sha256:c7526c0f6c3f30260a563d7bcf8ad778effac59a44f8ffa86678c35418338609",
+      "startedAt": "2026-10-15T02:26:38.206501575Z",
+      "health": "healthy",
+      "running": true
+    }
+  },
+  "candidateImages": {
+    "site": "sha256:d827649a1deb2e58c540b9d23ebff9417d58f36e0b2019a3c2a2692e607c2608",
+    "cms": "sha256:41a717a81b73ccd5f123482cf8b8f91c27908c0a6f1032cb1c69539970874411"
+  },
+  "acceptedHistoricalLimitations": 68,
+  "remoteDeployment": false,
+  "sameOriginProxyTestedSeparately": true,
+  "ownerAndExistingSessionsExactlyUnchangedBeforeVerificationLogin": true
+}

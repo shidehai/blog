@@ -59,5 +59,5 @@ COPY scripts/collect-runtime-font-notices.mjs /tmp/collect-runtime-font-notices.
 RUN node /tmp/collect-runtime-font-notices.mjs /usr/share/fonts/noto /app/THIRD_PARTY_NOTICES.txt && rm /tmp/collect-runtime-font-notices.mjs
 USER node
 EXPOSE 4322
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 CMD node -e "fetch('http://127.0.0.1:4322/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 CMD node -e "fetch('http://127.0.0.1:4322/admin/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 CMD ["sh", "-c", "node author-cms/scripts/manage.mjs migrate && node author-cms/server.js"]

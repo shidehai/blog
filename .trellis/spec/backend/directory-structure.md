@@ -14,7 +14,8 @@ Read for Docker, Compose, Caddy, env wiring or storage changes.
 - `scripts/setup-vps.sh [--import DIR]`: first-run orchestration; private config,
   sequential builds, pinned actual image IDs, migrations and owner only if absent.
   Advanced flags: `--env-file FILE --data-dir DIR --compose-override FILE --skip-build`.
-  Noninteractive public inputs: SITE_DOMAIN, CMS_DOMAIN, ACME_EMAIL.
+  Noninteractive public inputs: SITE_DOMAIN, ACME_EMAIL. One hostname serves the
+  blog at `/` and the CMS at `/admin`; no CMS_DOMAIN is needed.
 - `deploy/compose.dev.yaml`: localhost ports, dependency-preserving source mounts.
 - `deploy/compose.local.yaml`: persistent local runtime, immutable local image IDs,
   site/CMS loopback 4321/4322, PostgreSQL loopback 55433, opt-in Caddy.
@@ -81,6 +82,15 @@ forced SSH command updates site only; CMS/schema upgrades are reviewed maintenan
 Format 2 backups include validated DB dump and actual CMS media (including originals);
 no retired uploads directory is required. Restore accepts formats 1/2 only and checks
 CMS media presence plus empty targets before importing the database. Ownership repair stays inside author_cms.
+
+CMS always builds with basePath `/admin`; the dependency-free
+`@blog/content-contracts/paths` owns CMS_BASE_PATH/cmsPath. Caddy matches exactly
+`/admin` or `/admin/*` and preserves the prefix. Production CMS_ORIGIN and
+CMS_SITE_ORIGIN both equal the public site origin. CMS_INTERNAL_URL stays an
+internal root origin; site readers, media proxy and middleware append cmsPath.
+CMS health is `/admin/healthz`; site health stays `/healthz`. No content/database
+migration is required. Ship both application images and Caddy/Compose together.
+Keep exact Origin validation host-only and __Host session cookies at Path=/.
 
 ## 4. Validation & Error Matrix
 

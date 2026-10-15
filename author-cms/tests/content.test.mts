@@ -8,6 +8,7 @@ import { Pool } from "pg";
 import sharp from "sharp";
 import { z } from "zod";
 import { renderMarkdown, collectMediaIds } from "@blog/markdown";
+import { cmsPath } from "@blog/content-contracts/paths";
 import { ContentStore } from "../lib/store";
 import { migrate } from "../lib/migrate";
 import { persistImage } from "../lib/media-files";
@@ -30,7 +31,7 @@ import { sourceTables, importSource } from "../lib/source-transfer";
 test("shared Markdown handles GFM, matching anchors and sanitized HTML", () => {
   const id = randomUUID();
   const content = `## 中文 **标题**\n\n## 中文 **标题**\n\n| A | B |\n| - | - |\n| 1 | 2 |\n\n![山林](/media/${id})\n\n\`\`\`js\nconst value = '<script>';\n\`\`\`\n\n> [!NOTE]\n> 提示内容\n\n<script>alert(1)</script><img src="javascript:alert(1)" onerror="alert(1)">`;
-  const rendered = renderMarkdown(content, "/api/admin/media");
+  const rendered = renderMarkdown(content, cmsPath("/api/admin/media"));
   assert.deepEqual(
     rendered.headings.map((h) => h.id),
     ["中文-标题", "中文-标题-2"],
@@ -39,7 +40,10 @@ test("shared Markdown handles GFM, matching anchors and sanitized HTML", () => {
   assert.match(rendered.html, /<table>/);
   assert.match(rendered.html, /code-copy/);
   assert.match(rendered.html, /alert-note/);
-  assert.match(rendered.html, new RegExp(`/api/admin/media/${id}`));
+  assert.match(
+    rendered.html,
+    new RegExp(`${cmsPath(`/api/admin/media/${id}`)}`),
+  );
   assert.doesNotMatch(rendered.html, /<script>|onerror=|src="javascript:/);
   assert.deepEqual(collectMediaIds(`\`![fake](/media/${id})\``), []);
 });

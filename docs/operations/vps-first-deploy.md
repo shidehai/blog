@@ -4,7 +4,7 @@
 
 ## 首次部署
 
-先安装 Docker Engine / Compose 插件和 Git。博客与后台各准备一个域名，A 记录解析到 VPS 公网 IP；仅在有可用公网 IPv6 时添加 AAAA。保留 SSH，放行 TCP 80、443，确认这些端口没有被其他网站占用。
+先安装 Docker Engine / Compose 插件和 Git。只需一个域名，A 记录解析到 VPS 公网 IP；仅在有可用公网 IPv6 时添加 AAAA。博客使用根路径，后台使用同域名的 `/admin`。保留 SSH，放行 TCP 80、443，确认这些端口没有被其他网站占用。
 
 在 VPS 的 root 终端执行：
 
@@ -15,7 +15,7 @@ cd /opt/personal-journal/current
 sh scripts/setup-vps.sh
 ```
 
-按提示输入 **博客域名、后台域名、联系邮箱**，然后等待完成。域名不带 `https://` 或路径。
+按提示输入 **博客域名、联系邮箱**，然后等待完成。域名不带 `https://` 或路径；不需要后台子域名或第二条 DNS 记录。
 
 脚本会自动生成受保护的 `.env`、数据库密码和读取令牌，准备持久目录，顺序构建两个镜像并固定实际 image ID，创建受限数据库角色、执行迁移、初始化唯一后台密码，最后启动所有服务。第一次构建需要下载依赖；小内存主机建议预留约 2 GiB swap 和至少 10 GiB 可用磁盘。
 
@@ -25,7 +25,7 @@ sh scripts/setup-vps.sh
 cat /srv/personal-journal/data/bootstrap/owner-password.txt
 ```
 
-访问 `https://你的博客域名` 和 `https://你的后台域名`。Caddy 自动申请并续期证书；首次启动后仍须实际访问检查 HTTPS。
+访问 `https://你的域名` 和 `https://你的域名/admin`。Caddy 自动申请并续期证书；首次启动后仍须实际访问检查 HTTPS。后台的登录、接口、脚本、字体和认证图片都位于 `/admin` 下。
 
 如果失败，解决报错后重新执行脚本即可。已有配置、密码、会话和文章会保留；脚本会拒绝接管另一套 `.env` 或非空的新数据库目录。首次部署使用全新 checkout，不在当前本机日常工作区运行。
 

@@ -71,7 +71,7 @@ jobs:
         run: pnpm --filter author-cms exec playwright install --with-deps chromium
 
       - name: Verify immediate publishing and native browser interactions
-        run: xvfb-run --auto-servernum pnpm test:runtime --browser
+        run: xvfb-run --auto-servernum pnpm test:runtime --browser --proxy-port 4340
 
       - name: Validate Compose, Caddy, and operations image
         env:

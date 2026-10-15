@@ -1,6 +1,6 @@
 # 青山写作后台
 
-永久单作者的专用 CMS，监听 4322。后台页面和写入 API 校验所有者会话；公开服务读取 API 使用独立只读令牌，不能读取草稿或执行写入。
+永久单作者的专用 CMS，监听 4322，固定基路径为 `/admin`。本机访问 `http://localhost:4322/admin`，生产通过 Caddy 使用 `https://你的域名/admin`，博客位于同域名根路径。后台页面和写入 API 校验所有者会话；公开服务读取 API 使用独立只读令牌，不能读取草稿或执行写入。
 
 ## 本机初始化
 
@@ -39,6 +39,8 @@ pnpm cms:dev
 密码至少 12 字符。初始化和重置使用同一个 owner 命令；重置会撤销所有旧会话。没有注册、找回邮件或第二个所有者。生产镜像内命令为 `node author-cms/scripts/manage.mjs migrate` 和 `node author-cms/scripts/manage.mjs owner --password-stdin`，通过容器 stdin 提供密码。
 
 在 `frontend-v2/.env.local` 设置 `CONTENT_SOURCE=cms`、`CMS_INTERNAL_URL=http://localhost:4322` 与相同的 `CMS_READ_TOKEN` 后运行 `pnpm dev`。不要使用 `NEXT_PUBLIC_` 前缀或把令牌传给客户端。
+
+CMS_ORIGIN、CMS_SITE_ORIGIN、CMS_INTERNAL_URL 都只填 origin，不追加 `/admin`；代码共享的路径契约负责添加前缀。后台 API 和认证预览为 `/admin/api/*`，应用健康检查为 `/admin/healthz`；Markdown、封面和导出中的公开 `/media/UUID` 地址保持不变。
 
 ## 代码入口
 

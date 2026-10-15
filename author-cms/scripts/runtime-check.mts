@@ -1,4 +1,4 @@
-import { spawn, type ChildProcess } from "node:child_process";
+import { spawn, execFile, type ChildProcess } from "node:child_process";
 import { readFile, mkdir, open } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { randomUUID } from "node:crypto";
 import { createServer } from "node:net";
-import { parseArgs } from "node:util";
+import { parseArgs, promisify } from "node:util";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { z } from "zod";
@@ -18,6 +18,7 @@ import {
   catalogSchema,
 } from "@blog/content-contracts";
 import { ContentStore } from "../lib/store";
+import { cmsPath } from "@blog/content-contracts/paths";
 import { migrate } from "../lib/migrate";
 import { resetOwner } from "../lib/auth";
 import { closePool } from "../lib/db";
@@ -27,6 +28,7 @@ const { values: options } = parseArgs({
   options: {
     "site-port": { type: "string", default: "4321" },
     "cms-port": { type: "string", default: "4322" },
+    "proxy-port": { type: "string" },
     preview: { type: "boolean", default: false },
     browser: { type: "boolean", default: false },
   },
@@ -34,9 +36,13 @@ const { values: options } = parseArgs({
 const portSchema = z.coerce.number().int().min(1024).max(65535);
 const sitePort = portSchema.parse(options["site-port"]);
 const cmsPort = portSchema.parse(options["cms-port"]);
-assert.notEqual(sitePort, cmsPort, "独立应用必须使用不同端口");
+const proxyPort = options["proxy-port"]
+  ? portSchema.parse(options["proxy-port"])
+  : undefined;
+const ports = [sitePort, cmsPort, ...(proxyPort ? [proxyPort] : [])];
+assert.equal(new Set(ports).size, ports.length, "应用与代理必须使用不同端口");
 // Fail before touching the test schema when a daily app already owns a port.
-for (const port of [sitePort, cmsPort]) {
+for (const port of ports) {
   const server = createServer();
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
@@ -47,8 +53,10 @@ for (const port of [sitePort, cmsPort]) {
   );
 }
 const repository = fileURLToPath(new URL("../../", import.meta.url)),
-  cmsUrl = `http://localhost:${cmsPort}`,
-  siteUrl = `http://localhost:${sitePort}`;
+  cmsInternalOrigin = `http://localhost:${cmsPort}`,
+  cmsOrigin = `http://localhost:${proxyPort ?? cmsPort}`,
+  cmsUrl = `${cmsOrigin}${cmsPath()}`,
+  siteUrl = `http://localhost:${proxyPort ?? sitePort}`;
 const databaseUrl = process.env.CMS_TEST_DATABASE_URL;
 if (!databaseUrl) throw new Error("运行验证需要显式 CMS_TEST_DATABASE_URL");
 const url = new URL(databaseUrl);
@@ -61,7 +69,7 @@ const root = path.join(tmpdir(), `blog-cms-runtime-${Date.now()}`);
 await mkdir(root, { mode: 0o700 });
 Object.assign(process.env, {
   DATABASE_URL: databaseUrl,
-  CMS_ORIGIN: cmsUrl,
+  CMS_ORIGIN: cmsOrigin,
   CMS_SITE_ORIGIN: siteUrl,
   SITE_URL: siteUrl,
   CMS_READ_TOKEN: "isolated-runtime-reader-token-at-least-32-characters",
@@ -70,7 +78,14 @@ Object.assign(process.env, {
 const pool = new Pool({ connectionString: databaseUrl }),
   store = new ContentStore(pool),
   processes: ChildProcess[] = [];
+const run = promisify(execFile);
+const proxyName = `blog-admin-proxy-${process.pid}`;
+let proxyStarted = false;
 async function stop() {
+  if (proxyStarted) {
+    await run("docker", ["rm", "--force", proxyName]);
+    proxyStarted = false;
+  }
   for (const child of processes) {
     child.kill("SIGCONT");
     child.kill("SIGTERM");
@@ -98,7 +113,7 @@ async function start(name: string, port: number) {
         ...process.env,
         NODE_ENV: "production",
         CONTENT_SOURCE: "cms",
-        CMS_INTERNAL_URL: cmsUrl,
+        CMS_INTERNAL_URL: cmsInternalOrigin,
       },
       stdio: ["ignore", output.fd, output.fd],
     },
@@ -109,11 +124,58 @@ async function start(name: string, port: number) {
     if (child.exitCode !== null)
       throw new Error(`${name} 启动失败，日志：${root}`);
     try {
-      if ((await fetch(`http://localhost:${port}/healthz`)).ok) return child;
+      const probe = name === "author-cms" ? cmsPath("/healthz") : "/healthz";
+      if ((await fetch(`http://localhost:${port}${probe}`)).ok) return child;
     } catch {}
     await delay(250);
   }
   throw new Error(`${name} 启动超时`);
+}
+async function startProxy() {
+  if (!proxyPort) return;
+  // Exercise the shipping routing/header rules; replace only upstream addresses
+  // for isolated native processes and disable Caddy's shared admin listener.
+  const config = (
+    await readFile(path.join(repository, "deploy/Caddyfile"), "utf8")
+  )
+    .replace("email {$ACME_EMAIL}", "email {$ACME_EMAIL}\n\tadmin off")
+    .replace("site:4321", `127.0.0.1:${sitePort}`)
+    .replace("cms:4322", `127.0.0.1:${cmsPort}`);
+  const configPath = path.join(root, "Caddyfile");
+  const logs = path.join(root, "caddy-logs");
+  await mkdir(logs, { mode: 0o700 });
+  await writeFileSafe(configPath, config);
+  await run("docker", [
+    "run",
+    "--detach",
+    "--name",
+    proxyName,
+    "--network",
+    "host",
+    "--env",
+    `SITE_DOMAIN=${siteUrl}`,
+    "--env",
+    "ACME_EMAIL=owner@example.test",
+    "--volume",
+    `${configPath}:/etc/caddy/Caddyfile:ro`,
+    "--volume",
+    `${logs}:/var/log/caddy`,
+    "caddy:2.10.2-alpine",
+    "caddy",
+    "run",
+    "--config",
+    "/etc/caddy/Caddyfile",
+    "--adapter",
+    "caddyfile",
+  ]);
+  proxyStarted = true;
+  for (let attempt = 0; attempt < 40; attempt++) {
+    try {
+      if ((await fetch(`${siteUrl}/healthz`)).ok) return;
+    } catch {}
+    await delay(250);
+  }
+  throw new Error("隔离 Caddy 启动超时");
 }
 let cookie = "";
 async function admin<T>(
@@ -125,7 +187,7 @@ async function admin<T>(
   const response = await fetch(`${cmsUrl}/api/${resource}`, {
     method,
     headers: {
-      origin: cmsUrl,
+      origin: cmsOrigin,
       cookie,
       ...(data ? { "content-type": "application/json" } : {}),
     },
@@ -245,6 +307,47 @@ try {
   });
   const cms = await start("author-cms", cmsPort),
     site = await start("frontend-v2", sitePort);
+  await startProxy();
+  const unauthenticated = await fetch(cmsUrl, { redirect: "manual" });
+  assert.equal(unauthenticated.status, 307);
+  assert.equal(
+    new URL(unauthenticated.headers.get("location")!, cmsUrl).pathname,
+    cmsPath("/login"),
+  );
+  assert.equal((await fetch(`${cmsUrl}/api/admin/contents`)).status, 401);
+  assert.equal(
+    (await fetch(`${cmsInternalOrigin}/api/admin/contents`)).status,
+    404,
+  );
+  const loginPage = await fetch(`${cmsUrl}/login`);
+  const loginHtml = await loginPage.text();
+  const assets = [
+    ...loginHtml.matchAll(
+      /(?:src|href)="(\/admin\/_next\/[^"?]+)(?:\?[^"]*)?"/g,
+    ),
+  ];
+  assert.ok(
+    assets.length > 2,
+    "后台 HTML 必须引用 /admin 下的脚本、样式和字体",
+  );
+  for (const asset of assets)
+    assert.ok((await fetch(`${cmsOrigin}${asset[1]}`)).ok, asset[1]);
+  const invalidOrigin = await fetch(`${cmsUrl}/api/auth/login`, {
+    method: "POST",
+    headers: { origin: cmsUrl, "content-type": "application/json" },
+    body: JSON.stringify({ password: "isolated-preview-owner-2026" }),
+  });
+  assert.equal(
+    invalidOrigin.status,
+    403,
+    "Origin 必须是主机 origin，不包含 /admin",
+  );
+  if (proxyPort) {
+    assert.equal(loginPage.headers.get("x-robots-tag"), "noindex, nofollow");
+    assert.match(loginPage.headers.get("cache-control") ?? "", /no-store/);
+    await publicGet("/administrator", 404);
+    await publicGet("/api/admin/contents", 404);
+  }
   const pids = [cms.pid, site.pid];
   const builds = [
     await readFile(path.join(repository, "author-cms/.next/BUILD_ID"), "utf8"),
@@ -252,7 +355,7 @@ try {
   ];
   const login = await fetch(`${cmsUrl}/api/auth/login`, {
     method: "POST",
-    headers: { origin: cmsUrl, "content-type": "application/json" },
+    headers: { origin: cmsOrigin, "content-type": "application/json" },
     body: JSON.stringify({ password: "isolated-preview-owner-2026" }),
   });
   assert.equal(login.status, 200);
@@ -276,7 +379,11 @@ try {
     await (await fetch(`${cmsUrl}/robots.txt`)).text(),
     /Disallow: \//,
   );
-  const hostileHost = await fetch(`${siteUrl}/`, {
+  assert.match(
+    await (await publicGet("/robots.txt")).text(),
+    /Disallow: \/admin/,
+  );
+  const hostileHost = await fetch(`http://localhost:${sitePort}/`, {
     headers: { host: "untrusted.example.test" },
   });
   const homeHtml = await hostileHost.text();
@@ -330,7 +437,7 @@ try {
   );
   const upload = await fetch(`${cmsUrl}/api/admin/media`, {
     method: "POST",
-    headers: { origin: cmsUrl, cookie },
+    headers: { origin: cmsOrigin, cookie },
     body: form,
   });
   assert.equal(upload.status, 201);
@@ -484,7 +591,9 @@ try {
       "configured canonical/OG/Twitter and sharing PNG",
       "dynamic published-only sitemap after publish/rename/archive",
       "robots and disabled unused image optimizer",
+      "/admin redirects, static assets, private API and exact proxy path boundary",
     ],
+    sameOriginCaddy: Boolean(proxyPort),
     preview: {
       cms: cmsUrl,
       site: siteUrl,

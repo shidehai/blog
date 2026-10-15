@@ -3,6 +3,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { Check, Download, ImagePlus } from "lucide-react";
 import { siteProfileSchema, type SiteProfile } from "@blog/content-contracts";
+import { cmsPath } from "@blog/content-contracts/paths";
 import { api, errorMessage } from "../lib/client";
 import { MediaPicker } from "./MediaLibrary";
 export function Settings({
@@ -60,10 +61,14 @@ export function Settings({
           <div className="avatar-setting">
             {data.profile.avatar ? (
               <img
-                src={data.profile.avatar.replace(
-                  /^\/media\//,
-                  "/api/admin/media/",
-                )}
+                src={
+                  data.profile.avatar === "/avatar.svg"
+                    ? cmsPath("/avatar.svg")
+                    : data.profile.avatar.replace(
+                        /^\/media\//,
+                        cmsPath("/api/admin/media/"),
+                      )
+                }
                 alt="站点头像"
               />
             ) : (
@@ -158,7 +163,7 @@ export function Settings({
             导出正文、属性、关系和历史清单。图片原文件通过备份工具一并保存。
           </p>
         </div>
-        <a className="button" href="/api/admin/export" download>
+        <a className="button" href={cmsPath("/api/admin/export")} download>
           <Download size={16} />
           导出内容
         </a>

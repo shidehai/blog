@@ -44,7 +44,7 @@ docker run --detach --name "$container" --network "$network" \
   --env CMS_READ_TOKEN=isolated-image-reader-token-32-characters \
   --env CMS_MEDIA_ROOT=/data/cms-media "$image" >/dev/null
 deadline=$(($(date +%s) + 60))
-until docker exec "$container" node -e "fetch('http://127.0.0.1:4322/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" >/dev/null 2>&1; do
+until docker exec "$container" node -e "fetch('http://127.0.0.1:4322/admin/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" >/dev/null 2>&1; do
   [ "$(docker inspect --format '{{.State.Status}}' "$container")" = running ] || {
     docker logs "$container" >&2; exit 1;
   }
@@ -76,7 +76,7 @@ for(const text of ['Blog','中文']) {
   let ink=0;for(let pixel=0;pixel<data.length;pixel+=info.channels)if(data[pixel]<128)ink++;
   assert.ok(ink>150,`SVG text produced no readable pixels: ${text}`);
 }
-const origin='http://localhost:4322', base='http://127.0.0.1:4322';
+const origin='http://localhost:4322', base='http://127.0.0.1:4322/admin';
 assert.equal((await fetch(`${base}/api/admin/contents`)).status,401);
 const login=await fetch(`${base}/api/auth/login`,{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify({password:'isolated-image-owner-password-2026'})});
 assert.equal(login.status,200);
