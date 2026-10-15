@@ -21,7 +21,7 @@
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "2026-10-15 用户澄清尚未远程部署，本轮切换仅本地。已接受68项旧历史原档案处置；冻结并备份旧Directus，最终源表/地址/媒体及限制逐条对账一致。独立持久 blog-local 已运行，27条迁入内容＋1条归档验收文章；独立恢复、实际即时发布与完整质量门禁通过。后续按用户授权完成旧平台源码/SDK/配置/服务及精确资源清理，两套旧库已逻辑和停机物理归档；新镜像实际本地核验通过，28内容/37修订/3媒体文件及历史完全不变。见legacy-cleanup.md和research/legacy-cleanup-evidence.json。无提交、推送或远程部署；未覆盖的原生浏览器手势继续如实记录，任务保留in_progress；全程仅主会话串行。 2026-10-15 本地上线准备完成：247项生产依赖零命中，Node24.22/Next15.5.28/Sharp0.35.5补丁和实际两镜像high/critical零命中；SEO/本地字体/移动导航及可信CDP拖图、真实聚焦、前进后退/RSC transport通过。最新冻结备份后仅更新CMS/site，28内容/37修订/3媒体文件完全不变，9篇原文章/旧地址及账号正常；最新备份在独立库恢复重导出及所有者哈希一致。物理文件管理器拖拽、客户端预取缓存和真实远程验收边界保留；无提交/推送/远程部署。见research/launch-preparation-20261015.md。",
+  "notes": "2026-10-15 用户澄清尚未远程部署，本轮切换仅本地。已接受68项旧历史原档案处置；冻结并备份旧Directus，最终源表/地址/媒体及限制逐条对账一致。独立持久 blog-local 已运行，27条迁入内容＋1条归档验收文章；独立恢复、实际即时发布与完整质量门禁通过。后续按用户授权完成旧平台源码/SDK/配置/服务及精确资源清理，两套旧库已逻辑和停机物理归档；新镜像实际本地核验通过，28内容/37修订/3媒体文件及历史完全不变。见legacy-cleanup.md和research/legacy-cleanup-evidence.json。无提交、推送或远程部署；未覆盖的原生浏览器手势继续如实记录，任务保留in_progress；全程仅主会话串行。 2026-10-15 本地上线准备完成：247项生产依赖零命中，Node24.22/Next15.5.28/Sharp0.35.5补丁和实际两镜像high/critical零命中；SEO/本地字体/移动导航及可信CDP拖图、真实聚焦、前进后退/RSC transport通过。最新冻结备份后仅更新CMS/site，28内容/37修订/3媒体文件完全不变，9篇原文章/旧地址及账号正常；最新备份在独立库恢复重导出及所有者哈希一致。物理文件管理器拖拽、客户端预取缓存和真实远程验收边界保留；无提交/推送/远程部署。见research/launch-preparation-20261015.md。 2026-10-15 已按用户授权提交推送7ff4449。用户随后要求简化为docker-compose.yml部署；根入口与setup-vps.sh完成，完整质量门禁和两个隔离Compose目标的初始/重复启动、媒体发布、完整包恢复及重复导入保留新草稿/账号会话均通过。另导出当前28内容/37修订/3媒体的私有迁移包，未修改日常库；见compose-deployment.md和research/compose-bootstrap-evidence.json。未连接VPS或执行远程部署。",
   "meta": {
     "implementation": "local_cutover_and_legacy_cleanup_verified",
     "cutover_scope": "local_only",
@@ -42,6 +42,9 @@
       "date": "2026-10-15",
       "report": "research/launch-readiness-20261015.md",
       "historical": true
-    }
+    },
+    "github_first_delivery_commit": "7ff444962d1cb822c3b49d019ea372db64c3f3bf",
+    "standalone_compose_readiness": "local_bootstrap_and_restore_verified",
+    "standalone_compose_report": "compose-deployment.md"
   }
 }

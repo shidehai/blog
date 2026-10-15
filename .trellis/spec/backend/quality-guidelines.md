@@ -63,6 +63,13 @@ retired seed/launch tests are removed. Backup regressions prove CMS-only format 
 round-trip with originals, format 1 compatibility, missing media/unknown format
 refusal and preservation of nonempty targets. Deployment requires final frozen-source reconciliation.
 
+Standalone setup: run `tests/ops/vps-setup.test.sh`, render the root model with
+`validate-compose.mjs --standalone`, and run the CMS image smoke against the shared
+empty-volume role initializer. Exercise fresh setup plus repeat setup/import in
+isolated Compose projects; compare owner/session state, content and actual media.
+Previously scanned images may be reused when only orchestration changes; report
+that scope and do not claim a new image scan or real HTTPS acceptance.
+
 ## 7. Wrong vs Correct
 
 Wrong: `pnpm build` proves immediate publication/restore.

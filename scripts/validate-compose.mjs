@@ -16,6 +16,7 @@ import process from "node:process";
  * @property {ComposePort[]} [ports]
  * @property {Record<string, unknown>} [networks]
  * @property {string[]} [profiles]
+ * @property {{context?: string, target?: string}} [build]
  * @property {{target: string, read_only?: boolean}[]} [volumes]
  */
 
@@ -30,6 +31,7 @@ for await (const chunk of process.stdin) input += chunk;
 const config = /** @type {ComposeConfig} */ (JSON.parse(input));
 const services = config.services ?? {};
 const local = process.argv.includes("--local");
+const standalone = process.argv.includes("--standalone");
 
 /**
  * @param {unknown} condition
@@ -106,7 +108,7 @@ assert(
   (site.cap_drop ?? []).includes("ALL"),
   "site must drop all capabilities",
 );
-const imagePattern = local
+const imagePattern = local || standalone
   ? /^(?:ghcr\.io\/[a-z0-9./_-]+@)?sha256:[0-9a-f]{64}$/
   : /^ghcr\.io\/[a-z0-9./_-]+@sha256:[0-9a-f]{64}$/;
 assert(imagePattern.test(site.image ?? ""), "site image must be immutable");
@@ -157,6 +159,24 @@ assert(
   "CMS owns database connection",
 );
 assert(!services.directus, "normal operation does not run Directus");
+if (standalone) {
+  assert(!local, "standalone keeps the production port/network topology");
+  assert(
+    site.build?.target === "runtime" &&
+      cms.build?.target === "cms-runtime" &&
+      site.build?.context === cms.build?.context,
+    "standalone builds both applications from the same checkout",
+  );
+  assert(
+    (postgres.environment?.CMS_DB_PASSWORD ?? "").length >= 32 &&
+      (postgres.volumes ?? []).some(
+        (mount) =>
+          mount.target === "/docker-entrypoint-initdb.d/10-author-cms.sh" &&
+          mount.read_only === true,
+      ),
+    "new standalone databases initialize a restricted schema owner",
+  );
+}
 assert(
   postgres.image === "postgres:17.9-alpine",
   "PostgreSQL image must remain pinned to 17.9-alpine",
@@ -202,5 +222,5 @@ for (const [service, mediaTarget, readOnly] of [
 }
 
 console.log(
-  `compose contract mode=${local ? "local" : "production"} status=success`,
+  `compose contract mode=${local ? "local" : standalone ? "standalone" : "production"} status=success`,
 );

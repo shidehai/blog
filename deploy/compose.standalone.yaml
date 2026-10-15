@@ -1,0 +1,22 @@
+services:
+  site:
+    build:
+      context: ..
+      target: runtime
+    pull_policy: never
+  cms:
+    build:
+      context: ..
+      target: cms-runtime
+    pull_policy: never
+  postgres:
+    environment:
+      CMS_DB_PASSWORD: ${CMS_DB_PASSWORD:?Run scripts/setup-vps.sh first}
+    healthcheck:
+      # Ignore the temporary Unix-socket server used during first initialization.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+    volumes:
+      - type: bind
+        source: ./init-cms-role.sh
+        target: /docker-entrypoint-initdb.d/10-author-cms.sh
+        read_only: true

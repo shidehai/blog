@@ -8,6 +8,13 @@ Read for Docker, Compose, Caddy, env wiring or storage changes.
 
 - Docker targets: `development`, `runtime` (site 4321), `cms-runtime` (CMS 4322).
 - `deploy/compose.yaml`: Caddy/site/cms/postgres, optional backup/restore/maintenance.
+- `docker-compose.yml`: default VPS entrypoint; includes the shared production model
+  plus `deploy/compose.standalone.yaml` for source builds and empty-volume PostgreSQL
+  role initialization. Requires Compose >=2.20; production ports/networks stay intact.
+- `scripts/setup-vps.sh [--import DIR]`: first-run orchestration; private config,
+  sequential builds, pinned actual image IDs, migrations and owner only if absent.
+  Advanced flags: `--env-file FILE --data-dir DIR --compose-override FILE --skip-build`.
+  Noninteractive public inputs: SITE_DOMAIN, CMS_DOMAIN, ACME_EMAIL.
 - `deploy/compose.dev.yaml`: localhost ports, dependency-preserving source mounts.
 - `deploy/compose.local.yaml`: persistent local runtime, immutable local image IDs,
   site/CMS loopback 4321/4322, PostgreSQL loopback 55433, opt-in Caddy.
@@ -20,6 +27,20 @@ Only Caddy publishes production ports. Site joins web; CMS joins web and interna
 data; PostgreSQL joins data only. Applications run as node with read-only roots,
 /tmp tmpfs. CMS writes `/data/cms-media`, prepared for uid/gid 1000 on the host.
 Persistent data lives under BLOG_DATA_ROOT, outside images/Git.
+
+The standalone setup accepts only its own versioned .env; unrelated local/host
+configuration and nonempty new targets are refused. Generate secrets once and retain
+them on retries. Owner password enters the management CLI via stdin and is stored
+in a private host file, never runtime env. Existing owners and sessions are preserved.
+Optional import copies the input into a private temporary read-only mount, verifies
+before restore and records success; repeats skip the same completed bundle without
+overwriting later author writes. A different bundle is not an update operation.
+The PostgreSQL entrypoint creates blog_cms/author_cms only on an empty data volume;
+its password comes from the psql environment, not argv. Standalone readiness uses TCP so the
+temporary init server cannot release CMS before initialization finishes.
+Standalone checks allow exact local image IDs; registry deployment stays digest-only.
+Root setup keeps .env/data outside the image context and does not alter a running
+daily local environment. New code/CMS upgrades still require the backup/review process.
 
 The local writing environment uses a private root .env.local and common .env,
 separate from disposable _test databases. Retired service credentials are removed. pnpm local:up/down/status/logs owns
@@ -71,6 +92,9 @@ CMS media presence plus empty targets before importing the database. Ownership r
 | New backup lacks cms-media | Refuse restore before replacing data |
 | Format 1 lacks cms-media | Recover matching old release in isolation first |
 | Unknown manifest format | Refuse before applying data |
+| Unrecognized .env / populated new setup target | Refuse before replacing configuration/data |
+| Setup build fails | Retain generated credentials for the next attempt |
+| Existing owner / completed same-bundle import | Preserve password, sessions and newer content |
 
 ## 5. Good / Base / Bad Cases
 
@@ -78,6 +102,7 @@ CMS media presence plus empty targets before importing the database. Ownership r
 - Base: development explicitly selects fixture.
 - Base: source SVG text is rasterized with installed CJK fonts in a read-only CMS.
 - Bad: DB host ports, static upload-root exposure, build secrets or two live writers.
+- Bad: regenerate secrets or reset the owner on every Compose startup.
 
 ## 6. Tests Required
 
@@ -86,6 +111,10 @@ smokes and inspect metadata/history/layers. Prove restricted DB startup and deni
 legacy SELECT. Backup checks prove missing-input refusal and source preservation.
 CMS smoke also checks CJK font selection, Latin/Chinese glyph pixels, license texts
 and extracted font copyrights; require writable /tmp font cache without writable root.
+Setup regressions cover refusal, retry and secret boundaries. Smoke the shared
+PostgreSQL role initializer and, in isolated Compose projects, verify repeat setup
+preserves owner/sessions and full bundle restore/re-export retains bytes. A repeat
+same-bundle import must preserve newer drafts. Real-domain TLS needs a VPS acceptance.
 
 ## 7. Wrong vs Correct
 

@@ -2,7 +2,7 @@
 
 Production runs Caddy, site, cms and PostgreSQL. Content publishing updates the CMS transaction directly. CI builds code images without CMS/database credentials; manual workflow dispatch pushes both immutable images. The forced SSH key still replaces only site. CMS, schema, Compose, Caddy and host changes require an owner-run maintenance release from a reviewed commit.
 
-For the first owner-run deployment on Debian 12, follow the [Chinese VPS guide](vps-first-deploy.md), including the portable transfer of current local content and media. It builds both images on the server and pins their local image IDs; the forced SSH publisher still requires registry digest references.
+For a first deployment on Debian 12, use the root `docker-compose.yml` and `sh scripts/setup-vps.sh`, following the [Chinese VPS guide](vps-first-deploy.md). The script creates protected configuration, builds the images sequentially, pins their actual local image IDs, initializes a new database and owner, and optionally restores a current CMS bundle with `--import DIR`. Repeating it preserves existing credentials, owner sessions and completed imports. The advanced host/registry setup below remains available; the forced SSH publisher still requires registry digest references.
 
 ## Host configuration
 

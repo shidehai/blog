@@ -1,0 +1,5 @@
+# Default VPS entrypoint. Runtime topology stays in the shared production file.
+include:
+  - path:
+      - ./deploy/compose.yaml
+      - ./deploy/compose.standalone.yaml

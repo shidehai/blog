@@ -31,6 +31,15 @@ pnpm dev
 
 ## 构建与部署
 
+VPS 首次部署使用根目录 `docker-compose.yml`。安装 Docker/Compose、解析博客与后台域名后，在 VPS 全新检出运行：
+
+```sh
+sh scripts/setup-vps.sh
+# 带上本机完整内容包时：sh scripts/setup-vps.sh --import /root/blog-content
+```
+
+按提示填写两个域名和邮箱，脚本自动准备配置、数据库、后台密码和镜像并启动服务。之后用 `docker compose up -d`、`docker compose ps`、`docker compose logs` 管理。完整步骤见 [Debian 12 部署指南](docs/operations/vps-first-deploy.md)。
+
 ```sh
 docker build --target runtime --tag blog-site:local .
 docker build --target cms-runtime --tag blog-cms:local .

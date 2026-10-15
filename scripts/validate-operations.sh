@@ -46,6 +46,7 @@ BLOG_DATA_ROOT=$work/data
 POSTGRES_DB=blog
 POSTGRES_USER=blog
 POSTGRES_PASSWORD=fixture-database-password
+CMS_DB_PASSWORD=fixture-cms-database-password-at-least-32-characters
 RESTIC_REPOSITORY=rest:http://backup.example.test/
 RESTIC_PASSWORD=fixture-restic-password
 EOF
@@ -79,6 +80,14 @@ docker compose \
   --profile maintenance \
   config --format json |
   node "$script_dir/validate-compose.mjs" --local
+docker compose \
+  --env-file "$env_file" \
+  -f "$repository_root/docker-compose.yml" \
+  --profile backup \
+  --profile restore \
+  --profile maintenance \
+  config --format json |
+  node "$script_dir/validate-compose.mjs" --standalone
 
 docker run --rm \
   --env ACME_EMAIL=owner@example.test \

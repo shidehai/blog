@@ -1,0 +1,19 @@
+{
+  "scope": "isolated_compose_bootstrap_with_previously_verified_images",
+  "remoteDeployment": false,
+  "tlsTested": false,
+  "buildsRepeated": false,
+  "freshInitialization": true,
+  "restrictedRoleAndSchema": true,
+  "secureCookie": true,
+  "authenticatedPublicationAndMedia": true,
+  "publicRuntimeArticle": true,
+  "repeatedSetupPreservesCredentialsOwnerSessionsAndContent": true,
+  "separateBundleRestoreAndReexportEqual": true,
+  "mediaBytesEqual": true,
+  "repeatedImportPreservesNewerDraftsAndSessions": true,
+  "logsOmitRuntimeSecrets": true,
+  "contentCount": 1,
+  "mediaFileCount": 1,
+  "isolatedStacksStopped": true
+}
