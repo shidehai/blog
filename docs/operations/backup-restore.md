@@ -7,8 +7,8 @@ The backup profile creates a custom-format pg_dump, verifies pg_restore --list a
 Install and review ops/systemd units for nightly backup, six-hour freshness checks (maximum age 86400 seconds), weekly retention (14 daily, 8 weekly, 12 monthly) and weekly integrity checks. Enable blog-backup.timer, blog-backup-freshness.timer, blog-restic-forget.timer and blog-restic-check.timer. Perform a quarterly full restic check --read-data and record measured recovery times. Restic credentials are outside the backup set.
 
 ```sh
-docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml --profile backup run --build --rm backup
-docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml --profile restore run --rm restore verify <snapshot-id>
+docker compose --env-file /etc/blog/production.env -f deploy/compose.yaml --profile backup run --build --rm backup
+docker compose --env-file /etc/blog/production.env -f deploy/compose.yaml --profile restore run --rm restore verify <snapshot-id>
 ```
 
 Verify downloads to temporary staging and checks the dump/media payload without changing the database. Select a concrete snapshot ID for recovery evidence.
@@ -18,7 +18,7 @@ Verify downloads to temporary staging and checks the dump/media payload without 
 Apply requires an empty database, an existing writable empty CMS media target, a valid dump/manifest and no symlinks. Set RESTORE_CONFIRM=restore-empty:<database> and start only PostgreSQL in an isolated replacement stack:
 
 ```sh
-RESTORE_CONFIRM=restore-empty:blog docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml --profile restore run --rm restore apply <snapshot-id>
+RESTORE_CONFIRM=restore-empty:blog docker compose --env-file /etc/blog/production.env -f deploy/compose.yaml --profile restore run --rm restore apply <snapshot-id>
 ```
 
 The script refuses overwrite/cleanup of populated targets. If interrupted, retry into fresh empty targets. It uses pg_restore --no-owner --no-privileges, so the administrator restores table ownership. Before CMS startup recreate the restricted blog_cms role, then reassign **only author_cms** objects in that target database:

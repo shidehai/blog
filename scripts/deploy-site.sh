@@ -230,7 +230,7 @@ target_image=$1
 
 script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 repository_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
-deploy_config=${BLOG_DEPLOY_CONFIG:-/etc/personal-journal/deploy.env}
+deploy_config=${BLOG_DEPLOY_CONFIG:-/etc/blog/deploy.env}
 if [ -f "$deploy_config" ]; then
   config_owner=$(stat -c '%u' "$deploy_config")
   [ "$config_owner" -eq 0 ] || fail "deploy_config_must_be_root_owned"
@@ -255,7 +255,7 @@ esac
 validate_image_ref "$target_image" || fail "image_must_match_allowlist_and_sha256_digest"
 
 DEPLOY_COMPOSE_FILE=${DEPLOY_COMPOSE_FILE:-$repository_root/deploy/compose.yaml}
-DEPLOY_STATE_DIR=${DEPLOY_STATE_DIR:-/var/lib/personal-journal/deploy}
+DEPLOY_STATE_DIR=${DEPLOY_STATE_DIR:-/var/lib/blog/deploy}
 DEPLOY_TIMEOUT_SECONDS=${DEPLOY_TIMEOUT_SECONDS:-90}
 DEPLOY_PREFLIGHT_PATHS=${DEPLOY_PREFLIGHT_PATHS:-/healthz /}
 http_smoke_script=${DEPLOY_HTTP_SMOKE_SCRIPT:-$script_dir/http-smoke.sh}

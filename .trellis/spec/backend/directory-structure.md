@@ -29,6 +29,14 @@ data; PostgreSQL joins data only. Applications run as node with read-only roots,
 /tmp tmpfs. CMS writes `/data/cms-media`, prepared for uid/gid 1000 on the host.
 Persistent data lives under BLOG_DATA_ROOT, outside images/Git.
 
+VPS instructions clone `main` directly into `/opt/blog`; no `current` child is
+required. Merge release changes into `main` before following those instructions.
+Fresh standalone setup defaults to `/srv/blog/data` and Compose project `blog`.
+Advanced host configuration lives under `/etc/blog`, with deployment state under
+`/var/lib/blog/deploy`; systemd and forced-SSH templates use `/opt/blog`.
+Saved versioned `.env` values remain authoritative on retries: changing defaults
+does not relocate existing data, rename an existing project or rotate credentials.
+
 The standalone setup accepts only its own versioned .env; unrelated local/host
 configuration and nonempty new targets are refused. Generate secrets once and retain
 them on retries. Owner password enters the management CLI via stdin and is stored

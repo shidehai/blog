@@ -32,8 +32,8 @@ for name in RESTIC_PASSWORD RESTIC_REPOSITORY; do
 done
 
 staging=${RESTORE_STAGING_DIR:-/backup-staging}
-tag=${BACKUP_TAG:-personal-journal}
-backup_host=${BACKUP_HOST:-personal-journal-vps}
+tag=${BACKUP_TAG:-blog}
+backup_host=${BACKUP_HOST:-blog-vps}
 case "$staging" in
   "" | /)
     echo "RESTORE_STAGING_DIR must be a dedicated directory" >&2

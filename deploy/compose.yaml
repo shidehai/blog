@@ -154,8 +154,8 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      BACKUP_HOST: ${BACKUP_HOST:-personal-journal-vps}
-      BACKUP_TAG: ${BACKUP_TAG:-personal-journal}
+      BACKUP_HOST: ${BACKUP_HOST:-blog-vps}
+      BACKUP_TAG: ${BACKUP_TAG:-blog}
       POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
       POSTGRES_HOST: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
@@ -192,8 +192,8 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      BACKUP_HOST: ${BACKUP_HOST:-personal-journal-vps}
-      BACKUP_TAG: ${BACKUP_TAG:-personal-journal}
+      BACKUP_HOST: ${BACKUP_HOST:-blog-vps}
+      BACKUP_TAG: ${BACKUP_TAG:-blog}
       POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
       POSTGRES_HOST: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
@@ -228,9 +228,9 @@ services:
     entrypoint: ["/usr/local/bin/restic-maintenance"]
     restart: "no"
     environment:
-      BACKUP_HOST: ${BACKUP_HOST:-personal-journal-vps}
+      BACKUP_HOST: ${BACKUP_HOST:-blog-vps}
       BACKUP_MAX_AGE_SECONDS: ${BACKUP_MAX_AGE_SECONDS:-86400}
-      BACKUP_TAG: ${BACKUP_TAG:-personal-journal}
+      BACKUP_TAG: ${BACKUP_TAG:-blog}
       RESTIC_CACHE_DIR: /tmp/restic-cache
       RESTIC_CHECK_SUBSET: ${RESTIC_CHECK_SUBSET:-}
       RESTIC_PASSWORD: ${RESTIC_PASSWORD:?Set RESTIC_PASSWORD}

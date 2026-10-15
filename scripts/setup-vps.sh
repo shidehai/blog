@@ -5,7 +5,7 @@ umask 077
 script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 repository_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
 env_file=$repository_root/.env
-data_root=/srv/personal-journal/data
+data_root=/srv/blog/data
 import_source=
 compose_override=
 skip_build=0
@@ -87,7 +87,7 @@ if [ ! -e "$env_file" ]; then
     case "$domain" in blog.example.com|cms.example.com) fail "请填写自己的真实域名。" ;; esac
   done
   printf '%s\n' "$acme_email" | LC_ALL=C grep -Eq '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' || fail "邮箱格式无效。"
-  project_name=${COMPOSE_PROJECT_NAME:-personal-journal}
+  project_name=${COMPOSE_PROJECT_NAME:-blog}
   printf '%s\n' "$project_name" | LC_ALL=C grep -Eq '^[a-z0-9][a-z0-9_-]*$' || fail "Compose 项目名无效。"
   case "$data_root" in /*) ;; *) fail "数据目录需要绝对路径。" ;; esac
   case "$data_root" in /|*..*|*[!A-Za-z0-9_./-]*) fail "请使用独立的普通绝对数据目录。" ;; esac
@@ -116,10 +116,10 @@ POSTGRES_PASSWORD=$pg_password
 CMS_DB_PASSWORD=$cms_password
 CMS_DATABASE_URL=postgres://blog_cms:$cms_password@postgres:5432/blog
 CMS_READ_TOKEN=$(random_secret)
-RESTIC_REPOSITORY=sftp:user@backup.example.com:/srv/restic/personal-journal
+RESTIC_REPOSITORY=sftp:user@backup.example.com:/srv/restic/blog
 RESTIC_PASSWORD=$(random_secret)
 BACKUP_HOST=$project_name
-BACKUP_TAG=personal-journal
+BACKUP_TAG=blog
 BACKUP_MAX_AGE_SECONDS=86400
 BLOG_CAPACITY_MAX_PERCENT=85
 EOF
