@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f3f3ef"/>
+  <rect x="48" y="48" width="1104" height="534" rx="4" fill="#fffefa"/>
+  <g fill="none" stroke="#c83a27" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M132 110l-22 22 22 22m56-44 22 22-22 22m-24-54-12 64"/>
+  </g>
+  <text x="100" y="296" fill="#181b1a" font-family="Noto Serif CJK SC,serif" font-size="88" font-weight="700">青山神司集</text>
+  <text x="105" y="378" fill="#4d5552" font-family="Noto Sans CJK SC,sans-serif" font-size="32">技术、写作与日常思考</text>
+  <text x="105" y="516" fill="#646d6a" font-family="sans-serif" font-size="24">shidehai</text>
+  <path d="M958 472l38 28-38 28m66-56 38 28-38 28" fill="none" stroke="#c83a27" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

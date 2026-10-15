@@ -10,19 +10,19 @@ dist
 node_modules
 .env
 .env.*
+**/.env
+**/.env.*
 !.env.example
 playwright-report
 test-results
 
-.env
-.env.*
-!.env.example
-
 data
 backups
-directus/uploads
-frontend-v2/public/_cms
-frontend-v2/.cms-staging
-frontend-v2/.cms-build.lock
 
 *.log
+
+**/.next
+**/.tools
+**/node_modules
+**/*.tsbuildinfo
+exports

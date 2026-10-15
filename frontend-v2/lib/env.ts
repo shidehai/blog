@@ -1,82 +1,65 @@
 /**
  * V2 环境变量边界：全站只在这里解析 process.env。
  *
- * `CONTENT_SOURCE` 只影响构建期快照：fixture 是可离线复现的默认值；
- * directus 则必须带完整凭据，不能静默把生产构建降级成夹具。
+ * 正常生产请求默认使用 cms；本地 fixture 只在明确选择或开发默认下使用。
  */
 import { z } from "zod";
 
-const directusCredentialsSchema = z.object({
-  DIRECTUS_URL: z.url().transform((value, context) => {
-    try {
-      return normalizeDirectusUrl(value);
-    } catch {
-      context.addIssue({
-        code: "custom",
-        message: "Invalid CMS base",
-      });
-      return z.NEVER;
-    }
-  }),
-  DIRECTUS_BUILD_TOKEN: z.string().min(24),
-});
-
-/** A single credential-free HTTP(S) base owns both content and media requests. */
-export function normalizeDirectusUrl(value: string): string {
+const httpOriginSchema = z.url().refine((value) => {
   try {
     const url = new URL(value);
-    if (
-      (url.protocol === "http:" || url.protocol === "https:") &&
+    return (
+      ["http:", "https:"].includes(url.protocol) &&
       !url.username &&
       !url.password &&
-      !value.includes("?") &&
-      !value.includes("#")
-    )
-      return url.href.replace(/\/+$/, "");
-  } catch {
-    // Native URL errors can include their input.
-  }
-  throw new Error("[env] Invalid Directus build configuration: DIRECTUS_URL");
-}
-
-export interface DirectusCredentials {
-  url: string;
-  token: string;
-}
-
-export type BuildEnvironment =
-  { source: "fixture" } | { source: "directus"; directus: DirectusCredentials };
-
-/**
- * 读取构建时内容源。生产 Directus 构建不能因少一个变量或一次请求失败
- * 而悄悄产出 fixture；错误只报告字段名，绝不回显密钥。
- */
-export function readBuildEnvironment(
-  input: NodeJS.ProcessEnv = process.env,
-): BuildEnvironment {
-  const rawSource = input.CONTENT_SOURCE;
-  const source =
-    rawSource === undefined || rawSource === "" ? "fixture" : rawSource;
-
-  if (source === "fixture") return { source };
-  if (source !== "directus") {
-    throw new Error(
-      "[env] CONTENT_SOURCE must be either fixture or directus for a build",
+      !url.search &&
+      !url.hash &&
+      url.pathname === "/"
     );
+  } catch {
+    return false;
   }
+});
 
-  const parsed = directusCredentialsSchema.safeParse(input);
+const runtimeConfigSchema = z.object({
+  CMS_INTERNAL_URL: httpOriginSchema,
+  CMS_READ_TOKEN: z.string().min(32),
+  SITE_URL: httpOriginSchema,
+});
 
+export function readRuntimeEnvironment(
+  input: NodeJS.ProcessEnv = process.env,
+):
+  | { source: "fixture"; siteUrl: string }
+  | { source: "cms"; url: string; token: string; siteUrl: string } {
+  const source =
+    input.CONTENT_SOURCE ||
+    (input.NODE_ENV === "production" ? "cms" : "fixture");
+  if (source !== "cms" && source !== "fixture") {
+    throw new Error("[env] CONTENT_SOURCE must be cms or fixture");
+  }
+  const siteUrl =
+    input.SITE_URL ||
+    (source === "fixture" || input.NODE_ENV !== "production"
+      ? "http://localhost:4321"
+      : undefined);
+  if (source === "fixture") {
+    const parsed = httpOriginSchema.safeParse(siteUrl);
+    if (!parsed.success)
+      throw new Error("[env] Invalid runtime configuration: SITE_URL");
+    return { source, siteUrl: new URL(parsed.data).origin };
+  }
+  const parsed = runtimeConfigSchema.safeParse({ ...input, SITE_URL: siteUrl });
   if (!parsed.success) {
     const fields = [
-      ...new Set(parsed.error.issues.map((issue) => issue.path.join("."))),
+      ...new Set(parsed.error.issues.map((issue) => issue.path[0])),
     ].join(", ");
-    throw new Error(`[env] Invalid Directus build configuration: ${fields}`);
+    throw new Error(`[env] Invalid CMS runtime configuration: ${fields}`);
   }
-
-  const { DIRECTUS_URL: url, DIRECTUS_BUILD_TOKEN: token } = parsed.data;
   return {
     source,
-    directus: { url: url.replace(/\/$/, ""), token },
+    url: parsed.data.CMS_INTERNAL_URL.replace(/\/$/, ""),
+    token: parsed.data.CMS_READ_TOKEN,
+    siteUrl: new URL(parsed.data.SITE_URL).origin,
   };
 }

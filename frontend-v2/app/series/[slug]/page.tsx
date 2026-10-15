@@ -6,18 +6,27 @@ import {
   getProfile,
   getSeriesList,
   getTags,
+  getSeriesBySlug,
 } from "../../../lib/content";
 import { PostCard } from "../../../components/PostCard";
 import { SideLeft } from "../../../components/SideLeft";
 import { SideRight } from "../../../components/SideRight";
+import { pageMetadata } from "../../../lib/seo";
 
 interface SeriesDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateStaticParams() {
-  const seriesList = await getSeriesList();
-  return seriesList.map((s) => ({ slug: s.slug }));
+export async function generateMetadata({ params }: SeriesDetailPageProps) {
+  const { slug } = await params;
+  const series = await getSeriesBySlug(slug);
+  if (!series)
+    return { title: "系列未找到", robots: { index: false, follow: false } };
+  return pageMetadata({
+    path: `/series/${encodeURIComponent(series.slug)}`,
+    title: series.name,
+    description: series.description,
+  });
 }
 
 export default async function SeriesDetailPage({
@@ -56,9 +65,13 @@ export default async function SeriesDetailPage({
       {/* 2. Middle Main Content */}
       <main className="main-content" id="main-content">
         <nav className="breadcrumbs" aria-label="面包屑导航">
-          <Link href="/">首页</Link>
+          <Link prefetch={false} href="/">
+            首页
+          </Link>
           <span aria-hidden="true">/</span>
-          <Link href="/series">系列</Link>
+          <Link prefetch={false} href="/series">
+            系列
+          </Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">{series.name}</span>
         </nav>

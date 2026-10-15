@@ -87,7 +87,7 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
       <nav className="nav">
         <div className="nav-inner">
           {/* Logo */}
-          <Link href="/" className="nav-logo">
+          <Link prefetch={false} href="/" className="nav-logo">
             <svg
               className="ui-icon"
               viewBox="0 0 24 24"
@@ -119,6 +119,7 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
               return (
                 <li key={link.href}>
                   <Link
+              prefetch={false}
                     href={link.href}
                     className={isActive ? "active" : ""}
                     aria-current={isActive ? "page" : undefined}
@@ -299,7 +300,7 @@ export function Navbar({ onOpenSearch }: NavbarProps) {
                 : pathname.startsWith(link.href);
             return (
               <li key={link.href}>
-                <Link href={link.href} className={isActive ? "active" : ""}>
+                <Link prefetch={false} href={link.href} className={isActive ? "active" : ""}>
                   {link.label}
                 </Link>
               </li>

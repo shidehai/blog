@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
-import type { Post } from "../lib/types";
+import type { PostSummary } from "../lib/types";
 
 interface PostCardProps {
-  post: Post;
+  post: PostSummary;
 }
 
 export function PostCard({ post }: PostCardProps) {
@@ -15,7 +15,7 @@ export function PostCard({ post }: PostCardProps) {
   return (
     <article className="post-card post-card-has-cover">
       {post.cover && (
-        <Link className="post-card-cover-link" href={`/archives/${post.slug}`}>
+        <Link prefetch={false} className="post-card-cover-link" href={`/archives/${post.slug}`}>
           <img
             className="post-card-cover"
             src={post.cover}
@@ -29,7 +29,7 @@ export function PostCard({ post }: PostCardProps) {
 
       <div className="post-card-body">
         <h2>
-          <Link href={`/archives/${post.slug}`}>{post.title}</Link>
+          <Link prefetch={false} href={`/archives/${post.slug}`}>{post.title}</Link>
         </h2>
 
         <div className="post-meta">
@@ -71,6 +71,7 @@ export function PostCard({ post }: PostCardProps) {
         <div className="tags">
           {post.tags.map((tag) => (
             <Link
+              prefetch={false}
               key={tag}
               href={`/tags?tag=${encodeURIComponent(tag)}`}
               className="tag"

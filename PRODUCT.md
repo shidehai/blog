@@ -16,8 +16,9 @@ quickly, follow a tutorial without losing their place, or browse the author's
 thinking over time.
 
 The secondary user is the owner-author. They write and manage Markdown in a
-browser CMS, revisit editorial history, and manage publication and site
-identity without editing application code.
+dedicated browser CMS, revisit editorial history, and manage publication and site
+identity without editing application code. There is permanently one owner: no registration,
+teams, roles, approval workflow, or multi-author expansion.
 
 ## Product Purpose
 
@@ -93,3 +94,22 @@ Target WCAG 2.2 AA. All reading and navigation flows must work with a keyboard,
 visible focus, zoomed text, high contrast, and reduced motion. Color is never
 the only carrier of meaning. Public content requires no account, cookie banner,
 or authentication step.
+
+## Author Workspace and Publishing
+
+The owner uses Markdown with live preview, autosave, images, covers and explicit
+publication. The dedicated CMS uses a warm paper surface, sage navigation and
+a restrained vermilion action color; desktop comparison and mobile editing
+protect the same writing task. Draft edits and restored history never change
+the published snapshot until the owner publishes.
+
+Publishing commits immediately: public requests read the current CMS/database
+state without rebuilding or restarting the site. Existing readers revalidate
+on navigation, browser return or focus. CMS/database availability is now part
+of public reading availability; outages are explicit, with no stale fixture
+fallback. Code deployment remains a separate operational action.
+
+PostgreSQL author_cms is the only live authority after cutover. Actual media,
+immutable revisions, source archives and content exports remain recoverable.
+A historical migration limitation must be reported and reconciled before
+claiming a lossless production switch.

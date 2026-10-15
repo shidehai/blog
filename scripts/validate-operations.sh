@@ -26,7 +26,7 @@ find "$repository_root/tests/ops" -maxdepth 1 -type f -name '*.sh' -print 2>/dev
 
 mkdir -p \
   "$work/data/postgres" \
-  "$work/data/directus/uploads" \
+  "$work/data/cms/media" \
   "$work/data/caddy/data" \
   "$work/data/caddy/config" \
   "$work/data/caddy/logs" \
@@ -39,20 +39,20 @@ SITE_DOMAIN=blog.example.test
 CMS_DOMAIN=cms.example.test
 ACME_EMAIL=owner@example.test
 SITE_IMAGE=ghcr.io/example/personal-journal@sha256:0000000000000000000000000000000000000000000000000000000000000000
+CMS_IMAGE=ghcr.io/example/personal-journal-cms@sha256:0000000000000000000000000000000000000000000000000000000000000000
+CMS_READ_TOKEN=fixture-cms-reader-token-at-least-32-characters
+CMS_DATABASE_URL=postgres://blog:fixture-database-password@postgres:5432/blog
 BLOG_DATA_ROOT=$work/data
 POSTGRES_DB=blog
 POSTGRES_USER=blog
 POSTGRES_PASSWORD=fixture-database-password
-DIRECTUS_SECRET=fixture-directus-secret-at-least-32-characters
-DIRECTUS_LICENSE_KEY=
-GITHUB_DISPATCH_TOKEN=
-GITHUB_REPOSITORY=example/personal-journal
 RESTIC_REPOSITORY=rest:http://backup.example.test/
 RESTIC_PASSWORD=fixture-restic-password
 EOF
 
 compose_file=$repository_root/deploy/compose.yaml
 dev_file=$repository_root/deploy/compose.dev.yaml
+local_file=$repository_root/deploy/compose.local.yaml
 docker compose \
   --env-file "$env_file" \
   --file "$compose_file" \
@@ -69,6 +69,16 @@ docker compose \
   --profile restore \
   --profile maintenance \
   config --quiet
+docker compose \
+  --env-file "$env_file" \
+  -f "$compose_file" \
+  -f "$local_file" \
+  --profile production \
+  --profile backup \
+  --profile restore \
+  --profile maintenance \
+  config --format json |
+  node "$script_dir/validate-compose.mjs" --local
 
 docker run --rm \
   --env ACME_EMAIL=owner@example.test \

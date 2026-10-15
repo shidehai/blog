@@ -24,20 +24,21 @@ export BACKUP_TAG=personal-journal
 setup_case() {
   name=$1
   case_root=$suite_work/$name
-  mkdir -p "$case_root/staging" "$case_root/uploads-source" "$case_root/uploads-target"
+  mkdir -p "$case_root/staging" "$case_root/cms-media-source" "$case_root/cms-media-target"
   : >"$case_root/commands.log"
   export MOCK_COMMAND_LOG=$case_root/commands.log
   export BACKUP_STAGING_DIR=$case_root/staging
-  export BACKUP_UPLOADS_DIR=$case_root/uploads-source
+  export BACKUP_CMS_MEDIA_DIR=$case_root/cms-media-source
+  export RESTORE_CMS_MEDIA_TARGET=$case_root/cms-media-target
   export RESTORE_STAGING_DIR=$case_root/staging
-  export RESTORE_UPLOADS_TARGET=$case_root/uploads-target
-  unset MOCK_PG_RESTORE_LIST_FAIL MOCK_RESTIC_BACKUP_FAIL MOCK_USER_TABLES RESTORE_CONFIRM
+  unset MOCK_PG_RESTORE_LIST_FAIL MOCK_RESTIC_BACKUP_FAIL MOCK_USER_TABLES RESTORE_CONFIRM MOCK_BACKUP_FORMAT_VERSION MOCK_MISSING_CMS_MEDIA MOCK_CMS_MEDIA_SYMLINK
 }
 
 setup_case backup_success
 "$repository_root/scripts/backup.sh" >"$case_root/output" 2>&1
 assert_file_contains "$case_root/commands.log" "pg_restore --list" "backup must verify the custom dump"
-assert_file_contains "$case_root/commands.log" "restic backup" "verified dump and uploads must enter Restic"
+assert_file_contains "$case_root/commands.log" "restic backup" "verified dump and CMS media must enter Restic"
+assert_file_contains "$case_root/commands.log" "$BACKUP_CMS_MEDIA_DIR" "actual CMS media must enter the backup"
 assert_file_contains "$case_root/commands.log" "dump-mode 600" "temporary dump must use mode 0600"
 assert_file_contains "$case_root/output" "backup status=success" "backup must emit bounded success diagnostics"
 assert_file_contains "$case_root/output" "dump_sha256=" "backup must emit checksum evidence"
@@ -80,20 +81,63 @@ export RESTORE_CONFIRM=restore-empty:blog
 "$repository_root/scripts/restore.sh" apply latest >"$case_root/output" 2>&1
 assert_file_contains "$case_root/commands.log" "psql" "apply must prove target database has no user tables"
 assert_file_contains "$case_root/commands.log" "pg_restore --host postgres" "apply must import the verified dump"
-assert_file_contains "$case_root/uploads-target/example.webp" "fixture-upload" "apply must restore upload bytes"
 assert_file_contains "$case_root/output" "restore mode=apply status=success" "apply evidence must be explicit"
 assert_empty_directory "$case_root/staging" "apply must remove restored staging data"
-pass_test "clean-room apply restores database and uploads after explicit confirmation"
+assert_file_contains "$case_root/cms-media-target/cms-image.webp" "fixture-cms-media" "apply must restore CMS media bytes"
+assert_file_contains "$case_root/cms-media-target/originals/source.svg" "fixture-source-original" "apply must restore private original bytes"
+pass_test "clean-room apply restores database, CMS media and originals without an old uploads directory"
 
-setup_case nonempty_restore_target
-printf 'existing\n' >"$case_root/uploads-target/existing.txt"
+setup_case transition_backup
+export MOCK_BACKUP_FORMAT_VERSION=1
+export RESTORE_CONFIRM=restore-empty:blog
+"$repository_root/scripts/restore.sh" apply latest >"$case_root/output" 2>&1
+assert_file_contains "$case_root/cms-media-target/cms-image.webp" "fixture-cms-media" "transition backups with CMS media remain recoverable"
+pass_test "format 1 with complete CMS media remains recoverable"
+
+for version in 1 2; do
+  setup_case "missing_cms_media_$version"
+  export MOCK_BACKUP_FORMAT_VERSION=$version
+  export MOCK_MISSING_CMS_MEDIA=1
+  export RESTORE_CONFIRM=restore-empty:blog
+  if "$repository_root/scripts/restore.sh" apply latest >"$case_root/output" 2>&1; then
+    fail_test "format $version without CMS media must be refused"
+  fi
+  assert_file_contains "$case_root/output" "does not contain CMS media" "incomplete snapshots need a clear diagnostic"
+  assert_file_not_contains "$case_root/commands.log" "pg_restore --host postgres" "missing media must be detected before importing the database"
+  assert_empty_directory "$case_root/cms-media-target" "missing source must preserve the target"
+  assert_empty_directory "$case_root/staging" "missing media must clean staging"
+done
+pass_test "both backup formats refuse missing CMS media before mutation"
+
+setup_case unsupported_format
+export MOCK_BACKUP_FORMAT_VERSION=99
+if "$repository_root/scripts/restore.sh" verify latest >"$case_root/output" 2>&1; then
+  fail_test "unknown backup formats must be refused"
+fi
+assert_file_contains "$case_root/output" "unsupported format_version" "unknown format needs an explicit failure"
+assert_file_not_contains "$case_root/commands.log" "pg_restore --host postgres" "unknown format must never be applied"
+pass_test "unknown snapshot formats fail closed"
+
+setup_case symlink_media
+export MOCK_CMS_MEDIA_SYMLINK=1
 export RESTORE_CONFIRM=restore-empty:blog
 if "$repository_root/scripts/restore.sh" apply latest >"$case_root/output" 2>&1; then
-  fail_test "restore must reject a non-empty upload target"
+  fail_test "CMS media symlinks must be refused"
 fi
-assert_file_contains "$case_root/output" "RESTORE_UPLOADS_TARGET must be empty" "non-empty target needs a clear diagnostic"
+assert_file_not_contains "$case_root/commands.log" "pg_restore --host postgres" "unsafe media must be detected before database import"
+assert_empty_directory "$case_root/cms-media-target" "unsafe media must preserve the target"
+pass_test "restore rejects unsafe CMS media before mutation"
+
+setup_case nonempty_restore_target
+printf 'existing\n' >"$case_root/cms-media-target/existing.txt"
+export RESTORE_CONFIRM=restore-empty:blog
+if "$repository_root/scripts/restore.sh" apply latest >"$case_root/output" 2>&1; then
+  fail_test "restore must reject a non-empty CMS media target"
+fi
+assert_file_contains "$case_root/output" "RESTORE_CMS_MEDIA_TARGET must be empty" "non-empty target needs a clear diagnostic"
 assert_file_not_contains "$case_root/commands.log" "pg_restore --host postgres" "guard failure must happen before database import"
-pass_test "restore refuses to overwrite uploads"
+assert_file_contains "$case_root/cms-media-target/existing.txt" "existing" "existing media must remain intact"
+pass_test "restore refuses to overwrite CMS media"
 
 setup_case nonempty_database
 export RESTORE_CONFIRM=restore-empty:blog

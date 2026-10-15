@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import type { Category, Post, Series, SiteProfile, Tag } from "../../lib/types";
+import type { Category, PostSummary, Series, SiteProfile, Tag } from "../../lib/types";
 import { PostCard } from "../../components/PostCard";
 import { SideLeft } from "../../components/SideLeft";
 import { SideRight } from "../../components/SideRight";
@@ -13,7 +13,7 @@ interface TagsClientProps {
   categories: Category[];
   tags: Tag[];
   seriesList: Series[];
-  posts: Post[];
+  posts: PostSummary[];
 }
 
 export function TagsClient({
@@ -63,7 +63,7 @@ export function TagsClient({
       {/* 2. Middle Main Content */}
       <main className="main-content" id="main-content">
         <nav className="breadcrumbs" aria-label="面包屑导航">
-          <Link href="/">首页</Link>
+          <Link prefetch={false} href="/">首页</Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">标签</span>
           {currentTag && (

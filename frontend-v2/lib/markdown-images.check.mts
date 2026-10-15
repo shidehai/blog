@@ -177,7 +177,7 @@ assert.deepEqual(
 const rendered = render('![封面 **原样**](/_cms/digest.webp "*标题* `原样`")');
 assert.match(
   rendered,
-  /<img src="\/_cms\/digest\.webp" alt="封面 \*\*原样\*\*" title="\*标题\* `原样`" loading="lazy" decoding="async" style="max-width:100%;height:auto">/,
+  /<img src="\/_cms\/digest\.webp" alt="封面 原样" title="\*标题\* &#x60;原样&#x60;" loading="lazy" decoding="async">/,
 );
 assert.equal(rendered.includes("<strong>"), false);
 assert.equal(rendered.includes("<em>"), false);
@@ -188,7 +188,7 @@ assert.match(
 );
 assert.match(
   render("![local](</local/image with spaces.png>)"),
-  /<img src="\/local\/image with spaces\.png" alt="local"/,
+  /<img src="\/local\/image%20with%20spaces\.png" alt="local"/,
 );
 assert.match(
   render('![a](https://images.example.test/a.png "title") ![b](/b.png)'),
@@ -201,18 +201,13 @@ const hostile = render(
 for (const source of ["./image.png", "images/x.webp", "../image.png"]) {
   assert.ok(render(`![local](${source})`).includes(`<img src="${source}"`));
 }
-assert.match(hostile, /src="\/safe\?x=&quot;&amp;y=&#39;"/);
-assert.match(
-  hostile,
-  /alt="&quot; onerror=&quot;alert\(1\) &lt;script&gt;&amp;&#39; \*\*x\*\*"/,
-);
-assert.match(
-  hostile,
-  /title="a&quot; onload=&quot;boom &lt;script&gt;&amp;&#39; _title_"/,
-);
-assert.equal(hostile.includes("<script>"), false);
+assert.equal((hostile.match(/<img /g) ?? []).length, 1);
+assert.ok(hostile.includes("onerror="));
+assert.ok(hostile.includes("onload="));
+const hostileMarkup = hostile.replace(/"[^"]*"/g, '""');
+assert.equal(hostileMarkup.includes("<script>"), false);
 assert.equal(
-  /"\s+on(?:error|load)=/.test(hostile),
+  /"\s+on(?:error|load)=/.test(hostileMarkup),
   false,
   "Untrusted text must stay inside escaped attribute values",
 );
@@ -244,7 +239,7 @@ for (const example of protectedExamples.filter(
 }
 const rawHtmlCode = `\`<img src="directus://${fileId}" onerror="bad">\``;
 assert.equal(render(rawHtmlCode).includes("<img"), false);
-assert.ok(render(rawHtmlCode).includes("&lt;img"));
+assert.match(render(rawHtmlCode), /(?:&lt;|&#x3C;)img/i);
 for (const code of [
   `\`\`\`\`html\n\`\`\`\n<img src="/assets/${fileId}">\n\`\`\`\``,
   `\`\`\`html\n<img src="/assets/${fileId}">`,
@@ -252,12 +247,12 @@ for (const code of [
 ]) {
   assert.deepEqual(findUnsupportedMarkdownImageSources(code), []);
   assert.equal(render(code).includes("<img"), false);
-  assert.ok(render(code).includes("&lt;"));
+  assert.match(render(code), /&lt;|&#x3C;/i);
 }
 const escapedHtml = `\\<img src="/assets/${fileId}">`;
 assert.deepEqual(findUnsupportedMarkdownImageSources(escapedHtml), []);
 assert.equal(render(escapedHtml).includes("<img"), false);
-assert.ok(render(escapedHtml).includes("&lt;img"));
+assert.match(render(escapedHtml), /(?:&lt;|&#x3C;)img/i);
 assert.deepEqual(
   findUnsupportedMarkdownImageSources(
     `Ordinary prose directus://${fileId} and /assets/${fileId}.`,

@@ -1,3 +1,4 @@
+import { pageMetadata, PUBLIC_PAGES } from "../../lib/seo";
 import Link from "next/link";
 import {
   getAllPosts,
@@ -9,10 +10,9 @@ import {
 import { SideLeft } from "../../components/SideLeft";
 import { SideRight } from "../../components/SideRight";
 
-export const metadata = {
-  title: "分类",
-  description: "系统化分类导航，快速定位相关技术领域",
-};
+export function generateMetadata() {
+  return pageMetadata(PUBLIC_PAGES.categories);
+}
 
 export default async function CategoriesPage() {
   const [profile, categories, tags, seriesList, posts] = await Promise.all([
@@ -36,7 +36,9 @@ export default async function CategoriesPage() {
       {/* 2. Middle Main Content */}
       <main className="main-content" id="main-content">
         <nav className="breadcrumbs" aria-label="面包屑导航">
-          <Link href="/">首页</Link>
+          <Link prefetch={false} href="/">
+            首页
+          </Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">分类</span>
         </nav>
@@ -61,6 +63,7 @@ export default async function CategoriesPage() {
         <div className="category-grid">
           {categories.map((cat) => (
             <Link
+              prefetch={false}
               key={cat.slug}
               href={`/categories/${cat.slug}`}
               className="glass info-card category-link"

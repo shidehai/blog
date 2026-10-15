@@ -1,0 +1,50 @@
+{
+  "passed": true,
+  "buildIds": [
+    "f21hvldkeVYsFDHvCdlo_",
+    "e70Gjl15AgKWrZuhOQ61g"
+  ],
+  "pids": [
+    1782126,
+    1782174
+  ],
+  "checks": [
+    "previously-404 slug",
+    "list/category/series/search summaries",
+    "draft isolation",
+    "publish update",
+    "archive and media revoke",
+    "reader-only boundary",
+    "unavailable returns 503",
+    "no rebuild/restart"
+  ],
+  "preview": {
+    "cms": "http://localhost:4322",
+    "site": "http://localhost:4321",
+    "editor": "http://localhost:4322/write/dfe9d714-af5f-43e0-b732-91e27bb58bb2",
+    "logDirectory": "/tmp/blog-cms-runtime-1791988375682"
+  },
+  "browserConfirmation": {
+    "formerly404BackShowsVisibleArticle": true,
+    "forwardArchiveContainsNewArticle": true,
+    "secondBackShowsBody": true,
+    "publishedImagesLoaded": true,
+    "desktopViewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "mobileViewport": {
+      "width": 390,
+      "height": 844
+    },
+    "mobileNoHorizontalOverflow": true,
+    "titleNoClipping": true,
+    "mobileEditTabSelected": true,
+    "mobileClosedSidebarInert": true,
+    "mobileOpenMainInert": true,
+    "escapeClosesNavigation": true,
+    "nativeFileDropExercised": false,
+    "realFocusTransitionExercised": false,
+    "explicitPrefetchScenarioExercised": false
+  }
+}

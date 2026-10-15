@@ -1,166 +1,70 @@
-# Backend and Infrastructure Quality Guidelines
+# Infrastructure verification
 
-## Scenario: Static Snapshot Image and CMS Retirement Boundary
+## 1. Scope / Trigger
 
-### 1. Scope / Trigger
+API/DB/contracts, Docker/Compose/Caddy/CI, backup or migration changes. Main AI
+conversation only, all execution serial.
 
-Apply this contract when changing `Dockerfile`, `deploy/`, `scripts/`, CI,
-Directus schema/bootstrap, Caddy, or an environment value shared by those
-layers. It covers the complete path from a private Directus record to the
-published static Next image and deliberately excludes a runtime CMS/preview
-reader.
-
-### 2. Signatures
+## 2. Signatures
 
 ```sh
-# Offline fixture image
-docker build --target runtime --tag blog-site:fixture .
-
-# Published Directus image
-docker build --target runtime \
-  --secret id=directus_build_token,env=DIRECTUS_BUILD_TOKEN \
-  --build-arg CONTENT_SOURCE=directus \
-  --build-arg DIRECTUS_URL=https://cms.example.test \
-  --tag blog-site:published .
-
-scripts/test-runtime-image.sh blog-site:fixture
-DIRECTUS_BUILD_TOKEN=<inspection-token> scripts/assert-image-secret-free.sh blog-site:fixture
-```
-
-The runtime contract is `GET /healthz` on port 4321 from the `node` user.
-`deploy/compose.yaml` supplies the immutable site image but no V2 content-source
-or Directus environment variables. `directus/bootstrap.mjs` is the only owner
-of exact-ID legacy reader retirement.
-
-### 3. Contracts
-
-- `CONTENT_SOURCE=fixture` is the default image build and requires no CMS
-  value. `CONTENT_SOURCE=directus` requires a URL build argument and a mounted
-  Build Reader secret; Docker must fail before `next build` if either is absent.
-- The token is never an `ARG`, `ENV`, label, copied file, later-stage input, or
-  runtime variable. `.env` files stay outside the Docker context.
-- The runtime stage contains only standalone output, `/_next` static assets,
-  and public assets; it runs read-only as `node` on 4321 and has a Docker
-  healthcheck for `/healthz`.
-- Caddy caches only `/_next/static/*` immutably, marks `/healthz` no-store, and
-  applies a Next-compatible source-scoped CSP. It permits same-origin scripts
-  plus Next's inline hydration bootstrap, but does not retain fixed legacy
-  hashes, preview routing, Basic Auth, or trusted preview headers.
-- Posts expose no CMS `preview_url`. Bootstrap removes permissions and the
-  former reader's access/user/role/policy only by the known fixed IDs, treating
-  absent IDs as a successful no-op. It does not delete content, author users,
-  private assets, notes, topics, or the Build Reader.
-
-### 4. Validation & Error Matrix
-
-| Condition                                                           | Required result                                                                                |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Fixture image build without token                                   | Succeeds and contains the fixture snapshot                                                     |
-| Directus image build without secret or URL                          | Fails before content fetch/build                                                               |
-| Directus request/decode fails                                       | Next build fails; fixture is not substituted                                                   |
-| Runtime image has CMS/preview env or token bytes in metadata/layers | Secret inspection fails                                                                        |
-| Runtime starts read-only                                            | `/healthz` and `/` become healthy on 4321 as `node`                                            |
-| Caddy contains preview, hash, or trusted-header policy              | Static operations test fails                                                                   |
-| Legacy exact-ID reader objects are absent                           | Retirement is a successful no-op; normal bootstrap gates still apply                           |
-| A similarly named operator identity exists                          | Bootstrap leaves it untouched                                                                  |
-| Core license lacks custom permission rules                          | Bootstrap stops with the licensing error; full access verification remains blocked             |
-| Isolated Core uses a separate basic read-only test identity         | May validate real transport and image secret confinement, not production row/field/folder ACLs |
-| Production Compose injects source/CMS variables into site           | Rendered Compose validation fails                                                              |
-
-### 5. Good / Base / Bad Cases
-
-- Good: CI mounts a short-lived Build Reader token only into the build command,
-  then deploys a digest-pinned image whose runtime has no Directus environment.
-- Base: a local fixture image builds and passes health/non-root/secret checks
-  without any external CMS.
-- Bad: passing a token through `--build-arg`, setting it in Compose runtime,
-  catching a Directus build failure with fixture data, deleting a role by name,
-  or preserving a proxy endpoint for retired preview URLs.
-
-### 6. Tests Required
-
-- `pnpm verify` and `sh tests/ops/run.sh` cover V2 and static operations
-  contracts.
-- `sh scripts/validate-operations.sh` renders production/development Compose,
-  validates the pinned Caddyfile, and checks build/runtime separation.
-- Build a fixture runtime image, then run `scripts/test-runtime-image.sh` and
-  `scripts/assert-image-secret-free.sh` with a non-production inspection token.
-- Inspect generated routes through a standalone server: archive 200, known
-  writing redirect 308, unknown writing/note 404, health 200.
-- Run schema/bootstrap/access checks only against a disposable or backed-up
-  Directus instance. The access test must prove Build Reader receives published
-  article/tutorial fields but not topics/posts_topics, while author workflows
-  and private draft assets remain protected.
-- Record partial retirement checks separately from complete bootstrap/access
-  checks. A Core licensing failure is not a passing access test and must not
-  be worked around by weakening or bypassing the permission boundary.
-- V2 materializes referenced publishable raster originals into same-site
-  `/_cms/<sha256>.<ext>` files. Verify anonymous site image 200 with original
-  byte/MIME equality in a network-disabled read-only runtime; private and
-  unreferenced files must be absent/404. CMS anonymous originals may remain
-  denied; a successful administrator download alone does not prove delivery.
-  Licensed production Build Reader status/field/folder checks remain separate.
-- A licensed instance is not a prerequisite for starting an isolated test CMS.
-  Core basic read-only permissions may exercise the positive image path using
-  synthetic records and a separate test identity. Prove anonymous access,
-  writes, and user reads remain denied; never change the production Build Reader
-  or bootstrap to an all-field fallback.
-- Inspect the exact token consumed by the successful Directus image build,
-  against that same image's history, configuration, layers, and runtime.
-  Confirm CMS-only routes beyond the offline fixture exist in an offline
-  runtime. An unused random marker scan does not establish this positive path.
-- Development bind mounts must preserve both `/app/node_modules` and
-  `/app/frontend-v2/node_modules`; validate Next resolution with the repository
-  bind-mounted, not just in an unmounted image.
-
-### 7. Wrong vs Correct
-
-#### Wrong
-
-```yaml
-services:
-  site:
-    environment:
-      CONTENT_SOURCE: directus
-      DIRECTUS_BUILD_TOKEN: ${DIRECTUS_BUILD_TOKEN}
-```
-
-#### Correct
-
-```dockerfile
-RUN --mount=type=secret,id=directus_build_token,required=false \
-  set -eu; \
-  DIRECTUS_BUILD_TOKEN="$(cat /run/secrets/directus_build_token)" \
-  CONTENT_SOURCE=directus DIRECTUS_URL="$DIRECTUS_URL" \
-  pnpm --filter frontend-v2 build
-```
-
-The correct form confines the credential to the one build process that needs it
-and leaves no CMS capability in the deployed site.
-
-## Convention: Regenerate Consumed Files via Temp + Rename
-
-Any command that regenerates a file consumed by a later step (e.g.
-`directus/database.sql` is the input of `directus:schema:apply`) must write to
-a temporary sibling and rename on success (`> file.tmp && mv -f file.tmp
-file`). A bare `> file` truncates the target before the producer runs, so a
-mid-stream failure leaves a half-written file that the consuming command then
-applies. This cost us a real finding (2026-09 audit, `directus:schema:dump`).
-
-## Verification Order
-
-Run fast static checks first, then image checks, then guarded live CMS checks:
-
-```sh
-pnpm --filter frontend-v2 verify
-pnpm verify
-sh tests/ops/run.sh
+CMS_TEST_DATABASE_URL=postgres://.../author_cms_test pnpm verify
+CMS_TEST_DATABASE_URL=postgres://.../author_cms_test pnpm test:runtime
 sh scripts/validate-operations.sh
-docker build --target runtime --tag blog-site:fixture .
-scripts/test-runtime-image.sh blog-site:fixture
-DIRECTUS_BUILD_TOKEN=<inspection-token> scripts/assert-image-secret-free.sh blog-site:fixture
+docker build --target runtime --tag blog-site:test .
+docker build --target cms-runtime --tag blog-cms:test .
+sh scripts/test-runtime-image.sh blog-site:test
+sh scripts/test-cms-image.sh blog-cms:test
+CMS_READ_TOKEN=<synthetic-marker> sh scripts/assert-image-secret-free.sh blog-site:test
+CMS_READ_TOKEN=<synthetic-marker> sh scripts/assert-image-secret-free.sh blog-cms:test
 ```
 
-If Docker Hub or another external registry is unavailable, record that external
-failure separately. Do not weaken the Dockerfile secret or runtime contract to
-make a network outage appear green.
+## 3. Contracts
+
+DB tests destroy only explicitly selected local _test schemas; do not run while
+preview shares that schema. test:runtime --preview retains synthetic production
+processes for visual checks; report lifecycle accurately. Source instances are
+read-only evidence. CMS image smoke removes only its own temporary containers.
+
+Images build without secrets/content services; run read-only/non-root. Image
+smokes also assert bundled license/copyright and native-library notices exist. CMS smoke
+provisions restricted role, exercises Sharp/auth/publish/CLIs and denies legacy
+sentinel reads. Secret scans inspect config/history/layers; CI additionally audits
+dependencies and images. No marker scan alone proves build-time secret consumption.
+
+Runtime checks verify never-built formerly-404 slug, list/category/series/search,
+draft isolation/update/archive/media, writing 308, outage 503, unchanged build/PIDs.
+Browser checks separately prove focus/history/cached404, image insertion, conflict
+and responsive design. Full recovery compares actual bytes and re-exported data.
+Reconciliation gaps block declaring lossless cutover despite successful builds.
+
+## 4. Validation & Error Matrix
+
+| Check | Passing evidence |
+| --- | --- |
+| App gates | Real files selected; DB tests not skipped when claimed |
+| Runtime publishing | New/update/withdrawn observed, unchanged build/PIDs |
+| Restricted role | Startup works, legacy SELECT denied |
+| Media | Private404 → exact published bytes200 → revoked404 |
+| Recovery | Separate restored manifest/files equal source export |
+| Registry outage | Record unverified result, retain security contract |
+
+## 5. Good / Base / Bad Cases
+
+- Good: sequential app/container/browser checks with honest migration gaps.
+- Base: focused checks; repeat only checks affected by changes/failures.
+- Bad: fixture build alone, skipped DB coverage, or claiming unexecuted UI gestures.
+
+## 6. Tests Required
+
+Run the applicable commands above. Publication/storage need DB+production runtime;
+cache/navigation need browser checks; infra needs proxy/backup checks. Root gate covers only active CMS, fixture, Markdown and operations behavior;
+retired seed/launch tests are removed. Backup regressions prove CMS-only format 2
+round-trip with originals, format 1 compatibility, missing media/unknown format
+refusal and preservation of nonempty targets. Deployment requires final frozen-source reconciliation.
+
+## 7. Wrong vs Correct
+
+Wrong: `pnpm build` proves immediate publication/restore.
+Correct: build once, run services, publish/revoke and compare build/PIDs; separately
+restore full bytes. Regenerate consumed files via temp+rename only on success.

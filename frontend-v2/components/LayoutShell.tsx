@@ -1,19 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Post, SiteProfile } from "../lib/types";
+import type { PostSummary, SiteProfile } from "../lib/types";
 import { BackgroundCanvas } from "./BackgroundCanvas";
 import { CommandMenu } from "./CommandMenu";
 import { Footer } from "./Footer";
 import { Navbar } from "./Navbar";
+import { ContentFreshness } from "./ContentFreshness";
 
 interface LayoutShellProps {
   children: React.ReactNode;
   profile: SiteProfile;
-  posts: Post[];
+  posts: PostSummary[];
+  generation: number;
 }
 
-export function LayoutShell({ children, profile, posts }: LayoutShellProps) {
+export function LayoutShell({ children, profile, posts, generation }: LayoutShellProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -66,6 +68,7 @@ export function LayoutShell({ children, profile, posts }: LayoutShellProps) {
     <>
       <BackgroundCanvas />
       <Navbar onOpenSearch={() => setSearchOpen(true)} />
+      <ContentFreshness generation={generation}/>
 
       <div className="page">{children}</div>
 

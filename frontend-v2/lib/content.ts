@@ -1,116 +1,50 @@
-import {
-  buildSnapshot,
-  loadFromDirectus,
-  type ContentSnapshot,
-} from "./directus";
-import { readBuildEnvironment } from "./env";
+import { cache } from "react";
+import { catalogSchema, publicDetailSchema, postSummarySchema, type PublicCatalog } from "@blog/content-contracts";
+import { z } from "zod";
+import { readRuntimeEnvironment } from "./env";
+import { buildSnapshot } from "./fixture-projector";
 import { FIXTURE_ROWS } from "./fixture";
 import { generateActivityData, MOCK_PROJECTS } from "./mock";
-import type {
-  ActivityDay,
-  Category,
-  Post,
-  Project,
-  Series,
-  SiteProfile,
-  Tag,
-} from "./types";
+import type { ActivityDay, Category, Post, PostSummary, Project, Series, SiteProfile, Tag } from "./types";
 
-/**
- * 每个进程构建一次内容快照。fixture 是显式离线默认值；Directus 构建必须
- * 成功读取已发布数据。两条路径共用 buildSnapshot，派生字段只有一份实现。
- */
-let cached: Promise<ContentSnapshot> | undefined;
-
-export function snapshot(): Promise<ContentSnapshot> {
-  if (!cached) {
-    const environment = readBuildEnvironment();
-    // 夹具的 cover_image 全为 null，不需要资源前缀，base 传空串。
-    cached =
-      environment.source === "fixture"
-        ? Promise.resolve(buildSnapshot(FIXTURE_ROWS, ""))
-        : loadFromDirectus(environment.directus);
-  }
-  return cached;
+export class ContentUnavailable extends Error { constructor(){super("内容服务暂时不可用，请稍后重试。");} }
+export async function readPublished<T>(path: string, schema: z.ZodType<T>): Promise<T> {
+  const environment=readRuntimeEnvironment();
+  if(environment.source!=="cms") throw new ContentUnavailable();
+  try {
+    const response=await fetch(`${environment.url}/api/public/${path}`,{cache:"no-store",headers:{Authorization:`Bearer ${environment.token}`},signal:AbortSignal.timeout(5000)});
+    if(!response.ok) throw new ContentUnavailable();
+    return schema.parse(await response.json());
+  } catch { throw new ContentUnavailable(); }
 }
-
-export async function getProfile(): Promise<SiteProfile> {
-  return (await snapshot()).profile;
-}
-
-export async function getAllPosts(): Promise<Post[]> {
-  return (await snapshot()).posts;
-}
-
-export async function getFeaturedPosts(): Promise<Post[]> {
-  const { posts } = await snapshot();
-  const featured = posts.filter((p) => p.featured);
-  if (featured.length > 0) return featured;
-  return posts.slice(0, 1);
-}
-
-export async function getPostBySlug(slug: string): Promise<Post | undefined> {
-  return (await snapshot()).posts.find((p) => p.slug === slug);
-}
-
-export async function getCategories(): Promise<Category[]> {
-  return (await snapshot()).categories;
-}
-
-export async function getTags(): Promise<Tag[]> {
-  return (await snapshot()).tags;
-}
-
-export async function getSeriesList(): Promise<Series[]> {
-  return (await snapshot()).series;
-}
-
-export async function getSeriesBySlug(
-  slug: string,
-): Promise<Series | undefined> {
-  return (await snapshot()).series.find((s) => s.slug === slug);
-}
-
-export async function getActivityInfo(): Promise<{
-  days: ActivityDay[];
-  activeDaysCount: number;
-  totalUpdates: number;
-}> {
-  return generateActivityData();
-}
-
-export async function getNavigationPosts(currentPost: Post): Promise<{
-  prevPost: Post | null;
-  nextPost: Post | null;
-}> {
-  const { posts } = await snapshot();
-  const index = posts.findIndex((p) => p.id === currentPost.id);
-  if (index === -1) return { prevPost: null, nextPost: null };
-
-  const nextPost = index > 0 ? posts[index - 1]! : null;
-  const prevPost = index < posts.length - 1 ? posts[index + 1]! : null;
-
-  return { prevPost, nextPost };
-}
-
-export async function getCategoryBySlug(
-  slug: string,
-): Promise<Category | undefined> {
-  const decoded = decodeURIComponent(slug).toLowerCase();
-  return (await snapshot()).categories.find(
-    (c) => c.slug.toLowerCase() === decoded || c.name.toLowerCase() === decoded,
-  );
-}
-
-export async function getPostsByCategory(
-  categoryName: string,
-): Promise<Post[]> {
-  const target = categoryName.toLowerCase();
-  return (await snapshot()).posts.filter(
-    (p) => p.category.toLowerCase() === target,
-  );
-}
-
-export async function getAllProjects(): Promise<Project[]> {
-  return MOCK_PROJECTS;
-}
+function fixture() { return buildSnapshot(FIXTURE_ROWS); }
+// React cache deduplicates only within a server render. No module-level promise
+// or cross-request content cache may retain an archived publication.
+export const snapshot=cache(async():Promise<PublicCatalog>=>{
+  if(readRuntimeEnvironment().source==="fixture") {const data=fixture();return catalogSchema.parse({...data,generation:0,posts:data.posts.map(post=>postSummarySchema.parse(post))});}
+  return readPublished("catalog",catalogSchema);
+});
+export const getPostDetail=cache(async(slug:string)=>{
+  if(readRuntimeEnvironment().source==="fixture") {const post=fixture().posts.find(post=>post.slug===slug);return post?{generation:0,canonicalSlug:post.slug,post}:null;}
+  const environment=readRuntimeEnvironment();
+  if(environment.source!=="cms")throw new ContentUnavailable();
+  try {
+    const response=await fetch(`${environment.url}/api/public/posts/${encodeURIComponent(slug)}`,{cache:"no-store",headers:{Authorization:`Bearer ${environment.token}`},signal:AbortSignal.timeout(5000)});
+    if(response.status===404)return null;
+    if(!response.ok)throw new ContentUnavailable();
+    return publicDetailSchema.parse(await response.json());
+  }catch{throw new ContentUnavailable();}
+});
+export async function getProfile():Promise<SiteProfile>{return (await snapshot()).profile;}
+export async function getAllPosts():Promise<PostSummary[]>{return (await snapshot()).posts;}
+export async function getFeaturedPosts():Promise<PostSummary[]>{const posts=await getAllPosts();const featured=posts.filter(post=>post.featured);return featured.length?featured:posts.slice(0,1);}
+export async function getPostBySlug(slug:string):Promise<Post|undefined>{return (await getPostDetail(slug))?.post;}
+export async function getCategories():Promise<Category[]>{return (await snapshot()).categories;}
+export async function getTags():Promise<Tag[]>{return (await snapshot()).tags;}
+export async function getSeriesList():Promise<Series[]>{return (await snapshot()).series;}
+export async function getSeriesBySlug(slug:string):Promise<Series|undefined>{return (await snapshot()).series.find(series=>series.slug===slug);}
+export async function getNavigationPosts(current:Post):Promise<{prevPost:PostSummary|null;nextPost:PostSummary|null}>{const posts=await getAllPosts();const index=posts.findIndex(post=>post.id===current.id);return {prevPost:index>=0?posts[index+1]??null:null,nextPost:index>0?posts[index-1]??null:null};}
+export async function getCategoryBySlug(slug:string):Promise<Category|undefined>{const target=slug.toLowerCase();return (await snapshot()).categories.find(category=>category.slug.toLowerCase()===target||category.name.toLowerCase()===target);}
+export async function getPostsByCategory(name:string):Promise<PostSummary[]>{return (await getAllPosts()).filter(post=>post.category.toLowerCase()===name.toLowerCase());}
+export async function getActivityInfo():Promise<{days:ActivityDay[];activeDaysCount:number;totalUpdates:number}>{return generateActivityData();}
+export async function getAllProjects():Promise<Project[]>{return MOCK_PROJECTS;}

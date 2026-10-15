@@ -1,5 +1,5 @@
 // frontend-v2 owns its ESLint flat config. The root eslint.config.js scopes
-// itself to scripts/directus and ignores frontend-v2/**, so deleting this file
+// itself to scripts and ignores frontend-v2/**, so deleting this file
 // silently turns `pnpm --filter frontend-v2 lint` into a no-op that reports
 // green. eslint-config-next is not used: its peer range stops at eslint 9
 // while the workspace root runs eslint 10 under strict-peer-dependencies.

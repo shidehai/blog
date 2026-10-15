@@ -1,3 +1,4 @@
+import { pageMetadata, PUBLIC_PAGES } from "../../lib/seo";
 import Link from "next/link";
 import {
   getAllPosts,
@@ -9,10 +10,9 @@ import {
 import { SideLeft } from "../../components/SideLeft";
 import { SideRight } from "../../components/SideRight";
 
-export const metadata = {
-  title: "关于",
-  description: "关于作者、技术栈与本博客的建设理念",
-};
+export function generateMetadata() {
+  return pageMetadata(PUBLIC_PAGES.about);
+}
 
 export default async function AboutPage() {
   const [profile, categories, tags, seriesList, posts] = await Promise.all([
@@ -36,7 +36,9 @@ export default async function AboutPage() {
       {/* 2. Middle Main Content */}
       <main className="main-content" id="main-content">
         <nav className="breadcrumbs" aria-label="面包屑导航">
-          <Link href="/">首页</Link>
+          <Link prefetch={false} href="/">
+            首页
+          </Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">关于</span>
         </nav>

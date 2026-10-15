@@ -11,7 +11,7 @@ for name in POSTGRES_DB POSTGRES_HOST POSTGRES_PASSWORD POSTGRES_USER RESTIC_PAS
 done
 
 staging=${BACKUP_STAGING_DIR:-/backup-staging}
-uploads=${BACKUP_UPLOADS_DIR:-/data/uploads}
+cms_media=${BACKUP_CMS_MEDIA_DIR:-/data/cms-media}
 tag=${BACKUP_TAG:-personal-journal}
 backup_host=${BACKUP_HOST:-personal-journal-vps}
 
@@ -26,8 +26,8 @@ if [ ! -d "$staging" ] || [ ! -w "$staging" ]; then
   echo "BACKUP_STAGING_DIR must exist and be writable" >&2
   exit 1
 fi
-if [ ! -d "$uploads" ] || [ ! -r "$uploads" ]; then
-  echo "BACKUP_UPLOADS_DIR must exist and be readable" >&2
+if [ ! -d "$cms_media" ] || [ ! -r "$cms_media" ]; then
+  echo "BACKUP_CMS_MEDIA_DIR must exist and be readable" >&2
   exit 1
 fi
 
@@ -68,7 +68,7 @@ pg_restore --list "$dump" >/dev/null
 dump_sha256=$(sha256sum "$dump" | cut -d ' ' -f 1)
 dump_bytes=$(wc -c <"$dump" | tr -d ' ')
 cat >"$manifest" <<EOF
-format_version=1
+format_version=2
 created_at=$created_at
 dump_file=postgres.dump
 dump_sha256=$dump_sha256
@@ -77,7 +77,7 @@ EOF
 
 restic backup \
   "$work" \
-  "$uploads" \
+  "$cms_media" \
   --host "$backup_host" \
   --tag "$tag" &
 child=$!

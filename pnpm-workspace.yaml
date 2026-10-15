@@ -1,3 +1,5 @@
 packages:
   - "."
   - "frontend-v2"
+  - "author-cms"
+  - "packages/*"

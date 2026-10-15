@@ -1,0 +1,22 @@
+# Persistent local CMS. Use with compose.yaml and the private .env.local.
+services:
+  caddy:
+    profiles: [production]
+
+  site:
+    environment:
+      SITE_URL: http://localhost:4321
+    depends_on:
+      cms:
+        condition: service_healthy
+    ports: ["127.0.0.1:4321:4321"]
+
+  cms:
+    environment:
+      CMS_ORIGIN: http://localhost:4322
+      CMS_SITE_ORIGIN: http://localhost:4321
+    ports: ["127.0.0.1:4322:4322"]
+
+  postgres:
+    ports: ["127.0.0.1:55433:5432"]
+    networks: [web, data]

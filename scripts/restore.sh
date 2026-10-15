@@ -82,6 +82,15 @@ if [ ! -f "$manifest" ]; then
   exit 1
 fi
 
+format_version=$(sed -n 's/^format_version=//p' "$manifest")
+case "$format_version" in
+  1 | 2) ;;
+  *)
+    echo "Backup manifest has an unsupported format_version" >&2
+    exit 1
+    ;;
+esac
+
 expected_sha=$(sed -n 's/^dump_sha256=//p' "$manifest")
 case "$expected_sha" in
   "" | *[!0-9a-f]*)
@@ -100,13 +109,27 @@ if [ "$actual_sha" != "$expected_sha" ]; then
 fi
 pg_restore --list "$dump" >/dev/null
 
+cms_media_source=$(find "$work" -type d -path '*/data/cms-media' -print -quit)
+if [ -z "$cms_media_source" ]; then
+  echo "Restored snapshot does not contain CMS media; recover pre-CMS backups separately with their matching release" >&2
+  exit 1
+fi
+if [ -n "$(find "$work" -type d -path '*/data/cms-media' -print | sed -n '2p')" ]; then
+  echo "Restored snapshot contains multiple CMS media directories" >&2
+  exit 1
+fi
+if [ -n "$(find "$cms_media_source" -type l -print -quit)" ]; then
+  echo "Restored CMS media contain a symbolic link" >&2
+  exit 1
+fi
+
 if [ "$mode" = verify ]; then
   duration=$(($(date +%s) - started))
   echo "restore mode=verify status=success dump_sha256=$actual_sha duration_seconds=$duration"
   exit 0
 fi
 
-for name in POSTGRES_DB POSTGRES_HOST POSTGRES_PASSWORD POSTGRES_USER RESTORE_UPLOADS_TARGET; do
+for name in POSTGRES_DB POSTGRES_HOST POSTGRES_PASSWORD POSTGRES_USER RESTORE_CMS_MEDIA_TARGET; do
   if [ -z "$(printenv "$name" 2>/dev/null)" ]; then
     echo "Missing required environment variable: $name" >&2
     exit 1
@@ -118,21 +141,12 @@ if [ "${RESTORE_CONFIRM:-}" != "$required_confirmation" ]; then
   exit 1
 fi
 
-uploads_source=$(find "$work" -type d -path '*/data/uploads' -print -quit)
-if [ -z "$uploads_source" ]; then
-  echo "Restored snapshot does not contain the uploads directory" >&2
+if [ ! -d "$RESTORE_CMS_MEDIA_TARGET" ] || [ ! -w "$RESTORE_CMS_MEDIA_TARGET" ]; then
+  echo "RESTORE_CMS_MEDIA_TARGET must exist and be writable" >&2
   exit 1
 fi
-if [ -n "$(find "$uploads_source" -type l -print -quit)" ]; then
-  echo "Restored uploads contain a symbolic link" >&2
-  exit 1
-fi
-if [ ! -d "$RESTORE_UPLOADS_TARGET" ] || [ ! -w "$RESTORE_UPLOADS_TARGET" ]; then
-  echo "RESTORE_UPLOADS_TARGET must exist and be writable" >&2
-  exit 1
-fi
-if [ -n "$(find "$RESTORE_UPLOADS_TARGET" -mindepth 1 -print -quit)" ]; then
-  echo "RESTORE_UPLOADS_TARGET must be empty" >&2
+if [ -n "$(find "$RESTORE_CMS_MEDIA_TARGET" -mindepth 1 -print -quit)" ]; then
+  echo "RESTORE_CMS_MEDIA_TARGET must be empty" >&2
   exit 1
 fi
 
@@ -157,7 +171,7 @@ pg_restore \
   --no-owner \
   --no-privileges \
   "$dump"
-cp -a "$uploads_source/." "$RESTORE_UPLOADS_TARGET/"
+cp -a "$cms_media_source/." "$RESTORE_CMS_MEDIA_TARGET/"
 
 duration=$(($(date +%s) - started))
 echo "restore mode=apply status=success dump_sha256=$actual_sha duration_seconds=$duration"

@@ -1,8 +1,8 @@
 import type { ActivityDay, Project, SiteProfile } from "./types";
 
 /**
- * 站点设置尚未在 Directus 中建模的展示字段。文章、分类和标签不在这里复制，
- * 它们始终来自 fixture 或 Directus 的同一份快照。
+ * 离线样本的作者资料及项目展示数据。真实作者资料、文章、分类和标签
+ * 通过统一内容读取层获取。
  */
 export const MOCK_PROFILE: SiteProfile = {
   name: "shidehai",
@@ -111,8 +111,8 @@ export const MOCK_PROJECTS: Project[] = [
     id: "proj-4",
     name: "blog",
     description:
-      "本站：Next.js 静态站点与 Directus CMS，配套可复现的部署与备份脚本。",
-    techStack: ["Next.js", "Directus", "Docker"],
+      "本站：Next.js 博客与自建写作后台，支持即时发布、历史恢复和图片管理。",
+    techStack: ["Next.js", "PostgreSQL", "Docker"],
     githubUrl: "https://github.com/shidehai/blog",
     liveUrl: "https://qingshan.dev",
     stars: 42,

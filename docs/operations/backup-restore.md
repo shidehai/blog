@@ -1,92 +1,52 @@
-# Backup and clean-room restore
+# Backup and clean-room recovery
 
-## Policy and schedule
+## Nightly encrypted database backup
 
-The nightly `backup` profile creates a PostgreSQL custom-format logical dump,
-verifies it with `pg_restore --list`, writes a checksum/size/timestamp manifest,
-and snapshots that temporary set plus immutable Directus uploads to an
-encrypted Restic repository outside the VPS. The mode-`0600` temporary set is
-removed on every exit path. Live PostgreSQL data files are never copied as a
-database backup.
+The backup profile creates a custom-format pg_dump, verifies pg_restore --list and records size/SHA256/time. Format 2 Restic snapshots contain the dump and CMS media, including originals/. It removes the 0600 temporary dump on all exits. Live PostgreSQL files are not a logical backup. No retired uploads directory is required.
 
-Install the units under `ops/systemd/`, review their absolute paths, then run:
+Install and review ops/systemd units for nightly backup, six-hour freshness checks (maximum age 86400 seconds), weekly retention (14 daily, 8 weekly, 12 monthly) and weekly integrity checks. Enable blog-backup.timer, blog-backup-freshness.timer, blog-restic-forget.timer and blog-restic-check.timer. Perform a quarterly full restic check --read-data and record measured recovery times. Restic credentials are outside the backup set.
 
 ```sh
-systemctl daemon-reload
-systemctl enable --now \
-  blog-backup.timer \
-  blog-backup-freshness.timer \
-  blog-restic-forget.timer \
-  blog-restic-check.timer
-systemctl list-timers 'blog-*'
+docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml --profile backup run --build --rm backup
+docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml --profile restore run --rm restore verify <snapshot-id>
 ```
 
-The jobs are intentionally separate:
+Verify downloads to temporary staging and checks the dump/media payload without changing the database. Select a concrete snapshot ID for recovery evidence.
 
-- nightly snapshot;
-- six-hour freshness check with a maximum age of 86,400 seconds;
-- weekly retention/prune keeping 14 daily, 8 weekly, and 12 monthly points;
-- weekly repository integrity check, with optional data subset configured by
-  `RESTIC_CHECK_SUBSET`.
+## Full clean-room restore
 
-Run a full `restic check --read-data` during a quarterly drill. Never put
-Restic credentials in Git, a database export, or the backup set itself. Test
-the alert unit after configuring the owner-provided HTTPS alert endpoint.
-
-## Safe manual verification
-
-The verify mode downloads one snapshot into temporary staging, validates the
-manifest checksum, and lists the custom dump. It does not connect to or alter
-PostgreSQL/uploads:
+Apply requires an empty database, an existing writable empty CMS media target, a valid dump/manifest and no symlinks. Set RESTORE_CONFIRM=restore-empty:<database> and start only PostgreSQL in an isolated replacement stack:
 
 ```sh
-docker compose --env-file /etc/personal-journal/production.env \
-  --file deploy/compose.yaml --profile restore \
-  run --rm restore verify latest
+RESTORE_CONFIRM=restore-empty:blog docker compose --env-file /etc/personal-journal/production.env -f deploy/compose.yaml --profile restore run --rm restore apply <snapshot-id>
 ```
 
-Use a concrete snapshot ID during a drill so the evidence names an immutable
-recovery point.
+The script refuses overwrite/cleanup of populated targets. If interrupted, retry into fresh empty targets. It uses pg_restore --no-owner --no-privileges, so the administrator restores table ownership. Before CMS startup recreate the restricted blog_cms role, then reassign **only author_cms** objects in that target database:
 
-## Clean-room apply
+```sql
+SELECT format('ALTER TABLE %I.%I OWNER TO blog_cms', schemaname, tablename)
+FROM pg_tables WHERE schemaname='author_cms'
+\gexec
+ALTER SCHEMA author_cms OWNER TO blog_cms;
+```
 
-Recovery is deliberately fail-closed. `apply` requires all of these:
+Do not use broad REASSIGN OWNED across legacy tables. Ensure the media tree is writable/readable by the node UID/GID 1000. With the recorded compatible CMS image, verify migration checksums, login/reset, latest drafts and history, taxonomy, actual images and published addresses. Start site and Caddy, then check public pages and draft/private denials. Only the custom CMS checksum-validated migrations apply to a restored database.
 
-- a newly created PostgreSQL database containing no user tables;
-- an existing, writable, empty Directus upload target;
-- `RESTORE_CONFIRM=restore-empty:<database>`;
-- a valid manifest/dump checksum and no symlink in restored uploads.
+Record snapshot time, start/end, RPO/RTO, role/ownership changes, media checksums and URL samples. Targets remain at most 24 hours of lost changes and four hours recovery under ordinary network/DNS conditions. TLS certificates/code images can be regenerated; recovery secrets come from the password manager.
 
-On a clean replacement host, start only PostgreSQL, then run:
+## Portable content and media bundle
+
+The CMS CLI exports versioned JSON data, Markdown working copies, actual media/originals and SHA256 manifests. It excludes owner/sessions; the browser JSON export does not include image bytes. Use a new private destination directory:
 
 ```sh
-RESTORE_CONFIRM=restore-empty:blog \
-docker compose --env-file /etc/personal-journal/production.env \
-  --file deploy/compose.yaml --profile restore \
-  run --rm restore apply <snapshot-id>
+node author-cms/scripts/transfer.mjs export /protected/new-bundle
+node author-cms/scripts/transfer.mjs verify /protected/new-bundle
+# On a separate empty content schema and media root after migrate:
+node author-cms/scripts/transfer.mjs restore /protected/new-bundle
 ```
 
-The script refuses to clean, truncate, or overwrite a non-empty target. If an
-apply is interrupted, discard that clean-room database/upload target and retry
-from a new empty target. Do not turn the guard into `pg_restore --clean`.
+In development use pnpm --filter author-cms exec node --env-file=.env.local --import=tsx scripts/transfer.mts with the same arguments. In a container use a reviewed bind mount for /protected. DATABASE_URL and CMS_MEDIA_ROOT always name the selected target; do not point recovery at a populated authoring database. Restore validates checksums, refuses existing content and will only reuse identical immutable files. Original source archives are included. Initialize/reset the target owner separately, then re-export and compare data/media manifests with the original bundle.
 
-After apply:
+## Older pre-CMS snapshots
 
-1. Start the pinned Directus 12.2.0 image and verify `/server/ping`.
-2. Inspect users, policies, revisions, site settings, representative posts, and
-   media through the break-glass account.
-3. Compare the restored database with `directus/schema.yaml` using the schema
-   diff command. A full database restore already contains Directus and project
-   schemas: do **not** automatically apply the snapshot on top of it.
-4. Create a fresh Build Reader token if the recovery inventory marks it for
-   rotation, then build the complete public snapshot with a BuildKit secret.
-5. Compare a recorded set of stable URLs and public media checksums, and verify
-   draft/private assets remain absent.
-6. Record snapshot time, restore start/end, measured RPO/RTO, and every manual
-   intervention. The targets are at most 24 hours of data loss and four hours
-   to restore under normal network/DNS conditions.
-
-Caddy certificates and OCI layers are regenerated. Human credentials, MFA
-recovery, database/Directus secrets, Restic password, GitHub/GHCR credentials,
-SSH keys and alert credentials are recovered from the password manager, not
-Restic.
+The current restore script accepts manifest formats 1 and 2 only, and refuses either format when data/cms-media is missing. Format 1 transition snapshots containing complete CMS media can restore that media and database without a retired uploads target. Unknown formats are refused before applying data. Recover such snapshots with the pinned, reviewed pre-CMS release's restore tooling into a separate empty database/uploads target, then run the source migration procedure. Keep that release digest/commit in the recovery inventory. Do not suppress the media guard or label a legacy-only snapshot a complete backup of new CMS writes.

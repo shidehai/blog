@@ -1,9 +1,9 @@
 /**
- * Directus 形状的夹具数据（蛇形字段，对应 CMS 列名），供 lib/content.ts 接入
- * Directus 后作为离线降级来源使用。
+ * 离线开发与自检使用的固定文章样本，由 fixture-projector 映射到公开契约。
+ * 仅显式 fixture 模式读取，不作为 CMS 故障时的回退。
  *
- * 类型在本文件内自带：这里描述的是 CMS 原始行，与 lib/types.ts 里面向视图的
- * Post 是两套模型，不要合并。接入时在 content.ts 里做一次映射。
+ * 这里描述测试输入，与 lib/types.ts 面向视图的 Post 区分。
+ * 真实内容与草稿始终由自建 CMS 管理。
  *
  */
 
@@ -49,7 +49,7 @@ interface FixturePost {
   category: FixtureTaxonomy | null;
   series: FixtureTaxonomy | null;
   series_order: number | null;
-  /** M2M 结果形状，与 Directus REST 返回一致，供 buildSnapshot 直接消费。 */
+  /** 固定标签关系，由 buildSnapshot 展开为名称数组。 */
   tags: { tags_id: FixtureTaxonomy }[];
   body: string;
 }
@@ -319,7 +319,7 @@ export const QueryDatabaseTool = {
   },
 ];
 
-/** 聚合成 buildSnapshot 的入参形状，让夹具与 Directus 走同一条映射。 */
+/** 聚合离线样本，供 buildSnapshot 与隔离运行验证使用。 */
 export const FIXTURE_ROWS = {
   posts: FIXTURE_POSTS,
   categories: FIXTURE_CATEGORIES,

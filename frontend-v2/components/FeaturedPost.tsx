@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
-import type { Post } from "../lib/types";
+import type { PostSummary } from "../lib/types";
 
 interface FeaturedPostProps {
-  post: Post;
+  post: PostSummary;
 }
 
 export function FeaturedPost({ post }: FeaturedPostProps) {
@@ -16,6 +16,7 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
     <article className="featured-post glass">
       {post.cover && (
         <Link
+              prefetch={false}
           className="featured-post-cover-link"
           href={`/archives/${post.slug}`}
         >
@@ -33,10 +34,10 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
       <div className="featured-post-body">
         <span className="featured-label">置顶精选 · {formattedDate}</span>
         <h2>
-          <Link href={`/archives/${post.slug}`}>{post.title}</Link>
+          <Link prefetch={false} href={`/archives/${post.slug}`}>{post.title}</Link>
         </h2>
         <p>{post.summary}</p>
-        <Link className="featured-read" href={`/archives/${post.slug}`}>
+        <Link prefetch={false} className="featured-read" href={`/archives/${post.slug}`}>
           阅读全文{" "}
           <svg
             className="ui-icon"

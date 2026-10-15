@@ -1,3 +1,4 @@
+import { pageMetadata, PUBLIC_PAGES } from "../../lib/seo";
 import Link from "next/link";
 import {
   getAllPosts,
@@ -9,18 +10,15 @@ import {
 import { SideLeft } from "../../components/SideLeft";
 import { SideRight } from "../../components/SideRight";
 
-export const metadata = {
-  title: "工具箱",
-  description: "在线求解器、开发实用工具与开源项目入口",
-};
+export function generateMetadata() {
+  return pageMetadata(PUBLIC_PAGES.tools);
+}
 
 interface ToolItem {
   name: string;
   badge: string;
-  difficulty?: string;
   iconColor: "cyan" | "purple" | "green" | "red";
   desc: string;
-  link: string;
   meta: string[];
 }
 
@@ -30,15 +28,13 @@ const TOOLS_DATA: ToolItem[] = [
     badge: "实用工具",
     iconColor: "cyan",
     desc: "支持 Mermaid 语法的本地极速流程图预览与高分辨率 SVG 矢量导出工具。",
-    link: "#",
-    meta: ["客户端计算", "0 依赖", "离线可用"],
+    meta: ["Mermaid", "SVG 导出"],
   },
   {
     name: "JSON Schema 校验与 Go Struct 生成器",
     badge: "代码生成",
     iconColor: "purple",
     desc: "将任意 JSON 结构自动解析并转换为带 bson/json/yaml tag 的标准 Go 结构体。",
-    link: "#",
     meta: ["Go 1.24+", "Tag 定制", "即时生成"],
   },
   {
@@ -46,7 +42,6 @@ const TOOLS_DATA: ToolItem[] = [
     badge: "定时任务",
     iconColor: "green",
     desc: "直观展示 5 位/6 位 Cron 表达式在未来 10 次的触发时间点与时区换算。",
-    link: "#",
     meta: ["标准 Cron", "时区预览", "秒级计算"],
   },
   {
@@ -54,7 +49,6 @@ const TOOLS_DATA: ToolItem[] = [
     badge: "嵌入式",
     iconColor: "red",
     desc: "针对 4G Cat.1 模组的十六进制 PDU 短信编解码及常用 URC/AT 调试指令速查。",
-    link: "#",
     meta: ["PDU 7/8/16-bit", "URC 过滤", "AT 自动化"],
   },
   {
@@ -62,7 +56,6 @@ const TOOLS_DATA: ToolItem[] = [
     badge: "安全认证",
     iconColor: "cyan",
     desc: "无网络上传的安全客户端 JWT 签名验证、Header/Payload 解码与过期时间计算。",
-    link: "#",
     meta: ["纯前端解析", "隐私安全", "毫秒响应"],
   },
   {
@@ -70,7 +63,6 @@ const TOOLS_DATA: ToolItem[] = [
     badge: "系统运维",
     iconColor: "purple",
     desc: "快速生成针对 USB 串口固定设备节点、多网卡绑定的 udev rules 规则文件。",
-    link: "#",
     meta: ["Arch / Debian", "热插拔规则", "一键复制"],
   },
 ];
@@ -97,7 +89,9 @@ export default async function ToolsPage() {
       {/* 2. Middle Main Content */}
       <main className="main-content" id="main-content">
         <nav className="breadcrumbs" aria-label="面包屑导航">
-          <Link href="/">首页</Link>
+          <Link prefetch={false} href="/">
+            首页
+          </Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">工具箱</span>
         </nav>
@@ -105,9 +99,9 @@ export default async function ToolsPage() {
         <header className="toolbox-header">
           <div>
             <h1>工具箱</h1>
-            <p>可以直接用的在线求解器、开发实用工具，以及开源项目入口</p>
+            <p>正在整理日常开发中常用的小工具，完成后会在这里开放。</p>
           </div>
-          <span>{TOOLS_DATA.length} 个入口</span>
+          <span>{TOOLS_DATA.length} 项规划</span>
         </header>
 
         <section className="toolbox-section">
@@ -157,21 +151,7 @@ export default async function ToolsPage() {
                   ))}
                 </div>
                 <p className="tool-card-desc">{tool.desc}</p>
-                <span className="link">
-                  打开{" "}
-                  <svg
-                    className="ui-icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </span>
+                <span className="tool-card-meta">筹备中</span>
               </div>
             ))}
           </div>

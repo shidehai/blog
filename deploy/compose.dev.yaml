@@ -21,8 +21,9 @@ services:
       ]
     environment:
       CONTENT_SOURCE: ${CONTENT_SOURCE:-fixture}
-      DIRECTUS_URL: ${DIRECTUS_URL:-http://directus:8055}
-      DIRECTUS_BUILD_TOKEN: ${DIRECTUS_BUILD_TOKEN:-}
+      SITE_URL: http://localhost:4321
+      CMS_INTERNAL_URL: http://cms:4322
+      CMS_READ_TOKEN: ${CMS_READ_TOKEN:?Set CMS_READ_TOKEN}
     ports:
       - "127.0.0.1:4321:4321"
     volumes:
@@ -33,16 +34,25 @@ services:
       - site_frontend_node_modules:/app/frontend-v2/node_modules
     read_only: false
 
-  directus:
+  cms:
+    image: personal-journal-cms:dev
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: development
+    command: ["pnpm", "--filter", "author-cms", "dev", "--hostname", "0.0.0.0"]
     environment:
-      PUBLIC_URL: ${DIRECTUS_PUBLIC_URL:-http://localhost:8055}
-    ports:
-      - "127.0.0.1:8055:8055"
+      CMS_ORIGIN: http://localhost:4322
+      CMS_SITE_ORIGIN: http://localhost:4321
+      CMS_MEDIA_ROOT: /data/cms-media
+    ports: ["127.0.0.1:4322:4322"]
     volumes:
       - type: bind
-        source: ../directus
-        target: /directus/project
-        read_only: false
+        source: ..
+        target: /app
+      - site_node_modules:/app/node_modules
+      - cms_node_modules:/app/author-cms/node_modules
+    read_only: false
 
   postgres:
     ports:
@@ -52,3 +62,4 @@ services:
 volumes:
   site_node_modules:
   site_frontend_node_modules:
+  cms_node_modules:

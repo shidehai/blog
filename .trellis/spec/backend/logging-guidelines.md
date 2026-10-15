@@ -1,26 +1,15 @@
 # Logging Guidelines
 
-## Current Pattern
+Use concise bounded diagnostics without adding a logging dependency. Docker uses
+bounded json-file logs; Caddy retains JSON access logs.
 
-There is no application logging dependency. Small scripts emit concise,
-secret-free diagnostics to stdout/stderr; container logs use Docker's
-`json-file` driver; Caddy writes structured JSON access logs with its own
-retention policy.
+Log lifecycle, operation/status, counts/checksums and safe IDs. Record build/PIDs
+in isolated runtime evidence to prove no rebuild/restart. Migration reports are
+protected artifacts because source details can be private.
 
-## Log
-
-- Build source selection (`fixture` or `directus`) without exposing values.
-- Service lifecycle, health, image/runtime validation, and operation success or
-  failure.
-- A record ID and field name when content validation fails.
-- Backup time, size/checksum, duration, and status.
-
-## Never Log
-
-- Directus, database, deployment, dispatch, or Restic secrets.
-- Markdown bodies, authentication headers, complete environment dumps, private
-  asset URLs, or BuildKit secret contents.
-- Details from retired credentials or absent legacy service identities.
-
-Keep platform-native structured output where it already exists. A one-line
-boundary diagnostic does not justify a logging library.
+Never log passwords, sessions, reader/DB/Restic/deploy credentials, headers,
+Markdown bodies, private URLs or full environment. Unexpected API errors log a
+fixed label and return bounded 503. Avoid raw parser/SQL payloads.
+An unused marker scan does not prove a secret was consumed during build: current
+images intentionally build without secrets; config/history/layer scans complement
+that contract and runtime-only credential injection.

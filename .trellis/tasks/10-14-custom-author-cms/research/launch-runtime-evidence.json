@@ -1,0 +1,30 @@
+{
+  "passed": true,
+  "buildIds": [
+    "p0Asu8nC_Ibr4u6n-t6cU",
+    "_kzWuQeMhUp6bfB3wFY5Z"
+  ],
+  "pids": [
+    219464,
+    219493
+  ],
+  "checks": [
+    "previously-404 slug",
+    "list/category/series/search summaries",
+    "draft isolation",
+    "publish update",
+    "archive and media revoke",
+    "reader-only boundary",
+    "unavailable returns 503",
+    "no rebuild/restart",
+    "configured canonical/OG/Twitter and sharing PNG",
+    "dynamic published-only sitemap after publish/rename/archive",
+    "robots and disabled unused image optimizer"
+  ],
+  "preview": {
+    "cms": "http://localhost:4342",
+    "site": "http://localhost:4341",
+    "editor": "http://localhost:4342/write/3278f843-48e9-4b45-a696-ca863882b394",
+    "logDirectory": "/tmp/blog-cms-runtime-1792046186298"
+  }
+}

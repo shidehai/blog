@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-15",
+  "scope": "local-only",
+  "productionDependencyAudit": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0
+    },
+    "dependencies": 247,
+    "devDependencies": 0,
+    "optionalDependencies": 0,
+    "totalDependencies": 247
+  },
+  "runtimeVersions": {
+    "node": "24.22.0",
+    "next": "15.5.28",
+    "sharp": "0.35.5",
+    "libvips": "8.18.7",
+    "alpine": "3.23.6",
+    "libcrypto3": "3.5.8-r0",
+    "libssl3": "3.5.8-r0"
+  },
+  "scanner": {
+    "version": "0.76.0",
+    "image": "public.ecr.aws/aquasecurity/trivy:0.76.0",
+    "databaseRepository": "public.ecr.aws/aquasecurity/trivy-db:2",
+    "database": {
+      "Version": 2,
+      "NextUpdate": "2026-10-16T01:13:01.189994923Z",
+      "UpdatedAt": "2026-10-15T01:13:01.189995254Z",
+      "DownloadedAt": "2026-10-15T06:37:46.668879494Z"
+    },
+    "severityGate": [
+      "HIGH",
+      "CRITICAL"
+    ],
+    "ignores": false,
+    "ignoreUnfixed": false
+  },
+  "initialCmsFindings": 17,
+  "remediation": [
+    "Patched Node 24/Alpine base and OpenSSL",
+    "Remove global npm/Corepack/Yarn from runtime; build/development keep toolchains"
+  ],
+  "images": {
+    "site": {
+      "imageId": "sha256:520122eaf04faf9a6b84a9a0dff708b40acf30a326d51afed14b8198998dd382",
+      "createdAt": "2026-10-15T06:53:22.857278096Z",
+      "os": {
+        "Family": "alpine",
+        "Name": "3.23.6"
+      },
+      "high": 0,
+      "critical": 0,
+      "exitCode": 0,
+      "runtimeSmokePassed": true,
+      "runtimeCredentialInspectionPassed": true
+    },
+    "cms": {
+      "imageId": "sha256:e2a49b68b8e1cd44ac33c7504e0f20a8eeb3b64a4628f46fe66f465efb2f24d9",
+      "createdAt": "2026-10-15T06:54:56.593281331Z",
+      "os": {
+        "Family": "alpine",
+        "Name": "3.23.6"
+      },
+      "high": 0,
+      "critical": 0,
+      "exitCode": 0,
+      "runtimeSmokePassed": true,
+      "runtimeCredentialInspectionPassed": true
+    }
+  },
+  "cmsFontSource": "Temporary Tsinghua Alpine mirror; same pinned versions with APK signature checks",
+  "remoteDeployment": false
+}
